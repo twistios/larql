@@ -7,8 +7,8 @@ variant. Each format is a sibling subcommand under `quantize`, with
 its own flag surface. FP4 and Q4K are wired today; future formats
 land as additional subcommands without changing the grammar.
 **Format-specific references:**
-- FP4: [`fp4-format-spec.md`](fp4-format-spec.md) (byte layout),
-  [`fp4-precision-policy.md`](fp4-precision-policy.md) (A/B/C
+- FP4: [`fp4-format-spec.md`](../../larql-vindex/docs/fp4-format-spec.md) (byte layout),
+  [`fp4-precision-policy.md`](../../larql-vindex/docs/fp4-precision-policy.md) (A/B/C
   policies + compliance gate).
 - Q4K: GGML "Q4_K_M" mix (Q4_K gate/up + Q6_K down), Ollama-
   compatible. Library entry: `larql_vindex::quant::vindex_to_q4k`
@@ -247,13 +247,13 @@ is unambiguously distinguishable from a complete one.
 
 ## 5. Exit codes
 
-| Code | Meaning                                                            |
-| ---- | ------------------------------------------------------------------ |
-| 0    | Output produced; all policy-specified projections written.         |
-| 1    | Input vindex invalid, missing files, or unsupported geometry.      |
-| 2    | Compliance floor missed on ≥ 1 projection AND `--strict` was set.  |
-| 3    | I/O error writing output.                                          |
-| 4    | Output exists and `--force` not provided.                          |
+| Code | Meaning                                                           |
+|------|-------------------------------------------------------------------|
+| 0    | Output produced; all policy-specified projections written.        |
+| 1    | Input vindex invalid, missing files, or unsupported geometry.     |
+| 2    | Compliance floor missed on ≥ 1 projection AND `--strict` was set. |
+| 3    | I/O error writing output.                                         |
+| 4    | Output exists and `--force` not provided.                         |
 
 Non-success codes always leave `DST` either absent (on early failure)
 or with a partial output clearly tagged by the absence of
@@ -334,13 +334,13 @@ and only noisy on anomalies.
 
 The existing tests mostly transfer:
 
-| Existing test                                                | Covers |
-| ------------------------------------------------------------ | ------ |
-| `tests/test_fp4_synthetic` (7 tests)                         | Per-feature round-trip through a loaded FP4 vindex — the kind `larql convert` produces. |
-| `tests/test_fp4_storage` (4 tests, real fixture)             | End-to-end against `gemma3-4b-fp4.vindex`. Switching to `larql convert`-produced output changes nothing. |
-| `format::fp4_storage::tests` (7 tests)                       | File-level writer/reader. The converter uses these via `write_fp4_projection` / `write_fp8_projection`. |
-| `index::fp4_storage::tests` (13 tests)                       | Per-projection storage — same abstraction. |
-| `walk_ffn::routing_tests` (3 tests)                          | Predicate ladder, including the Q2-regression guard. |
+| Existing test                                    | Covers                                                                                                   |
+|--------------------------------------------------|----------------------------------------------------------------------------------------------------------|
+| `tests/test_fp4_synthetic` (7 tests)             | Per-feature round-trip through a loaded FP4 vindex — the kind `larql convert` produces.                  |
+| `tests/test_fp4_storage` (4 tests, real fixture) | End-to-end against `gemma3-4b-fp4.vindex`. Switching to `larql convert`-produced output changes nothing. |
+| `format::fp4_storage::tests` (7 tests)           | File-level writer/reader. The converter uses these via `write_fp4_projection` / `write_fp8_projection`.  |
+| `index::fp4_storage::tests` (13 tests)           | Per-projection storage — same abstraction.                                                               |
+| `walk_ffn::routing_tests` (3 tests)              | Predicate ladder, including the Q2-regression guard.                                                     |
 
 New tests the CLI subcommand needs:
 
