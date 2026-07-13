@@ -36,25 +36,25 @@ The spec **does not** define:
 
 Lives at the vindex root. Top-level fields:
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `vindex_spec_version` | u32 | yes | Must equal `1`. The validator rejects other values. |
-| `version` | u32 | yes | On-disk file-format version. Independent of `vindex_spec_version`. |
-| `model` | string | yes | Upstream model id, e.g. `google/gemma-3-4b-it`. |
-| `family` | string | yes | Architecture family for loader dispatch. |
-| `source` | object | yes | Provenance — see §3. Was nullable pre-v1; v1 hardens it. |
-| `checksums` | object | yes | `{filename → sha256-hex}` for every `.bin` referenced. Was nullable pre-v1. |
-| `num_layers` | u32 | yes | Transformer layer count. |
-| `hidden_size` | u32 | yes | Hidden dim. |
-| `intermediate_size` | u32 | yes | FFN intermediate dim. |
-| `vocab_size` | u32 | yes | Vocabulary size. |
-| `embed_scale` | f32 | yes | Embedding scaling factor. |
-| `extract_level` | enum | yes | `browse` < `attention` < `inference` < `all`. See §4. |
-| `dtype` | enum | yes | `f32` or `f16`. See §5. |
-| `quant` | enum | yes | `none`, `q4k`, or `kquant`. See §6. |
-| `layers` | array | yes | Per-layer offset table — see §7. |
-| `down_top_k` | u32 | yes | K used at runtime for top-K gate-feature lookup. |
-| `has_model_weights` | bool | yes | Whether full weight tensors (not just gate vectors) are present. |
+| Field                 | Type   | Required | Notes                                                                       |
+|-----------------------|--------|----------|-----------------------------------------------------------------------------|
+| `vindex_spec_version` | u32    | yes      | Must equal `1`. The validator rejects other values.                         |
+| `version`             | u32    | yes      | On-disk file-format version. Independent of `vindex_spec_version`.          |
+| `model`               | string | yes      | Upstream model id, e.g. `google/gemma-3-4b-it`.                             |
+| `family`              | string | yes      | Architecture family for loader dispatch.                                    |
+| `source`              | object | yes      | Provenance — see §3. Was nullable pre-v1; v1 hardens it.                    |
+| `checksums`           | object | yes      | `{filename → sha256-hex}` for every `.bin` referenced. Was nullable pre-v1. |
+| `num_layers`          | u32    | yes      | Transformer layer count.                                                    |
+| `hidden_size`         | u32    | yes      | Hidden dim.                                                                 |
+| `intermediate_size`   | u32    | yes      | FFN intermediate dim.                                                       |
+| `vocab_size`          | u32    | yes      | Vocabulary size.                                                            |
+| `embed_scale`         | f32    | yes      | Embedding scaling factor.                                                   |
+| `extract_level`       | enum   | yes      | `browse` < `attention` < `inference` < `all`. See §4.                       |
+| `dtype`               | enum   | yes      | `f32` or `f16`. See §5.                                                     |
+| `quant`               | enum   | yes      | `none`, `q4k`, or `kquant`. See §6.                                         |
+| `layers`              | array  | yes      | Per-layer offset table — see §7.                                            |
+| `down_top_k`          | u32    | yes      | K used at runtime for top-K gate-feature lookup.                            |
+| `has_model_weights`   | bool   | yes      | Whether full weight tensors (not just gate vectors) are present.            |
 
 Any field on disk that isn't named above is passed through unchanged
 (`serde(flatten)` into the Rust `extra` map). Known loader-domain
@@ -67,15 +67,15 @@ All fields are REQUIRED in v1. The pre-v1 manifest allowed `null` on
 `huggingface_revision` and `safetensors_sha256` (and `source` itself
 was nullable); v1 retires both.
 
-| Field | Type | Notes |
-|---|---|---|
-| `huggingface_repo` | string | Canonical upstream repo. |
-| `huggingface_revision` | string | Branch or tag pulled at extract time. |
-| `base_model_sha` | string | Upstream git commit SHA — the validator pulls exactly these bytes. |
-| `base_safetensors_sha256` | object | `{shard_filename → sha256-hex}` for every safetensors shard. |
-| `extracted_at` | string | ISO 8601 timestamp. |
-| `larql_version` | string | `larql` crate version that produced the vindex. |
-| `extractor_sha` | string | Git SHA of the larql repo at extract time. |
+| Field                     | Type   | Notes                                                              |
+|---------------------------|--------|--------------------------------------------------------------------|
+| `huggingface_repo`        | string | Canonical upstream repo.                                           |
+| `huggingface_revision`    | string | Branch or tag pulled at extract time.                              |
+| `base_model_sha`          | string | Upstream git commit SHA — the validator pulls exactly these bytes. |
+| `base_safetensors_sha256` | object | `{shard_filename → sha256-hex}` for every safetensors shard.       |
+| `extracted_at`            | string | ISO 8601 timestamp.                                                |
+| `larql_version`           | string | `larql` crate version that produced the vindex.                    |
+| `extractor_sha`           | string | Git SHA of the larql repo at extract time.                         |
 
 The combination of `base_model_sha` + `extractor_sha` is enough for a
 validator to reproduce the extraction bit-for-bit modulo float
@@ -86,20 +86,20 @@ tolerates.
 
 Strictly increasing tier. Each level is a superset of the previous.
 
-| `extract_level` | Adds | Enables |
-|---|---|---|
-| `browse` | gate + embed + down_meta + tokenizer | WALK / DESCRIBE / SELECT |
-| `attention` | + attention + norms | client-side of remote-FFN inference |
-| `inference` | + FFN up/down | full local INFER |
-| `all` | + lm_head + COMPILE extras | COMPILE |
+| `extract_level` | Adds                                 | Enables                             |
+|-----------------|--------------------------------------|-------------------------------------|
+| `browse`        | gate + embed + down_meta + tokenizer | WALK / DESCRIBE / SELECT            |
+| `attention`     | + attention + norms                  | client-side of remote-FFN inference |
+| `inference`     | + FFN up/down                        | full local INFER                    |
+| `all`           | + lm_head + COMPILE extras           | COMPILE                             |
 
 ## 5. Storage dtype (`dtype`)
 
 Float precision for non-quantised tensors (gate vectors, embeddings,
 norms, ...). Closed enum:
 
-| Value | Notes |
-|---|---|
+| Value | Notes                                                   |
+|-------|---------------------------------------------------------|
 | `f32` | IEEE 754 binary32. Default for full-precision vindexes. |
 | `f16` | IEEE 754 binary16. Default for size-optimised vindexes. |
 
@@ -110,10 +110,10 @@ weights are governed by `quant`; everything else by `dtype`.
 
 Quant scheme for FFN weight files. v1 enum:
 
-| Value | Notes |
-|---|---|
-| `none` | Float storage controlled by `dtype`. |
-| `q4k` | Q4_K / Q6_K family — the v1 canonical tag. Writers emit this for v1 vindexes. |
+| Value    | Notes                                                                                                                                                                            |
+|----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `none`   | Float storage controlled by `dtype`.                                                                                                                                             |
+| `q4k`    | Q4_K / Q6_K family — the v1 canonical tag. Writers emit this for v1 vindexes.                                                                                                    |
 | `kquant` | Same Q4_K / Q6_K family as `q4k`; the post-rename canonical tag. Readers MUST accept it as an alias of `q4k`. A future v2 schema bump flips writers to emit `kquant` by default. |
 
 Filename convention (set by the Rust constants in
@@ -198,11 +198,11 @@ the next vindex revision picks up the fix.
 Live in `thresholds.rs`, not the manifest. The validator picks them
 from `(quant, dtype)`:
 
-| `quant` | `dtype` | `cosine_min` | `max_diff` |
-|---|---|---|---|
-| `q4k` / `kquant` | (any) | 0.995 | 0.05 |
-| `none` | `f16` | 0.9999 | 0.01 |
-| `none` | `f32` | 0.99999 | 0.001 |
+| `quant`          | `dtype` | `cosine_min` | `max_diff` |
+|------------------|---------|--------------|------------|
+| `q4k` / `kquant` | (any)   | 0.995        | 0.05       |
+| `none`           | `f16`   | 0.9999       | 0.01       |
+| `none`           | `f32`   | 0.99999      | 0.001      |
 
 The two k-quant tags share thresholds because they describe the same
 on-disk format family. When `quant` is either tag the quant
@@ -222,12 +222,12 @@ catching real errors.
 These exist in real manifests today and round-trip via `extra` /
 `serde(flatten)`. The spec doesn't validate them; the loader does.
 
-| Field | Role |
-|---|---|
-| `layer_bands` | Syntax / knowledge / output band partitioning for DESCRIBE. |
-| `model_config` | Architecture metadata (head dim, RoPE base, Granite scalars, ...). |
-| `fp4` | FP4/FP8 block storage config (per-projection precision, compliance gate). |
-| `ffn_layout` | When `per_layer`, FFN weights live in `layers/layer_NN.weights`. |
+| Field          | Role                                                                      |
+|----------------|---------------------------------------------------------------------------|
+| `layer_bands`  | Syntax / knowledge / output band partitioning for DESCRIBE.               |
+| `model_config` | Architecture metadata (head dim, RoPE base, Granite scalars, ...).        |
+| `fp4`          | FP4/FP8 block storage config (per-projection precision, compliance gate). |
+| `ffn_layout`   | When `per_layer`, FFN weights live in `layers/layer_NN.weights`.          |
 
 These evolve under the on-disk `version` field, not
 `vindex_spec_version`. Adding a new loader field doesn't require a

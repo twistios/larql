@@ -50,11 +50,11 @@ concatenates per-shard ranges in order before checking.
 
 Live in [`src/thresholds.rs`](src/thresholds.rs), not the manifest:
 
-| `quant` | `dtype` | `cosine_min` | `max_diff` |
-|---|---|---|---|
-| `q4k` / `kquant` | (any) | 0.995 | 0.05 |
-| `none` | `f16` | 0.9999 | 0.01 |
-| `none` | `f32` | 0.99999 | 0.001 |
+| `quant`          | `dtype` | `cosine_min` | `max_diff` |
+|------------------|---------|--------------|------------|
+| `q4k` / `kquant` | (any)   | 0.995        | 0.05       |
+| `none`           | `f16`   | 0.9999       | 0.01       |
+| `none`           | `f32`   | 0.99999      | 0.001      |
 
 Sampled layers: `[0, L/4, L/2, 3L/4, L-1]` — deduped for shallow
 models. Five reads per validation regardless of model depth.

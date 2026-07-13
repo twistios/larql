@@ -3,10 +3,10 @@
 Bounded-cost compute primitives for neural-model pipelines. Two modes,
 pick with Cargo features:
 
-| Feature | Module | Purpose | Weight |
-|---|---|---|---|
-| `native` (default) | `model_compute::native` | Deterministic Rust kernels — arithmetic, datetime | 3 deps |
-| `wasm` | `model_compute::wasm` | Wasmtime-hosted WASM modules with fuel/memory caps | +wasmtime |
+| Feature            | Module                  | Purpose                                            | Weight    |
+|--------------------|-------------------------|----------------------------------------------------|-----------|
+| `native` (default) | `model_compute::native` | Deterministic Rust kernels — arithmetic, datetime  | 3 deps    |
+| `wasm`             | `model_compute::wasm`   | Wasmtime-hosted WASM modules with fuel/memory caps | +wasmtime |
 
 Both share the conceptual model of "bounded-cost input → output
 computation." The difference is where the computation lives: native
@@ -36,14 +36,14 @@ assert_eq!(registry.invoke("arithmetic", "sum(1..101)")?, "5050");
 assert_eq!(registry.invoke("datetime", "weekday(2026-04-16)")?, "Thu");
 ```
 
-| Kernel | Syntax | Output |
-|---|---|---|
-| `arithmetic` | `sum(1..101)` | `"5050"` |
-| `arithmetic` | `math::pow(2.0, 10.0)` | `"1024"` |
-| `arithmetic` | `factorial(10)` | `"3628800"` |
-| `datetime` | `days_between(2026-01-01, 2026-04-16)` | `"105"` |
-| `datetime` | `weekday(2026-04-16)` | `"Thu"` |
-| `datetime` | `add_days(2026-04-16, 7)` | `"2026-04-23"` |
+| Kernel       | Syntax                                 | Output         |
+|--------------|----------------------------------------|----------------|
+| `arithmetic` | `sum(1..101)`                          | `"5050"`       |
+| `arithmetic` | `math::pow(2.0, 10.0)`                 | `"1024"`       |
+| `arithmetic` | `factorial(10)`                        | `"3628800"`    |
+| `datetime`   | `days_between(2026-01-01, 2026-04-16)` | `"105"`        |
+| `datetime`   | `weekday(2026-04-16)`                  | `"Thu"`        |
+| `datetime`   | `add_days(2026-04-16, 7)`              | `"2026-04-23"` |
 
 Run the demo:
 
@@ -72,12 +72,12 @@ let output = session.solve(&input_bytes)?;    // alloc → write → solve → r
 
 Guest modules implement the canonical ABI:
 
-| Export | Purpose |
-|---|---|
-| `alloc(u32) -> i32` | reserve input buffer |
+| Export                           | Purpose                    |
+|----------------------------------|----------------------------|
+| `alloc(u32) -> i32`              | reserve input buffer       |
 | `solve(i32 ptr, u32 len) -> u32` | run compute, return status |
-| `solution_ptr() -> i32` | pointer to output |
-| `solution_len() -> u32` | length of output |
+| `solution_ptr() -> i32`          | pointer to output          |
+| `solution_len() -> u32`          | length of output           |
 
 Every call runs in a fresh `Store` with explicit fuel + memory caps.
 Exceeding either errors rather than wedges the host. This is what makes
