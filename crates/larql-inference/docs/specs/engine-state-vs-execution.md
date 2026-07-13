@@ -212,12 +212,12 @@ is opaque.
 
 ### 3.3 Concrete executors
 
-| Executor | Dispatch | When |
-|---|---|---|
-| `LocalFusedExecutor` | `Fused` | Wraps `KvDispatch::coarse_prefill` / `coarse_decode_step`. The existing Metal-fused / CPU-Q4K-coarse path. |
-| `LocalWalkExecutor` | `PerLayer` | Per-layer attention + FFN dispatch through the passed `FfnBackend`. The current `rs_prefill_walk` body, generalised to honor the FFN parameter. |
-| `RemoteFfnExecutor` | `PerLayer` | Attention local, FFN remote via `RemoteWalkBackend`. Per-layer because each FFN call is a separate HTTP round-trip. |
-| `MoeShardedExecutor` | `PerLayer` | MoE expert dispatch sharded across remote nodes (current `RemoteMoeBackend` path). |
+| Executor             | Dispatch   | When                                                                                                                                            |
+|----------------------|------------|-------------------------------------------------------------------------------------------------------------------------------------------------|
+| `LocalFusedExecutor` | `Fused`    | Wraps `KvDispatch::coarse_prefill` / `coarse_decode_step`. The existing Metal-fused / CPU-Q4K-coarse path.                                      |
+| `LocalWalkExecutor`  | `PerLayer` | Per-layer attention + FFN dispatch through the passed `FfnBackend`. The current `rs_prefill_walk` body, generalised to honor the FFN parameter. |
+| `RemoteFfnExecutor`  | `PerLayer` | Attention local, FFN remote via `RemoteWalkBackend`. Per-layer because each FFN call is a separate HTTP round-trip.                             |
+| `MoeShardedExecutor` | `PerLayer` | MoE expert dispatch sharded across remote nodes (current `RemoteMoeBackend` path).                                                              |
 
 Each implements `LayerExecutor` over the existing primitives. None of
 them need to know about engine state policy.

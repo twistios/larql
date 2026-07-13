@@ -66,12 +66,12 @@ The bound is per-codec, per-architecture, established by a calibration
 sweep (see §4.7). Initial bounds from Exp 43/49 on Gemma 3 4B final
 layer:
 
-| Codec | Bytes/vec at d=2560 | KL bound (nats) | Top-1 |
-|---|---:|---:|---:|
-| `Bf16` | 5120 | ≈ 0 (lossless under bf16 forward) | 100% |
-| `Int8Clip3Sigma` | 2564 | ≤ 2.0 (per-position, final-layer) | ≥ 93% |
-| `AdaptiveBlockG32` | 1637 | ≤ 0.05 | ≥ 89% |
-| `PerGroupInt4G128` | 1364 | ≤ 0.20 | ≥ 80% |
+| Codec              | Bytes/vec at d=2560 |                   KL bound (nats) | Top-1 |
+|--------------------|--------------------:|----------------------------------:|------:|
+| `Bf16`             |                5120 | ≈ 0 (lossless under bf16 forward) |  100% |
+| `Int8Clip3Sigma`   |                2564 | ≤ 2.0 (per-position, final-layer) | ≥ 93% |
+| `AdaptiveBlockG32` |                1637 |                            ≤ 0.05 | ≥ 89% |
+| `PerGroupInt4G128` |                1364 |                            ≤ 0.20 | ≥ 80% |
 
 **These bounds are final-layer-only and do not transfer to mid-layer
 residuals.** Exp 46 measured `Int8Clip3Sigma` at L12 (Gemma 3 4B):
@@ -108,12 +108,12 @@ rather than K/V; the codec is the only difference.
 
 For Gemma 3 4B at `W = 512`, `N_cold = 128K`:
 
-| Codec | Hot tier | Cold tier | Total |
-|---|---:|---:|---:|
-| `MarkovResidual` (f32 cold) | 170 MiB | 44 GiB | 44 GiB |
-| `Bf16` cold | 170 MiB | 22 GiB | 22 GiB |
-| `Int8Clip3Sigma` cold | 170 MiB | 11 GiB | 11 GiB |
-| `AdaptiveBlockG32` cold | 170 MiB | 7 GiB | 7 GiB |
+| Codec                       | Hot tier | Cold tier |  Total |
+|-----------------------------|---------:|----------:|-------:|
+| `MarkovResidual` (f32 cold) |  170 MiB |    44 GiB | 44 GiB |
+| `Bf16` cold                 |  170 MiB |    22 GiB | 22 GiB |
+| `Int8Clip3Sigma` cold       |  170 MiB |    11 GiB | 11 GiB |
+| `AdaptiveBlockG32` cold     |  170 MiB |     7 GiB |  7 GiB |
 
 The hot tier dominates only at short context. The cold tier dominates
 beyond ~5K tokens — which is where this engine starts to be worth its
@@ -480,10 +480,10 @@ hot K/V is derivative state (the codec-encoded residual is the
 canonical cold tier; hot K/V is reprojectable). Under
 `LARQL_W10_HONLY=1`:
 
-| `window_size` | Mask | Engine shadow drops |
-|---|---|---|
-| `Some(N)` | `HOnly` | `hot_kv` |
-| `None` | `None` | `hot_kv` AND `rs.stored` |
+| `window_size` | Mask    | Engine shadow drops      |
+|---------------|---------|--------------------------|
+| `Some(N)`     | `HOnly` | `hot_kv`                 |
+| `None`        | `None`  | `hot_kv` AND `rs.stored` |
 
 Preserves the `bounded_KL(ε)` contract — only the kernel→engine
 transfer path changes; the codec round-trip on the cold tier is

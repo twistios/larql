@@ -318,13 +318,13 @@ these are different engines from their standalone counterparts; see
 
 Per-layer compositions previously inexpressible:
 
-| Composition          | LayerPolicy                                                              | Contract                           |
-|----------------------|--------------------------------------------------------------------------|------------------------------------|
-| `walk-ffn`           | `uniform(Standard, WalkFfn, WalkGraph)`                                  | `exact_logits`                     |
-| `pipelined`          | `uniform(Standard, BackendFfn, PipelinedGraph)` (CPU attn + Metal FFN)  | `exact_logits`                     |
-| `predict-honest`     | `tiered(L0-12 = (Standard, _, Dense), L13-33 = (Standard, WalkFfn, WalkGraph))` | `exact_logits` (current production) |
-| `compiled-ffn`       | `tiered(L0-12 = (Standard, CompiledLookup, CachedGraph), rest = default)` | **aspirational — see below**       |
-| `full-routed`        | cached early, experts mid, walk-ffn deep, window K/V throughout          | meet of constituents (when constituents have contracts) |
+| Composition      | LayerPolicy                                                                     | Contract                                                |
+|------------------|---------------------------------------------------------------------------------|---------------------------------------------------------|
+| `walk-ffn`       | `uniform(Standard, WalkFfn, WalkGraph)`                                         | `exact_logits`                                          |
+| `pipelined`      | `uniform(Standard, BackendFfn, PipelinedGraph)` (CPU attn + Metal FFN)          | `exact_logits`                                          |
+| `predict-honest` | `tiered(L0-12 = (Standard, _, Dense), L13-33 = (Standard, WalkFfn, WalkGraph))` | `exact_logits` (current production)                     |
+| `compiled-ffn`   | `tiered(L0-12 = (Standard, CompiledLookup, CachedGraph), rest = default)`       | **aspirational — see below**                            |
+| `full-routed`    | cached early, experts mid, walk-ffn deep, window K/V throughout                 | meet of constituents (when constituents have contracts) |
 
 > **v0.4 scope note**: the "uniform LayerPolicy" rows above describe
 > what each engine *would do as a top-level engine via LayerEngine*.
@@ -342,12 +342,12 @@ a working `confidence_gated(τ)` engine. **Empirical measurement
 falsifies this** (`crates/larql-kv/examples/contract_classify_cached_ffn.rs`,
 2026-05-19):
 
-| Sample test prompt (template = "The capital of France is") | KL_sym | Argmax |
-|---|---:|:---:|
-| exact build prompt | 0.003 | ✓ |
-| "The capital of Germany is" | 2.05 | ✓ but "Paris" wrong city |
-| "The capital of Brazil is" | 3.75 | ✗ |
-| "She walked to the park" | 8.85 | ✗ |
+| Sample test prompt (template = "The capital of France is") | KL_sym |          Argmax          |
+|------------------------------------------------------------|-------:|:------------------------:|
+| exact build prompt                                         |  0.003 |            ✓             |
+| "The capital of Germany is"                                |   2.05 | ✓ but "Paris" wrong city |
+| "The capital of Brazil is"                                 |   3.75 |            ✗             |
+| "She walked to the park"                                   |   8.85 |            ✗             |
 
 Aggregate over 17 same-shape prompts: argmax_agreement = 58.8%,
 kl_p95 = 8.85, kl_max = 9.38. `CachedLayerGraph` substitutes the same
@@ -530,14 +530,14 @@ Run: `cargo run --release -p larql-kv --example contract_classify_cached_ffn -- 
 
 Result (17 same-template-length prompts, 2026-05-19):
 
-| Metric | Value |
-|---|---:|
-| argmax_agreement | 58.8 % |
-| logit_cos_mean | 0.9414 |
-| kl_symmetric mean | 3.01 |
-| kl_symmetric p95 | 8.85 |
-| kl_symmetric max | 9.38 |
-| kl_symmetric on exact build prompt | 0.003 |
+| Metric                             |  Value |
+|------------------------------------|-------:|
+| argmax_agreement                   | 58.8 % |
+| logit_cos_mean                     | 0.9414 |
+| kl_symmetric mean                  |   3.01 |
+| kl_symmetric p95                   |   8.85 |
+| kl_symmetric max                   |   9.38 |
+| kl_symmetric on exact build prompt |  0.003 |
 
 `bounded_KL(ε=0)` holds on the singleton `{build_prompt}`. No defensible
 contract holds elsewhere. Logit cosine doesn't separate the safe class
@@ -555,10 +555,10 @@ question as §10.1.
 
 ## 12. Scope migration history
 
-| Version | Date | Scope |
-|---|---|---|
-| v0.2 | 2026-05-18 | New top-level engine; hypothetical `compiled-ffn` working composition |
-| v0.3 | 2026-05-19 | Top-level engine over existing `PerLayerGraph` seam; `compiled-ffn` aspirational |
+| Version  | Date           | Scope                                                                                               |
+|----------|----------------|-----------------------------------------------------------------------------------------------------|
+| v0.2     | 2026-05-18     | New top-level engine; hypothetical `compiled-ffn` working composition                               |
+| v0.3     | 2026-05-19     | Top-level engine over existing `PerLayerGraph` seam; `compiled-ffn` aspirational                    |
 | **v0.4** | **2026-05-19** | **Inner per-layer composer for WALK zones; top-level role moves to [ZoneEngine](./zone-engine.md)** |
 
 The scope narrowing in v0.4 reflects the empirical finding that the

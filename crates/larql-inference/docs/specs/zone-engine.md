@@ -112,11 +112,11 @@ and the empirical falsification in
 the kinds separate at §3.1 keeps that discipline at the API boundary
 instead of by convention.
 
-| Kind    | What it does                                          | Cost                       | Contract        | Failure mode                |
-|---------|-------------------------------------------------------|----------------------------|-----------------|-----------------------------|
-| PREDICT | Linear (or low-rank) map from choke-in to choke-out   | ~0.1 ms (rank-30 matvec)   | `top1_preserving(τ) ∧ bounded_KL(ε)` | distributional drift; corpus-level |
-| WALK    | Run each layer normally (LayerEngine inside)          | full per-layer FFN cost    | inherits from LayerEngine | per-layer; well-defined |
-| CACHE   | Return stored residual if input matches template      | ~5 ms (lookup) on hit; falls back to WALK on miss | `bounded_KL(ε≈0)` on hit, inherited on miss | hit/miss; per-prompt observable |
+| Kind    | What it does                                        | Cost                                              | Contract                                    | Failure mode                       |
+|---------|-----------------------------------------------------|---------------------------------------------------|---------------------------------------------|------------------------------------|
+| PREDICT | Linear (or low-rank) map from choke-in to choke-out | ~0.1 ms (rank-30 matvec)                          | `top1_preserving(τ) ∧ bounded_KL(ε)`        | distributional drift; corpus-level |
+| WALK    | Run each layer normally (LayerEngine inside)        | full per-layer FFN cost                           | inherits from LayerEngine                   | per-layer; well-defined            |
+| CACHE   | Return stored residual if input matches template    | ~5 ms (lookup) on hit; falls back to WALK on miss | `bounded_KL(ε≈0)` on hit, inherited on miss | hit/miss; per-prompt observable    |
 
 ### 3.2 The zone map (Gemma 3 4B, validated)
 

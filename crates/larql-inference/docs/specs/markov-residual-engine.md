@@ -421,10 +421,10 @@ stored residuals"), the engine can elide the kernel→engine state
 bridge on Metal without breaking the correctness contract. Two
 mask levels are gated by `LARQL_W10_HONLY=1`:
 
-| `window_size` | Mask used | What kernel skips | Engine shadow drops |
-|---|---|---|---|
-| `Some(N)` | `HOnly` | K/V staging buffer alloc + blit + GPU→CPU readback | `hot_kv` |
-| `None` | `None` | h_in staging + K/V staging + all readbacks | `hot_kv` AND `rs.stored` |
+| `window_size` | Mask used | What kernel skips                                  | Engine shadow drops      |
+|---------------|-----------|----------------------------------------------------|--------------------------|
+| `Some(N)`     | `HOnly`   | K/V staging buffer alloc + blit + GPU→CPU readback | `hot_kv`                 |
+| `None`        | `None`    | h_in staging + K/V staging + all readbacks         | `hot_kv` AND `rs.stored` |
 
 Both modes preserve the **exact_logits** contract under the §4
 preconditions — they only change the *path* the state takes, not
@@ -439,11 +439,11 @@ what state the model sees. Specifically:
 
 **Measured wins** (Gemma 3 4B Q4K, Metal, M3 Max, isolated runs):
 
-| Mask | tok/s | hot mem |
-|---|---:|---:|
-| `Full` (default) | 87.9 | 54.4 MB |
-| `HOnly` (window=512) | 102.1 | 30.2 MB |
-| `None` (windowless) | **106.8** | **0 MB** |
+| Mask                 |     tok/s |  hot mem |
+|----------------------|----------:|---------:|
+| `Full` (default)     |      87.9 |  54.4 MB |
+| `HOnly` (window=512) |     102.1 |  30.2 MB |
+| `None` (windowless)  | **106.8** | **0 MB** |
 
 `None` matches and slightly exceeds `standard`'s fused-kernel
 ~100 tok/s ceiling. See `crates/larql-kv/PERFORMANCE.md` for the

@@ -24,13 +24,13 @@ classes. The MEE supplies exactly that residue.
 
 ## 2. Deltas vs AVE v0.1
 
-| stage | v0.1 (AVE) | v0.2 (MEE) | risk class |
-|---|---|---|---|
-| gate | symbolic ops + L8 probe | + function-name lexicon (tier-0) | LOW (additive) |
-| extract | operand-pair regex / 2-shot rewrite | expression-tree parse / rewrite-to-expression | MEDIUM (depth unmeasured) |
-| compute | BigInt +,−,× | full expression engine (§5) | LOW (engineering) |
-| drive | forced decode, exact payload | + precision policy for non-terminating values (§6) | MEDIUM (new controller decision) |
-| verify | magnitude prior | + domain/range checks, interval prior (§7) | LOW |
+| stage   | v0.1 (AVE)                          | v0.2 (MEE)                                         | risk class                       |
+|---------|-------------------------------------|----------------------------------------------------|----------------------------------|
+| gate    | symbolic ops + L8 probe             | + function-name lexicon (tier-0)                   | LOW (additive)                   |
+| extract | operand-pair regex / 2-shot rewrite | expression-tree parse / rewrite-to-expression      | MEDIUM (depth unmeasured)        |
+| compute | BigInt +,−,×                        | full expression engine (§5)                        | LOW (engineering)                |
+| drive   | forced decode, exact payload        | + precision policy for non-terminating values (§6) | MEDIUM (new controller decision) |
+| verify  | magnitude prior                     | + domain/range checks, interval prior (§7)         | LOW                              |
 
 Gate architecture, L8 probe, injection reserve, schedule termination, telemetry
 invariants: unchanged, inherited.

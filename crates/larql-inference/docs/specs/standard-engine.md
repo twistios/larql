@@ -78,12 +78,12 @@ preserved at a lower fidelity).
 
 ## 3. Implementation
 
-| Concern | Location |
-|---|---|
-| Engine type + trait impl | `crates/larql-kv/src/engines/standard.rs` |
-| Trait surface (`KvDispatch::coarse_prefill` etc.) | `crates/larql-inference/src/kv_dispatch/mod.rs` |
-| Metal fused kernel | `crates/larql-compute-metal/src/decode/mod.rs::decode_token_with_moe_split_fn` |
-| Sliding-window clip | `larql_kv::engines::standard::StandardEngine::do_prefill` + `do_decode_step` |
+| Concern                                           | Location                                                                       |
+|---------------------------------------------------|--------------------------------------------------------------------------------|
+| Engine type + trait impl                          | `crates/larql-kv/src/engines/standard.rs`                                      |
+| Trait surface (`KvDispatch::coarse_prefill` etc.) | `crates/larql-inference/src/kv_dispatch/mod.rs`                                |
+| Metal fused kernel                                | `crates/larql-compute-metal/src/decode/mod.rs::decode_token_with_moe_split_fn` |
+| Sliding-window clip                               | `larql_kv::engines::standard::StandardEngine::do_prefill` + `do_decode_step`   |
 
 The engine intentionally has minimal code — most of the work is on
 the backend side. `do_prefill` / `do_decode_step` route through
@@ -95,10 +95,10 @@ across steps.
 
 ## 4. Performance (Gemma 3 4B Q4K, M3 Max, 2026-05-17)
 
-| Backend | Decode (tok/s) | Per-step latency |
-|---|---:|---:|
-| Metal (fused fast path) | **105.9** | 9.4 ms |
-| CPU (BLAS + C Q4 kernel) | 28.2 | 35 ms |
+| Backend                  | Decode (tok/s) | Per-step latency |
+|--------------------------|---------------:|-----------------:|
+| Metal (fused fast path)  |      **105.9** |           9.4 ms |
+| CPU (BLAS + C Q4 kernel) |           28.2 |            35 ms |
 
 These are the **ceiling numbers** for the model on this machine.
 Every other engine compares against these.

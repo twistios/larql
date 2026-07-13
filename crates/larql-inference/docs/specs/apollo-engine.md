@@ -98,11 +98,11 @@ for that step.
 apollo:layer=25,coef=8.0,top_k=12
 ```
 
-| Param | Meaning | Default |
-|---|---|---|
-| `layer` | `crystal_layer` — where in the stack to inject | 30 |
-| `coef` | injection coefficient + similarity threshold | 4.0 |
-| `top_k` | how many candidates to consider before picking best | 8 |
+| Param   | Meaning                                             | Default |
+|---------|-----------------------------------------------------|---------|
+| `layer` | `crystal_layer` — where in the stack to inject      | 30      |
+| `coef`  | injection coefficient + similarity threshold        | 4.0     |
+| `top_k` | how many candidates to consider before picking best | 8       |
 
 The `larql-apollo` crate is the offline tool that captures
 constellations and builds stores; `ApolloEngine` is the runtime
@@ -112,12 +112,12 @@ that consumes them.
 
 ## 4. Implementation
 
-| Concern | Location |
-|---|---|
-| Engine struct + `RetrievalEngine` impl (NOT `KvEngine` — see the 2026-05-24 note above) | `crates/larql-kv/src/engines/apollo/engine.rs` |
-| Store schema | `crates/larql-apollo/` |
-| `forward_from_layer` (run-tail) | `crates/larql-inference/src/forward/from_layer.rs` |
-| Residual capture (offline) | `crates/larql-apollo::capture` |
+| Concern                                                                                 | Location                                           |
+|-----------------------------------------------------------------------------------------|----------------------------------------------------|
+| Engine struct + `RetrievalEngine` impl (NOT `KvEngine` — see the 2026-05-24 note above) | `crates/larql-kv/src/engines/apollo/engine.rs`     |
+| Store schema                                                                            | `crates/larql-apollo/`                             |
+| `forward_from_layer` (run-tail)                                                         | `crates/larql-inference/src/forward/from_layer.rs` |
+| Residual capture (offline)                                                              | `crates/larql-apollo::capture`                     |
 
 Apollo composes with `StandardEngine`'s `KvHandle` underneath when
 the store misses — the back-end K/V cache continues to grow during
@@ -130,10 +130,10 @@ intervenes at the residual layer.
 
 ## 5. Performance (Gemma 3 4B, M3 Max, 2026-05-17)
 
-| Path | Per-step latency | Throughput |
-|---|---:|---:|
-| Store hit (4-layer tail) | ~1.1 ms | ~900 tok/s ceiling, single-task |
-| Store miss (full forward) | ~9.4 ms | matches `standard` |
+| Path                      | Per-step latency |                      Throughput |
+|---------------------------|-----------------:|--------------------------------:|
+| Store hit (4-layer tail)  |          ~1.1 ms | ~900 tok/s ceiling, single-task |
+| Store miss (full forward) |          ~9.4 ms |              matches `standard` |
 
 The "store hit" number is the upper bound; real workloads mix hits
 and misses, so observed tok/s on `larql bench --engine apollo:...`

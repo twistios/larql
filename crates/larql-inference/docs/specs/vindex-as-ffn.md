@@ -297,11 +297,11 @@ Plugging Exp 52's measured fact-domain hit rate (`h ≈ 0.20`):
 
 | K_layer | Crossover (h = 0.20) | Crossover (full-hit, h = 1.0) |
 |--------:|---------------------:|------------------------------:|
-| 8092    | N < 3,237            | N < 16,184                    |
-| 1024    | N < 410              | N < 2,048                     |
-| 256     | N < 102              | N < 512                       |
-| 64      | N < 26               | N < 128                       |
-| 10      | N < 4                | N < 20                        |
+|    8092 |            N < 3,237 |                    N < 16,184 |
+|    1024 |              N < 410 |                     N < 2,048 |
+|     256 |              N < 102 |                       N < 512 |
+|      64 |               N < 26 |                       N < 128 |
+|      10 |                N < 4 |                        N < 20 |
 
 So at K=10 with a 20% hit rate, more than 4 compiled facts is
 wall-clock-negative against `WalkFfn` itself. The qualitative conclusion

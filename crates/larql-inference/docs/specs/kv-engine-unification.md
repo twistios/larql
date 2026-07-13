@@ -33,14 +33,14 @@ restated here; this spec depends on that contract holding.
 
 Today the repo has two implementations of the same idea:
 
-| Concern | Live decode path | Research engine path |
-|---|---|---|
-| Trait | `FfnBackend` + raw functions | `KvEngine` (in `larql-kv`) |
-| Entry point | `generate_cached_bounded` (`larql-inference/src/forward/kv_generate.rs:125`) | `EngineKind::build(...).prefill / decode_step` |
-| Cache shape | Sliding window K/V tensors, optional unbounded growth | Residual-stream + recompute-K/V, or per-engine alternative |
-| Reachable from | `larql run`, `larql walk`, server, router | `larql bench --engine` only |
-| Tuning surface | `--kv-cache standard\|markov-bounded\|none` + `--context-window` | `--engine markov-rs[:window=N]\|unlimited-context\|turbo-quant\|apollo` |
-| Tested by | snapshot tests on `larql run` | 200 unit tests + `bench` smoke |
+| Concern        | Live decode path                                                             | Research engine path                                                    |
+|----------------|------------------------------------------------------------------------------|-------------------------------------------------------------------------|
+| Trait          | `FfnBackend` + raw functions                                                 | `KvEngine` (in `larql-kv`)                                              |
+| Entry point    | `generate_cached_bounded` (`larql-inference/src/forward/kv_generate.rs:125`) | `EngineKind::build(...).prefill / decode_step`                          |
+| Cache shape    | Sliding window K/V tensors, optional unbounded growth                        | Residual-stream + recompute-K/V, or per-engine alternative              |
+| Reachable from | `larql run`, `larql walk`, server, router                                    | `larql bench --engine` only                                             |
+| Tuning surface | `--kv-cache standard\|markov-bounded\|none` + `--context-window`             | `--engine markov-rs[:window=N]\|unlimited-context\|turbo-quant\|apollo` |
+| Tested by      | snapshot tests on `larql run`                                                | 200 unit tests + `bench` smoke                                          |
 
 The duplication has three concrete costs:
 
@@ -249,15 +249,15 @@ grid-ready: the `PerLayerDecodeState` fields hold
 current production code paths, and keeps the four research engines. The
 default path is bit-identical to today's `--kv-cache standard`.
 
-| EngineKind variant | Maps to current CLI flag | Underlying mechanism | Status after unification |
-|---|---|---|---|
-| `Standard { window_size: None }` | `--kv-cache standard` (default) | Current `generate_cached_bounded(window: None)` — full K/V tensor cache, unbounded growth | **Default**, bit-parity with current production |
-| `Standard { window_size: Some(N) }` | `--kv-cache markov-bounded --context-window N` | Current `generate_cached_bounded(window: Some(N))` — sliding-window K/V tensor cache | Opt-in via flag, bit-parity with current production |
-| `NoCache` | `--kv-cache none` | Current full re-forward per step (O(N²)) | Opt-in via flag, bit-parity with current production |
-| `MarkovResidual { window_size }` | (new) `--engine markov-rs[:window=N]` | Stores residuals, recomputes K/V at decode. **Different mechanism** from `Standard`; bit-identical output under preconditions per `markov-residual-engine.md` | Opt-in; research engine promoted to live path |
-| `UnlimitedContext { window_size }` | (new) `--engine unlimited-context:window=N` | Per-window K/V checkpoints | Opt-in, advertised as experimental |
-| `TurboQuant { bits }` | (new) `--engine turbo-quant:bits=N` | Quantised K/V | Opt-in, advertised as experimental |
-| `Apollo { ... }` | (unchanged) `larql bench --engine apollo` only | Boundary store + residual injection | **Not wired into run/walk**, see §7 |
+| EngineKind variant                  | Maps to current CLI flag                       | Underlying mechanism                                                                                                                                          | Status after unification                            |
+|-------------------------------------|------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------|
+| `Standard { window_size: None }`    | `--kv-cache standard` (default)                | Current `generate_cached_bounded(window: None)` — full K/V tensor cache, unbounded growth                                                                     | **Default**, bit-parity with current production     |
+| `Standard { window_size: Some(N) }` | `--kv-cache markov-bounded --context-window N` | Current `generate_cached_bounded(window: Some(N))` — sliding-window K/V tensor cache                                                                          | Opt-in via flag, bit-parity with current production |
+| `NoCache`                           | `--kv-cache none`                              | Current full re-forward per step (O(N²))                                                                                                                      | Opt-in via flag, bit-parity with current production |
+| `MarkovResidual { window_size }`    | (new) `--engine markov-rs[:window=N]`          | Stores residuals, recomputes K/V at decode. **Different mechanism** from `Standard`; bit-identical output under preconditions per `markov-residual-engine.md` | Opt-in; research engine promoted to live path       |
+| `UnlimitedContext { window_size }`  | (new) `--engine unlimited-context:window=N`    | Per-window K/V checkpoints                                                                                                                                    | Opt-in, advertised as experimental                  |
+| `TurboQuant { bits }`               | (new) `--engine turbo-quant:bits=N`            | Quantised K/V                                                                                                                                                 | Opt-in, advertised as experimental                  |
+| `Apollo { ... }`                    | (unchanged) `larql bench --engine apollo` only | Boundary store + residual injection                                                                                                                           | **Not wired into run/walk**, see §7                 |
 
 `Standard` is a thin `KvEngine` adapter over `generate_cached_bounded`;
 no new cache code, just a trait impl. `NoCache` is similarly a thin
@@ -280,11 +280,11 @@ existing `EngineKind::from_name` (extended to recognise the new
 
 The legacy `--kv-cache` flag remains and resolves to:
 
-| `--kv-cache` value | Resolved `EngineKind` |
-|---|---|
-| `standard` (default) | `Standard { window_size: None }` |
-| `markov-bounded` | `Standard { window_size: Some(--context-window) }` |
-| `none` | `NoCache` |
+| `--kv-cache` value   | Resolved `EngineKind`                              |
+|----------------------|----------------------------------------------------|
+| `standard` (default) | `Standard { window_size: None }`                   |
+| `markov-bounded`     | `Standard { window_size: Some(--context-window) }` |
+| `none`               | `NoCache`                                          |
 
 If both `--kv-cache` and `--engine` are passed, `--engine` wins; passing
 both is a `WARN`-level log, not an error.

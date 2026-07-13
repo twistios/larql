@@ -17,11 +17,11 @@
 
 ## Three regimes (validated)
 
-| Regime | Layers | Strategy | Latency |
-|--------|--------|----------|---------|
-| Template-fixed | L0-12 | Cache | 0ms |
+| Regime           | Layers | Strategy     | Latency            |
+|------------------|--------|--------------|--------------------|
+| Template-fixed   | L0-12  | Cache        | 0ms                |
 | Stable knowledge | L13-23 | Walk + cache | 424ms (1.3x dense) |
-| Entity-dependent | L24-33 | Dense/GPU | Variable |
+| Entity-dependent | L24-33 | Dense/GPU    | Variable           |
 
 ## Consequences
 

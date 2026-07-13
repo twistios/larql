@@ -56,12 +56,12 @@ amortises away with its incremental K/V update.
 
 ## 3. Implementation
 
-| Concern | Location |
-|---|---|
-| Engine | `crates/larql-kv/src/engines/no_cache.rs` |
-| `prefill` / `decode_step` | calls `kv_prefill_run` from `larql_kv::generation` |
+| Concern                               | Location                                                              |
+|---------------------------------------|-----------------------------------------------------------------------|
+| Engine                                | `crates/larql-kv/src/engines/no_cache.rs`                             |
+| `prefill` / `decode_step`             | calls `kv_prefill_run` from `larql_kv::generation`                    |
 | `prefill_quant` / `decode_step_quant` | calls the same after dequantising attn tensors + building a `WalkFfn` |
-| W1-GPU `*_via_executor` overrides | inherit the executor's FFN dispatcher; no separate state-policy |
+| W1-GPU `*_via_executor` overrides     | inherit the executor's FFN dispatcher; no separate state-policy       |
 
 The engine has no state struct of its own beyond `tokens: Vec<u32>`
 + the backend handle.

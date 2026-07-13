@@ -200,23 +200,23 @@ weights touched, no model routing used); compute is **never** the model's.
 
 ## 9. Measured-parameter table
 
-| parameter | value | status | source |
-|---|---|---|---|
-| probe layer / site | L8, last prompt token | MEASURED | A7b |
-| probe arch | ridge, λ ∝ mean feature norm | MEASURED | A7b |
-| gate specificity | 1.00 (0/66 false fires) | MEASURED | A8+A10 |
-| gate sensitivity (current weights) | 0.17–1.0 by phrasing | MEASURED; probe DEMOTED to audit instrument | A8/A10 + A11 |
-| extraction (2-shot floor) | 1.00 all cells | MEASURED | A8/A10 |
-| drive equivalence (bias≅inject≅force) | β=10 / λ≥0.25 / forced | MEASURED (greedy) | A9b |
-| λ floor / threshold (L30) | clean 0.25 / graded ≈0.1 | MEASURED | A9b |
-| emission-commandable sites | ≥L16 (lower bound open) | MEASURED | A9b |
-| delivery w/o termination | 129/135 ≈ 0.96 (one mode: +1 digit) | MEASURED | A10+corr |
-| delivery w/ schedule termination | 1.0 by construction | DERIVED | A10 corr |
-| explicit-path token overhead | 0 | MEASURED | A10 |
-| disguised-path token overhead | ~2× (rewrite floor) | MEASURED | A8/A10 |
-| estimator prior envelope | ±25–35% to 24 digits; void ≥28 | MEASURED | A4c/A5 |
-| end-to-end demo | 24-digit add 0.92 vs native 0.00, equal tokens | MEASURED | A10 |
-| forced decode, Metal Q4_K | 6/6 exact, schedule-end 6/6, ~20 tok/s e2e | MEASURED | larql-rs 2026-06-12 |
+| parameter                             | value                                          | status                                      | source              |
+|---------------------------------------|------------------------------------------------|---------------------------------------------|---------------------|
+| probe layer / site                    | L8, last prompt token                          | MEASURED                                    | A7b                 |
+| probe arch                            | ridge, λ ∝ mean feature norm                   | MEASURED                                    | A7b                 |
+| gate specificity                      | 1.00 (0/66 false fires)                        | MEASURED                                    | A8+A10              |
+| gate sensitivity (current weights)    | 0.17–1.0 by phrasing                           | MEASURED; probe DEMOTED to audit instrument | A8/A10 + A11        |
+| extraction (2-shot floor)             | 1.00 all cells                                 | MEASURED                                    | A8/A10              |
+| drive equivalence (bias≅inject≅force) | β=10 / λ≥0.25 / forced                         | MEASURED (greedy)                           | A9b                 |
+| λ floor / threshold (L30)             | clean 0.25 / graded ≈0.1                       | MEASURED                                    | A9b                 |
+| emission-commandable sites            | ≥L16 (lower bound open)                        | MEASURED                                    | A9b                 |
+| delivery w/o termination              | 129/135 ≈ 0.96 (one mode: +1 digit)            | MEASURED                                    | A10+corr            |
+| delivery w/ schedule termination      | 1.0 by construction                            | DERIVED                                     | A10 corr            |
+| explicit-path token overhead          | 0                                              | MEASURED                                    | A10                 |
+| disguised-path token overhead         | ~2× (rewrite floor)                            | MEASURED                                    | A8/A10              |
+| estimator prior envelope              | ±25–35% to 24 digits; void ≥28                 | MEASURED                                    | A4c/A5              |
+| end-to-end demo                       | 24-digit add 0.92 vs native 0.00, equal tokens | MEASURED                                    | A10                 |
+| forced decode, Metal Q4_K             | 6/6 exact, schedule-end 6/6, ~20 tok/s e2e     | MEASURED                                    | larql-rs 2026-06-12 |
 
 ## 10. Out of scope / risks
 

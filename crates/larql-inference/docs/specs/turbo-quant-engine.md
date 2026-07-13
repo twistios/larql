@@ -96,11 +96,11 @@ scalar quantisation. The rotation step disperses the input's energy
 across coordinates so per-coordinate quantisation has nearly-uniform
 error.
 
-| Operation | Implementation |
-|---|---|
-| WHT | `crates/larql-kv/src/engines/turbo_quant/rotation.rs` — in-place butterfly, O(d log d) |
-| Codebook | `engines/turbo_quant/codebooks.rs` — pre-computed Lloyd-Max centroids per (dim, bits) |
-| Bit packing | `engines/turbo_quant/packing.rs` — 3-bit and 4-bit variants |
+| Operation   | Implementation                                                                         |
+|-------------|----------------------------------------------------------------------------------------|
+| WHT         | `crates/larql-kv/src/engines/turbo_quant/rotation.rs` — in-place butterfly, O(d log d) |
+| Codebook    | `engines/turbo_quant/codebooks.rs` — pre-computed Lloyd-Max centroids per (dim, bits)  |
+| Bit packing | `engines/turbo_quant/packing.rs` — 3-bit and 4-bit variants                            |
 
 The codec is **scalar f32** today; SIMD vectorisation (NEON/AVX2)
 of the rotation step is a P1 follow-up — would close most of the
@@ -125,12 +125,12 @@ work in the inner loop that markov_residual doesn't pay.
 
 ## 5. Implementation
 
-| Concern | Location |
-|---|---|
-| Engine + `KvEngine` impl | `crates/larql-kv/src/engines/turbo_quant/engine.rs` |
-| `TurboQuant` codec | same file, `pub struct TurboQuant { bits: u8 }` |
-| `CompressedLayer` | same file — per-layer compressed K + V bytes |
-| W1-GPU dispatch helpers | `engine.rs::try_prefill_via_dispatch` + `decode_step_via_dispatch` |
+| Concern                  | Location                                                           |
+|--------------------------|--------------------------------------------------------------------|
+| Engine + `KvEngine` impl | `crates/larql-kv/src/engines/turbo_quant/engine.rs`                |
+| `TurboQuant` codec       | same file, `pub struct TurboQuant { bits: u8 }`                    |
+| `CompressedLayer`        | same file — per-layer compressed K + V bytes                       |
+| W1-GPU dispatch helpers  | `engine.rs::try_prefill_via_dispatch` + `decode_step_via_dispatch` |
 
 ---
 

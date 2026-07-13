@@ -16,11 +16,11 @@ Trace stores persist the internal activations captured during inference. Instead
 
 Three formats exist at different granularity/size trade-offs:
 
-| Format | Extension | Magic | Purpose | Per-token cost (gemma3-4b) |
-|--------|-----------|-------|---------|---------------------------|
-| Chain store | `.bin` | `TRAC` | Full layer-by-layer trace for every token | ~1.05 MB |
-| Boundary store | `.bndx` | `BNDX` | One residual per window boundary | ~10 KB per boundary |
-| Context store | `.ctxt` | `CTXT` | Tiered boundary data (residual + critical deltas) | 10-70 KB per boundary |
+| Format         | Extension | Magic  | Purpose                                           | Per-token cost (gemma3-4b) |
+|----------------|-----------|--------|---------------------------------------------------|----------------------------|
+| Chain store    | `.bin`    | `TRAC` | Full layer-by-layer trace for every token         | ~1.05 MB                   |
+| Boundary store | `.bndx`   | `BNDX` | One residual per window boundary                  | ~10 KB per boundary        |
+| Context store  | `.ctxt`   | `CTXT` | Tiered boundary data (residual + critical deltas) | 10-70 KB per boundary      |
 
 All three formats share common properties:
 
@@ -75,11 +75,11 @@ Each token chain stores activations for (n_layers + 1) waypoints. The "+1" accou
 
 Each waypoint contains 3 vectors of `hidden_size` f32 floats:
 
-| Vector | Index | Description |
-|--------|-------|-------------|
-| residual | 0 | Residual stream state at this waypoint |
-| attn_delta | 1 | Change applied by the attention sublayer |
-| ffn_delta | 2 | Change applied by the FFN sublayer |
+| Vector     | Index | Description                              |
+|------------|-------|------------------------------------------|
+| residual   | 0     | Residual stream state at this waypoint   |
+| attn_delta | 1     | Change applied by the attention sublayer |
+| ffn_delta  | 2     | Change applied by the FFN sublayer       |
 
 **Chain size formula:**
 
@@ -129,13 +129,13 @@ The result is a contiguous `hidden_size * 4` byte region, reinterpreted as `&[f3
 
 The store uses physical waypoint indices (0-based). The logical layer mapping is:
 
-| Waypoint index | Logical layer | Content |
-|---------------|---------------|---------|
-| 0 | -1 (embedding) | Post-embedding residual |
-| 1 | 0 | After transformer layer 0 |
-| 2 | 1 | After transformer layer 1 |
-| ... | ... | ... |
-| n_layers | n_layers - 1 | After final transformer layer |
+| Waypoint index | Logical layer  | Content                       |
+|----------------|----------------|-------------------------------|
+| 0              | -1 (embedding) | Post-embedding residual       |
+| 1              | 0              | After transformer layer 0     |
+| 2              | 1              | After transformer layer 1     |
+| ...            | ...            | ...                           |
+| n_layers       | n_layers - 1   | After final transformer layer |
 
 When reading via `node()`, the store converts back: `logical_layer = waypoint_index - 1`.
 
@@ -225,11 +225,11 @@ The context store extends the boundary store with a tiered system. Instead of st
 
 ### 4.1 Tiers
 
-| Tier | Value | Stored per boundary | Vectors | Description |
-|------|-------|---------------------|---------|-------------|
-| Residual | 1 | Boundary residual | 1 | Needs forward pass replay for reconstruction |
-| FfnDeltas | 2 | + FFN deltas at critical layers | 1 + n_critical | Partial reconstruction, no replay for knowledge queries |
-| Full | 3 | + attention deltas at critical layers | 1 + 2 * n_critical | Full reconstruction, zero replay cost |
+| Tier      | Value | Stored per boundary                   | Vectors            | Description                                             |
+|-----------|-------|---------------------------------------|--------------------|---------------------------------------------------------|
+| Residual  | 1     | Boundary residual                     | 1                  | Needs forward pass replay for reconstruction            |
+| FfnDeltas | 2     | + FFN deltas at critical layers       | 1 + n_critical     | Partial reconstruction, no replay for knowledge queries |
+| Full      | 3     | + attention deltas at critical layers | 1 + 2 * n_critical | Full reconstruction, zero replay cost                   |
 
 The tier is fixed at file creation time. All boundaries in a file use the same tier.
 
@@ -375,11 +375,11 @@ The mmap is read-only (`Mmap`, not `MmapMut`). Multiple readers can safely share
 
 All three formats use version 1. The version field is checked on open; mismatched versions produce an error.
 
-| Format | Current version | Magic | Header size |
-|--------|----------------|-------|-------------|
-| Chain store | 1 | `TRAC` | 64 bytes |
-| Boundary store | 1 | `BNDX` | 64 bytes |
-| Context store | 1 | `CTXT` | 128 bytes |
+| Format         | Current version | Magic  | Header size |
+|----------------|-----------------|--------|-------------|
+| Chain store    | 1               | `TRAC` | 64 bytes    |
+| Boundary store | 1               | `BNDX` | 64 bytes    |
+| Context store  | 1               | `CTXT` | 128 bytes   |
 
 Each header includes reserved bytes (44, 40, and 88 bytes respectively) for forward-compatible additions. Future versions can use reserved space without changing the header size, allowing older readers to open newer files (they ignore the reserved region).
 
@@ -395,12 +395,12 @@ vectors_per_chain = 35 * 3 = 105
 chain_size        = 105 * 2560 * 4 = 1,075,200 bytes (~1.05 MB)
 ```
 
-| Tokens | File size | Description |
-|--------|-----------|-------------|
-| 1 | 1.05 MB | Single token trace |
-| 100 | 105 MB | Short prompt |
-| 1,000 | 1.05 GB | Medium document |
-| 10,000 | 10.5 GB | Long document |
+| Tokens | File size | Description        |
+|--------|-----------|--------------------|
+| 1      | 1.05 MB   | Single token trace |
+| 100    | 105 MB    | Short prompt       |
+| 1,000  | 1.05 GB   | Medium document    |
+| 10,000 | 10.5 GB   | Long document      |
 
 The chain store grows linearly at ~1 MB per token. It is intended for detailed analysis of short sequences, not long-context storage.
 
@@ -412,11 +412,11 @@ window_size   = 200 tokens (typical)
 ```
 
 | Total tokens | Boundaries | Index size | Data size | Total file size |
-|-------------|------------|-----------|-----------|-----------------|
-| 10,000 | 50 | 800 B | 500 KB | ~661 KB |
-| 100,000 | 500 | 8 KB | 5 MB | ~5.2 MB |
-| 370,000 | 1,850 | 29 KB | 18.5 MB | ~18.7 MB |
-| 1,000,000 | 5,000 | 78 KB | 50 MB | ~50.2 MB |
+|--------------|------------|------------|-----------|-----------------|
+| 10,000       | 50         | 800 B      | 500 KB    | ~661 KB         |
+| 100,000      | 500        | 8 KB       | 5 MB      | ~5.2 MB         |
+| 370,000      | 1,850      | 29 KB      | 18.5 MB   | ~18.7 MB        |
+| 1,000,000    | 5,000      | 78 KB      | 50 MB     | ~50.2 MB        |
 
 With default max_boundaries=10,000, pre-allocated index = 160 KB.
 
@@ -426,19 +426,19 @@ With default max_boundaries=10,000, pre-allocated index = 160 KB.
 
 Assuming 4 critical layers (e.g., layers 14, 18, 22, 26):
 
-| Tier | Vectors/boundary | Bytes/boundary | 370K tokens (1,850 boundaries) |
-|------|-----------------|----------------|-------------------------------|
-| 1 (Residual) | 1 | 10,240 (10 KB) | 18.5 MB |
-| 2 (FfnDeltas) | 5 | 51,200 (50 KB) | 92.5 MB |
-| 3 (Full) | 9 | 92,160 (90 KB) | 166.5 MB |
+| Tier          | Vectors/boundary | Bytes/boundary | 370K tokens (1,850 boundaries) |
+|---------------|------------------|----------------|--------------------------------|
+| 1 (Residual)  | 1                | 10,240 (10 KB) | 18.5 MB                        |
+| 2 (FfnDeltas) | 5                | 51,200 (50 KB) | 92.5 MB                        |
+| 3 (Full)      | 9                | 92,160 (90 KB) | 166.5 MB                       |
 
 With 8 critical layers:
 
-| Tier | Vectors/boundary | Bytes/boundary | 370K tokens (1,850 boundaries) |
-|------|-----------------|----------------|-------------------------------|
-| 1 (Residual) | 1 | 10 KB | 18.5 MB |
-| 2 (FfnDeltas) | 9 | 90 KB | 163 MB |
-| 3 (Full) | 17 | 170 KB | 308 MB |
+| Tier          | Vectors/boundary | Bytes/boundary | 370K tokens (1,850 boundaries) |
+|---------------|------------------|----------------|--------------------------------|
+| 1 (Residual)  | 1                | 10 KB          | 18.5 MB                        |
+| 2 (FfnDeltas) | 9                | 90 KB          | 163 MB                         |
+| 3 (Full)      | 17               | 170 KB         | 308 MB                         |
 
 **Comparison to KV cache (56 GB):**
 - Tier 1: 18.5 MB = **3,000x** compression (needs replay)
@@ -451,17 +451,17 @@ With default max_boundaries=10,000, pre-allocated index = 240 KB.
 
 ## 8. Format Comparison
 
-| Property | Chain Store | Boundary Store | Context Store |
-|----------|------------|----------------|---------------|
-| Extension | `.bin` | `.bndx` | `.ctxt` |
-| Magic | `TRAC` | `BNDX` | `CTXT` |
-| Header size | 64 B | 64 B | 128 B |
-| Index | None (implicit) | 16 B/entry | 24 B/entry |
-| Granularity | Every token, every layer | One residual per window | Tiered per window |
-| Growth | ~1 MB/token | ~10 KB/boundary | 10-170 KB/boundary |
-| Use case | Detailed analysis | Long-context compression | Tunable reconstruction |
-| Max tokens (u32) | ~4B | ~4B | ~4B |
-| Max file size | Limited by chain count (u32) | Limited by data_offset (u32 = 4 GB) | u64 data_offset = unlimited |
+| Property         | Chain Store                  | Boundary Store                      | Context Store               |
+|------------------|------------------------------|-------------------------------------|-----------------------------|
+| Extension        | `.bin`                       | `.bndx`                             | `.ctxt`                     |
+| Magic            | `TRAC`                       | `BNDX`                              | `CTXT`                      |
+| Header size      | 64 B                         | 64 B                                | 128 B                       |
+| Index            | None (implicit)              | 16 B/entry                          | 24 B/entry                  |
+| Granularity      | Every token, every layer     | One residual per window             | Tiered per window           |
+| Growth           | ~1 MB/token                  | ~10 KB/boundary                     | 10-170 KB/boundary          |
+| Use case         | Detailed analysis            | Long-context compression            | Tunable reconstruction      |
+| Max tokens (u32) | ~4B                          | ~4B                                 | ~4B                         |
+| Max file size    | Limited by chain count (u32) | Limited by data_offset (u32 = 4 GB) | u64 data_offset = unlimited |
 
 The chain store has no explicit index -- token chains are located by arithmetic from the header fields. The boundary and context stores use explicit index entries because residual data is appended at variable file positions (after the pre-allocated index region).
 

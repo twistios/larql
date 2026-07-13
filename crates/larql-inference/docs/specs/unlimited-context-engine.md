@@ -135,13 +135,13 @@ their window.
 
 ## 5. Implementation
 
-| Concern | Location |
-|---|---|
-| Engine struct + `KvEngine` impl | `crates/larql-kv/src/engines/unlimited_context/engine.rs` |
-| Checkpoint storage | `engines/unlimited_context/checkpoint_store.rs` |
-| Token archive | `engines/unlimited_context/token_archive.rs` |
-| Per-token K/V extension | `engines/unlimited_context/extend.rs::rs_extend_from_checkpoint_*` |
-| W1-GPU dispatch helpers | `engines/unlimited_context/engine.rs::try_prefill_via_dispatch` + `decode_step_via_dispatch` |
+| Concern                         | Location                                                                                     |
+|---------------------------------|----------------------------------------------------------------------------------------------|
+| Engine struct + `KvEngine` impl | `crates/larql-kv/src/engines/unlimited_context/engine.rs`                                    |
+| Checkpoint storage              | `engines/unlimited_context/checkpoint_store.rs`                                              |
+| Token archive                   | `engines/unlimited_context/token_archive.rs`                                                 |
+| Per-token K/V extension         | `engines/unlimited_context/extend.rs::rs_extend_from_checkpoint_*`                           |
+| W1-GPU dispatch helpers         | `engines/unlimited_context/engine.rs::try_prefill_via_dispatch` + `decode_step_via_dispatch` |
 
 ---
 
@@ -183,10 +183,10 @@ shadow only existed to satisfy `close_window`'s checkpoint
 emission, which now pulls the last position's K/V back from the
 Metal cache on demand via `KvDispatch::read_kv_row_at`.
 
-| Path | Mask | Engine shadow |
-|---|---|---|
-| `LARQL_W10_HONLY=0` (default) | `Full` | `current_window_kv` pre-allocated |
-| `LARQL_W10_HONLY=1` | `HOnly` | `current_window_kv = None`; close_window reads back from Metal |
+| Path                          | Mask    | Engine shadow                                                  |
+|-------------------------------|---------|----------------------------------------------------------------|
+| `LARQL_W10_HONLY=0` (default) | `Full`  | `current_window_kv` pre-allocated                              |
+| `LARQL_W10_HONLY=1`           | `HOnly` | `current_window_kv = None`; close_window reads back from Metal |
 
 Preserves the **exact within window** contract — the kv cache
 Metal maintains for attention is the same one we'd otherwise have

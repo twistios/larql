@@ -130,12 +130,12 @@ correctness contract (what output it produces) and a capability flag
 
 ### 5.1 Cache primitives
 
-| Intent | Caller | Why per-backend |
-|---|---|---|
+| Intent                                                   | Caller                                                      | Why per-backend                                                                                                                |
+|----------------------------------------------------------|-------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
 | `alloc_kv_buffer(layer, max_tokens, kv_dim) -> KvHandle` | `standard`, `markov-rs`, `turbo-quant`, `unlimited-context` | Metal: pre-allocate `MTLBuffer` with `StorageModePrivate`. Vulkan: `VkBuffer` with `DEVICE_LOCAL`. CPU: `Vec<f32>` allocation. |
-| `append_kv(handle, k_row, v_row, position)` | same | GPU: kernel dispatch that writes into pre-allocated buffer at offset. CPU: array slice + memcpy. |
-| `clip_kv(handle, window_size)` | `standard:window=N` | GPU: dispatch that shifts entries; CPU: array copy. Backends may no-op if their cache layout supports bounded ring buffers. |
-| `read_kv_to_host(handle) -> SharedKV` | fallback paths, debug | GPU: blocking memory copy; CPU: identity. Should not be used in hot loops. |
+| `append_kv(handle, k_row, v_row, position)`              | same                                                        | GPU: kernel dispatch that writes into pre-allocated buffer at offset. CPU: array slice + memcpy.                               |
+| `clip_kv(handle, window_size)`                           | `standard:window=N`                                         | GPU: dispatch that shifts entries; CPU: array copy. Backends may no-op if their cache layout supports bounded ring buffers.    |
+| `read_kv_to_host(handle) -> SharedKV`                    | fallback paths, debug                                       | GPU: blocking memory copy; CPU: identity. Should not be used in hot loops.                                                     |
 
 ### 5.2 Attention primitives
 

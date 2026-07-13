@@ -110,15 +110,15 @@ returns a handle instead of the immediate result. Handles compose: a method
 that takes a `TokenHandle` and produces an `AttentionHandle` doesn't block
 — it just records the dependency in the in-flight command buffer.
 
-| Sync (`KvDispatch`) | Async (`AsyncComputeBackend`) | Returns |
-|---|---|---|
-| `attention_step(...) -> Option<Array2<f32>>` | `attention_step_async(...) -> AttentionHandle` | Handle to post-attention hidden |
-| `attention_step_windowed(...) -> Option<Array2<f32>>` | `attention_step_windowed_async(...) -> AttentionHandle` | Same |
-| `attention_prefill(...) -> Option<(Array2<f32>, KvHandle)>` | `attention_prefill_async(...) -> (AttentionHandle, KvHandle)` | Handle + (already-handled) KV |
-| `recompute_kv_from_residuals(...) -> Option<KvHandle>` | `recompute_kv_from_residuals_async(...) -> KvHandle` | KV handle |
-| `forward_from_layer(...) -> Option<Array2<f32>>` | `forward_from_layer_async(...) -> AttentionHandle` | Hidden handle |
-| `upload_boundary_residual(...) -> Option<ResidualHandle>` | `upload_boundary_residual_async(...) -> ResidualHandle` | Residual handle |
-| `read_kv_to_host(...) -> Option<(Array2, Array2)>` | (n/a — read-back triggers commit) | |
+| Sync (`KvDispatch`)                                         | Async (`AsyncComputeBackend`)                                 | Returns                         |
+|-------------------------------------------------------------|---------------------------------------------------------------|---------------------------------|
+| `attention_step(...) -> Option<Array2<f32>>`                | `attention_step_async(...) -> AttentionHandle`                | Handle to post-attention hidden |
+| `attention_step_windowed(...) -> Option<Array2<f32>>`       | `attention_step_windowed_async(...) -> AttentionHandle`       | Same                            |
+| `attention_prefill(...) -> Option<(Array2<f32>, KvHandle)>` | `attention_prefill_async(...) -> (AttentionHandle, KvHandle)` | Handle + (already-handled) KV   |
+| `recompute_kv_from_residuals(...) -> Option<KvHandle>`      | `recompute_kv_from_residuals_async(...) -> KvHandle`          | KV handle                       |
+| `forward_from_layer(...) -> Option<Array2<f32>>`            | `forward_from_layer_async(...) -> AttentionHandle`            | Hidden handle                   |
+| `upload_boundary_residual(...) -> Option<ResidualHandle>`   | `upload_boundary_residual_async(...) -> ResidualHandle`       | Residual handle                 |
+| `read_kv_to_host(...) -> Option<(Array2, Array2)>`          | (n/a — read-back triggers commit)                             |                                 |
 
 New trait-level methods:
 

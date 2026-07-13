@@ -511,16 +511,16 @@ Not blocking the spec, but worth tracking:
 
 ## Appendix A: Relationship to sibling engines
 
-| Engine | What it replaces | In-session contract | Cross-session contract |
-|---|---|---|---|
-| `Standard` | — | reference | none |
-| `MarkovResidualEngine` | live KV with per-layer residuals | bit-identical (KL=0) | not in scope |
-| `BoundaryKvEngine` *(this spec)* | nothing in-session; transport for restore | bit-identical via Standard | `A` / `D-@high` per frame |
-| `MarkovResidualCodecEngine` *(future)* | `MarkovResidualEngine`'s cold tier with a codec | bounded-KL per layer | not in scope |
-| `BoundaryPerLayerEngine` *(future)* | per-layer codec policy | per-layer contract | per-layer per-frame |
-| `ApolloEngine` | retrieval-augmented compiled facts via residual injection | task accuracy | n/a |
-| `UnlimitedContextEngine` | live KV with per-window checkpoints | exact within window | not in scope |
-| `TurboQuantEngine` | live KV with WHT+Lloyd-Max codec | cos ≈ 0.991 | not in scope |
+| Engine                                 | What it replaces                                          | In-session contract        | Cross-session contract    |
+|----------------------------------------|-----------------------------------------------------------|----------------------------|---------------------------|
+| `Standard`                             | —                                                         | reference                  | none                      |
+| `MarkovResidualEngine`                 | live KV with per-layer residuals                          | bit-identical (KL=0)       | not in scope              |
+| `BoundaryKvEngine` *(this spec)*       | nothing in-session; transport for restore                 | bit-identical via Standard | `A` / `D-@high` per frame |
+| `MarkovResidualCodecEngine` *(future)* | `MarkovResidualEngine`'s cold tier with a codec           | bounded-KL per layer       | not in scope              |
+| `BoundaryPerLayerEngine` *(future)*    | per-layer codec policy                                    | per-layer contract         | per-layer per-frame       |
+| `ApolloEngine`                         | retrieval-augmented compiled facts via residual injection | task accuracy              | n/a                       |
+| `UnlimitedContextEngine`               | live KV with per-window checkpoints                       | exact within window        | not in scope              |
+| `TurboQuantEngine`                     | live KV with WHT+Lloyd-Max codec                          | cos ≈ 0.991                | not in scope              |
 
 `BoundaryKvEngine` is the only engine whose primary value lives at the
 cross-session boundary rather than in-session. The other two planned

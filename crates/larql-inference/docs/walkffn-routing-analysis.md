@@ -28,11 +28,11 @@ With `LARQL_INSTRUMENT_MARKOV=1` instrumentation on `rs_decode_step_walk` (the m
 
 FFN dropped from **2412ms → 26ms** (92× faster). Per-engine tok/s gains:
 
-| Engine | Before (tok/s) | After (tok/s) | Speedup |
-|---|---:|---:|---:|
-| `markov-rs` | 0.4 | 7.3 | 18× |
-| `unlimited-context:window=256` | 0.4 | 26.2 | 65× (matches standard) |
-| `turbo-quant:bits=4` | 0.4 | 17.7 | 44× |
+| Engine                         | Before (tok/s) | After (tok/s) |                Speedup |
+|--------------------------------|---------------:|--------------:|-----------------------:|
+| `markov-rs`                    |            0.4 |           7.3 |                    18× |
+| `unlimited-context:window=256` |            0.4 |          26.2 | 65× (matches standard) |
+| `turbo-quant:bits=4`           |            0.4 |          17.7 |                    44× |
 
 ## The routing ladder today
 
@@ -40,24 +40,24 @@ From `crates/larql-inference/src/vindex/walk_ffn/mod.rs:252-394`. Order is prior
 
 ### Pre-ladder gates
 
-| Order | Branch | When it fires | What it does |
-|---|---|---|---|
-| 0 | `zero_features_dense` (line 254) | `num_features(layer) == 0` | Dispatch to `WeightFfn` — **dense f32 matmul, ignores all vindex compact storage** |
-| 0a | `l1_cache_hit` (line 304) | Single-position residual key hits the L1 cache | Return cached output |
-| 0b | sparse-with-overrides (line 271) | `index.has_overrides_at(layer)` true | Route to `walk_ffn_sparse` (intercepts overrides correctly) |
+| Order | Branch                           | When it fires                                  | What it does                                                                       |
+|-------|----------------------------------|------------------------------------------------|------------------------------------------------------------------------------------|
+| 0     | `zero_features_dense` (line 254) | `num_features(layer) == 0`                     | Dispatch to `WeightFfn` — **dense f32 matmul, ignores all vindex compact storage** |
+| 0a    | `l1_cache_hit` (line 304)        | Single-position residual key hits the L1 cache | Return cached output                                                               |
+| 0b    | sparse-with-overrides (line 271) | `index.has_overrides_at(layer)` true           | Route to `walk_ffn_sparse` (intercepts overrides correctly)                        |
 
 ### Routing ladder proper
 
-| Order | Branch | When it fires | What it does |
-|---|---|---|---|
-| 2 | `walk_ffn_sparse` (line 315) | `config.is_sparse(layer)` — user opted in | Sparse walk over top-K gate features |
-| 3 | FP4/FP8 sparse (line 327) | `index.has_fp4_storage()` | Sparse walk with FP4 storage |
-| 4 | `walk_ffn_q4_interleaved` (line 334) | `has_interleaved_q4() && backend.has_q4()` | Q4_0 (not Q4_K) interleaved + Metal Q4 |
-| 5 | `walk_ffn_interleaved` (line 341) | `has_interleaved()` | f32 interleaved |
-| 6 | `walk_ffn_full_mmap` (line 348) | `has_full_mmap_ffn()` | Separate gate/up/down mmap files |
-| 7 | `walk_ffn_q4k_dequant` (line 355) | `has_interleaved_q4k()` | **Q4K interleaved — DEQUANT to f32 then matmul** |
-| 8 | `walk_ffn_exact` (line 362) | `has_down_features()` | Down from mmap, gate/up from safetensors |
-| 9 | sparse weights fallback (line 369) | Top-K against safetensors weights | Last resort |
+| Order | Branch                               | When it fires                              | What it does                                     |
+|-------|--------------------------------------|--------------------------------------------|--------------------------------------------------|
+| 2     | `walk_ffn_sparse` (line 315)         | `config.is_sparse(layer)` — user opted in  | Sparse walk over top-K gate features             |
+| 3     | FP4/FP8 sparse (line 327)            | `index.has_fp4_storage()`                  | Sparse walk with FP4 storage                     |
+| 4     | `walk_ffn_q4_interleaved` (line 334) | `has_interleaved_q4() && backend.has_q4()` | Q4_0 (not Q4_K) interleaved + Metal Q4           |
+| 5     | `walk_ffn_interleaved` (line 341)    | `has_interleaved()`                        | f32 interleaved                                  |
+| 6     | `walk_ffn_full_mmap` (line 348)      | `has_full_mmap_ffn()`                      | Separate gate/up/down mmap files                 |
+| 7     | `walk_ffn_q4k_dequant` (line 355)    | `has_interleaved_q4k()`                    | **Q4K interleaved — DEQUANT to f32 then matmul** |
+| 8     | `walk_ffn_exact` (line 362)          | `has_down_features()`                      | Down from mmap, gate/up from safetensors         |
+| 9     | sparse weights fallback (line 369)   | Top-K against safetensors weights          | Last resort                                      |
 
 ### The two Q4K branches
 

@@ -46,12 +46,12 @@ estimated from Exp 49's per-codec sizes against a depth-fraction
 fragility profile (the L22-L25 commitment-band finding referenced in
 [the parent series notes](boundary-kv-engine.md)):
 
-| Engine | Codec policy | Cold tier (Gemma 3 4B, 128K tokens) |
-|---|---|---:|
-| `MarkovResidualEngine` | f32 all layers | 44 GiB |
-| `MarkovResidualCodecEngine { Bf16 }` | bf16 all layers | 22 GiB |
-| `MarkovResidualCodecEngine { Int8Clip3Sigma }` (unsafe mid-layer) | int8 all layers | 11 GiB |
-| **`BoundaryPerLayerEngine` (default policy)** | mixed per fragility | **~14 GiB** |
+| Engine                                                            | Codec policy        | Cold tier (Gemma 3 4B, 128K tokens) |
+|-------------------------------------------------------------------|---------------------|------------------------------------:|
+| `MarkovResidualEngine`                                            | f32 all layers      |                              44 GiB |
+| `MarkovResidualCodecEngine { Bf16 }`                              | bf16 all layers     |                              22 GiB |
+| `MarkovResidualCodecEngine { Int8Clip3Sigma }` (unsafe mid-layer) | int8 all layers     |                              11 GiB |
+| **`BoundaryPerLayerEngine` (default policy)**                     | mixed per fragility |                         **~14 GiB** |
 
 The mixed-policy number is bigger than the unsafe-uniform-int8 number,
 which is the point: the engine trades a smaller compression ratio for
