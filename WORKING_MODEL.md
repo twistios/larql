@@ -26,14 +26,14 @@ The model processes English factual content through three overlapping functional
 
 **Zone dominance (hit counts, L0-L33):**
 
-| Relation | L0-L5 | L6-L12 | L13-L20 | L21-L29 | L30-L33 | Retrieval/Classify ratio |
-|----------|-------|--------|---------|---------|---------|--------------------------|
-| pertainym | 91 | 60 | 174 | **773** | 252 | 4.4x |
-| similar_to | 49 | 46 | 108 | **244** | 119 | 2.3x |
-| attribute | 37 | 48 | 59 | **161** | 77 | 2.7x |
-| also_see | 67 | 75 | 124 | **162** | 76 | 1.3x |
-| entailment | 21 | 11 | 30 | **45** | 16 | 1.5x |
-| cause | 5 | 3 | 8 | 8 | 5 | 1.0x (sparse) |
+| Relation   | L0-L5 | L6-L12 | L13-L20 | L21-L29 | L30-L33 | Retrieval/Classify ratio |
+|------------|-------|--------|---------|---------|---------|--------------------------|
+| pertainym  | 91    | 60     | 174     | **773** | 252     | 4.4x                     |
+| similar_to | 49    | 46     | 108     | **244** | 119     | 2.3x                     |
+| attribute  | 37    | 48     | 59      | **161** | 77      | 2.7x                     |
+| also_see   | 67    | 75     | 124     | **162** | 76      | 1.3x                     |
+| entailment | 21    | 11     | 30      | **45**  | 16      | 1.5x                     |
+| cause      | 5     | 3      | 8       | 8       | 5       | 1.0x (sparse)            |
 
 **Important confound: feature count vs hit count (§2.5).** The zone-dominance ratios above are computed on hit counts. Hits-per-feature normalization shows individual features at L21-L29 fire at comparable or lower rates than L13-L20 features. The depth signature reflects *feature-space allocation* (more of L21-L29's ~10,238 features/layer match lexical probes) rather than per-feature intensity. The claim is: "the model allocates more of its feature space to lexical-relational structure at L21-L29," not "individual features are more strongly lexical there." See §2.5.
 
@@ -55,13 +55,13 @@ The L0-L20 scan (v0.1 basis) showed pertainym peaking at L20 (36 hits) and led t
 
 **Pertainym full depth profile (per-layer hit counts):**
 
-| Layer | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 |
-|-------|---|---|---|---|---|---|---|---|---|---|----|----|----|----|----|----|----|
-| Hits | 6 | 10 | 41 | 16 | 10 | 8 | 8 | 5 | 17 | 12 | 9 | 2 | 7 | 13 | 14 | 16 | 18 |
+| Layer | 0 | 1  | 2  | 3  | 4  | 5 | 6 | 7 | 8  | 9  | 10 | 11 | 12 | 13 | 14 | 15 | 16 |
+|-------|---|----|----|----|----|---|---|---|----|----|----|----|----|----|----|----|----|
+| Hits  | 6 | 10 | 41 | 16 | 10 | 8 | 8 | 5 | 17 | 12 | 9  | 2  | 7  | 13 | 14 | 16 | 18 |
 
-| Layer | 17 | 18 | 19 | 20 | 21 | 22 | 23 | 24 | 25 | 26 | 27 | 28 | 29 | 30 | 31 | 32 | 33 |
-|-------|----|----|----|----|----|----|-----|-----|-----|-----|----|----|----|----|----|----|-----|
-| Hits | 24 | 28 | 25 | 36 | 51 | 71 | **129** | **119** | **125** | **117** | 86 | 47 | 28 | 39 | 82 | 32 | 99 |
+| Layer | 17 | 18 | 19 | 20 | 21 | 22 | 23      | 24      | 25      | 26      | 27 | 28 | 29 | 30 | 31 | 32 | 33 |
+|-------|----|----|----|----|----|----|---------|---------|---------|---------|----|----|----|----|----|----|----|
+| Hits  | 24 | 28 | 25 | 36 | 51 | 71 | **129** | **119** | **125** | **117** | 86 | 47 | 28 | 39 | 82 | 32 | 99 |
 
 The L20 "peak" at 36 hits is dwarfed by L23 (129 hits, 3.6x). Pertainym's true peak zone is L23-L26, coinciding exactly with the crystallization zone (MI09: 0%→99% at L24-L30).
 
@@ -90,13 +90,13 @@ This does not mean L13-L20 is doing nothing. Features exist there, and their den
 
 The v2 classifier checked polysemantic *before* mono-semantic. At L21+, SAE features have structurally higher down_meta bimodality, causing 68 false polysemantic classifications (features like ophthalmic→eye, auditory→ear, papal→pope classified as "polysemantic" despite clear mono-semantic entity coherence). The v3 classifier checks mono *before* poly, using the same cutoffs.
 
-| Zone | Total | Mono | Promiscuous | M3-stable | Promiscuity % |
-|------|-------|------|-------------|-----------|---------------|
-| L0-L12 | 67 | 52 (78%) | 15 (22%) | 38 | 22.4% |
-| L13-L20 | 75 | 64 (85%) | 11 (15%) | 31 | 14.7% |
-| L21-L29 | 231 | 224 (97%) | 7 (3%) | 99 | 3.0% |
-| L30-L33 | 77 | 72 (94%) | 5 (6%) | 35 | 6.5% |
-| **Total** | **450** | **412 (92%)** | **38 (8%)** | **203** | **8.4%** |
+| Zone      | Total   | Mono          | Promiscuous | M3-stable | Promiscuity % |
+|-----------|---------|---------------|-------------|-----------|---------------|
+| L0-L12    | 67      | 52 (78%)      | 15 (22%)    | 38        | 22.4%         |
+| L13-L20   | 75      | 64 (85%)      | 11 (15%)    | 31        | 14.7%         |
+| L21-L29   | 231     | 224 (97%)     | 7 (3%)      | 99        | 3.0%          |
+| L30-L33   | 77      | 72 (94%)      | 5 (6%)      | 35        | 6.5%          |
+| **Total** | **450** | **412 (92%)** | **38 (8%)** | **203**   | **8.4%**      |
 
 **Key finding: promiscuity drops with depth.** The retrieval-zone features (L21-L29) are the cleanest in the inventory at 3% promiscuous, compared to 22% at L0-L12. This means the retrieval-zone density finding (§2.2) is not inflated by noise — if anything, the L0-L12 hit counts are more contaminated.
 
@@ -110,17 +110,17 @@ The zone-dominance ratios in §1 and §2.2 are computed on raw hit counts. A fea
 
 **Hits-per-feature by zone (selected relations, all three pilots):**
 
-| Pilot:Relation | L13-L20 h/f | L21-L29 h/f | Ratio | Verdict |
-|----------------|-------------|-------------|-------|---------|
-| subword:hypernym | 3.8 | 5.9 | 1.6x | L21-L29 stronger |
-| subword:meronym | 2.5 | 4.0 | 1.6x | L21-L29 stronger |
-| 1c:pertainym | 2.5 | 2.7 | 1.1x | Comparable |
-| subword:derivation | 2.5 | 2.5 | 1.0x | Identical |
-| 1c:also_see | 3.2 | 2.7 | 0.8x | L13-L20 stronger |
-| 1c:similar_to | 6.2 | 4.3 | 0.7x | L13-L20 stronger |
-| multilingual:hypernym | 4.8 | 3.9 | 0.8x | L13-L20 stronger |
-| multilingual:meronym | 9.0 | 5.1 | 0.6x | L13-L20 stronger |
-| multilingual:synonym | 3.8 | 2.8 | 0.7x | L13-L20 stronger |
+| Pilot:Relation        | L13-L20 h/f | L21-L29 h/f | Ratio | Verdict          |
+|-----------------------|-------------|-------------|-------|------------------|
+| subword:hypernym      | 3.8         | 5.9         | 1.6x  | L21-L29 stronger |
+| subword:meronym       | 2.5         | 4.0         | 1.6x  | L21-L29 stronger |
+| 1c:pertainym          | 2.5         | 2.7         | 1.1x  | Comparable       |
+| subword:derivation    | 2.5         | 2.5         | 1.0x  | Identical        |
+| 1c:also_see           | 3.2         | 2.7         | 0.8x  | L13-L20 stronger |
+| 1c:similar_to         | 6.2         | 4.3         | 0.7x  | L13-L20 stronger |
+| multilingual:hypernym | 4.8         | 3.9         | 0.8x  | L13-L20 stronger |
+| multilingual:meronym  | 9.0         | 5.1         | 0.6x  | L13-L20 stronger |
+| multilingual:synonym  | 3.8         | 2.8         | 0.7x  | L13-L20 stronger |
 
 **Conclusion:** for most relations, per-feature intensity at L21-L29 is comparable to or lower than L13-L20. The depth signature is predominantly a *feature-space allocation* effect: more of L21-L29's feature space is devoted to lexical-relational structure. Individual features at L13-L20 often fire on *more* entities per feature. The two exceptions (subword hypernym and meronym) show genuine per-feature intensification at L21-L29.
 
@@ -128,17 +128,17 @@ This sharpens the claim: "the model allocates more of its representational capac
 
 ### Cross-references to Shannon program
 
-| Finding | Source | Relevance |
-|---------|--------|-----------|
-| >70% of bits-budget at L20-L33 | exp 30 | Comprehend phase |
-| L26 gate-vector dispatch | exp 71, 77 | Peak of resolve-and-retrieve phase |
-| Crystallization 0%→99% at L24-L30 | MI09 | Coincides with feature density peak |
-| L30 injection works for novel entities | exp 22 | Resolve-and-retrieve phase |
-| L33 format | exp 21 | Format phase |
-| Translation/addition fail at L31 | exp 62 | Scope constraint |
-| Feature identity L14→L15-L27 at 93% | exp 18 | Highway → retrieval gradient continuity |
-| Continuous relation-pair cosine elevation | exp 78 | Phases overlap, not discrete |
-| Depth-fraction routing at 15%/25%/38% | MI11 | Early commitment points |
+| Finding                                   | Source     | Relevance                               |
+|-------------------------------------------|------------|-----------------------------------------|
+| >70% of bits-budget at L20-L33            | exp 30     | Comprehend phase                        |
+| L26 gate-vector dispatch                  | exp 71, 77 | Peak of resolve-and-retrieve phase      |
+| Crystallization 0%→99% at L24-L30         | MI09       | Coincides with feature density peak     |
+| L30 injection works for novel entities    | exp 22     | Resolve-and-retrieve phase              |
+| L33 format                                | exp 21     | Format phase                            |
+| Translation/addition fail at L31          | exp 62     | Scope constraint                        |
+| Feature identity L14→L15-L27 at 93%       | exp 18     | Highway → retrieval gradient continuity |
+| Continuous relation-pair cosine elevation | exp 78     | Phases overlap, not discrete            |
+| Depth-fraction routing at 15%/25%/38%     | MI11       | Early commitment points                 |
 
 ---
 
@@ -187,10 +187,10 @@ Pertainym shows 252 hits at L30-L33, including spikes at L31 (82) and L33 (99). 
 
 Results (5 features per zone):
 
-| Zone | Selective (rel only) | Both fire | Mean activation diff |
-|------|---------------------|-----------|---------------------|
-| L23-L26 (control) | 1/5 | 4/5 | +444 |
-| **L31/L33 (Q4)** | **3/5** | **2/5** | **+1852** |
+| Zone              | Selective (rel only) | Both fire | Mean activation diff |
+|-------------------|----------------------|-----------|----------------------|
+| L23-L26 (control) | 1/5                  | 4/5       | +444                 |
+| **L31/L33 (Q4)**  | **3/5**              | **2/5**   | **+1852**            |
 
 **L31/L33 features are MORE context-dependent than L23-L26, not less.** Three L31 features show negative irrelevant activation (actively suppressed in non-pertainym contexts). This contradicts the unembedding-leakage hypothesis — vocabulary-structure features would fire context-independently. The late-layer features discriminate more sharply, consistent with "formatting includes final lexical selection."
 
@@ -198,11 +198,11 @@ The unexpected control result (L23-L26 features mostly fire on both prompts) sug
 
 **v2 test (same entity, different relation, 2026-05-25):** three templates per entity — pertainym ("adjective 'X' pertains to"), hypernym ("something described as 'X' is a type of"), irrelevant ("the X research project was funded by"). Three zones tested: L15-L18 (4 features), L23-L26 (5 features), L31-L33 (5 features).
 
-| Zone | Mean pertainym | Mean hypernym | Mean irrelevant | P-H diff | P-I diff |
-|------|---------------|---------------|-----------------|----------|----------|
-| L15-L18 | 16 | 64 | -12 | -48 | +28 |
-| L23-L26 | 1006 | 588 | 562 | +419 | +444 |
-| L31-L33 | 1852 | 1306 | ~0 | +546 | +1852 |
+| Zone    | Mean pertainym | Mean hypernym | Mean irrelevant | P-H diff | P-I diff |
+|---------|----------------|---------------|-----------------|----------|----------|
+| L15-L18 | 16             | 64            | -12             | -48      | +28      |
+| L23-L26 | 1006           | 588           | 562             | +419     | +444     |
+| L31-L33 | 1852           | 1306          | ~0              | +546     | +1852    |
 
 **Three qualitatively different MLP regimes:**
 
@@ -234,23 +234,23 @@ Multilingual and subword pilots re-run at L0-L33. Results confirm retrieval-zone
 
 **Subword pilot (533 features, 5 relations):**
 
-| Relation | L21-L29/L13-L20 | Peak | Pattern |
-|----------|-----------------|------|---------|
-| hypernym | **7.7x** | L23=108 | Strong retrieval-zone |
-| derivation | **5.5x** | L25=44 | Strong retrieval-zone |
-| meronym | **41.2x** | L25=51 | Extreme retrieval-zone (5 hits at L13-L20) |
-| antonym | **5.9x** | L24=18 | Strong retrieval-zone |
-| synonym | **1.4x** | L24=15 | Weak retrieval-zone |
+| Relation   | L21-L29/L13-L20 | Peak    | Pattern                                    |
+|------------|-----------------|---------|--------------------------------------------|
+| hypernym   | **7.7x**        | L23=108 | Strong retrieval-zone                      |
+| derivation | **5.5x**        | L25=44  | Strong retrieval-zone                      |
+| meronym    | **41.2x**       | L25=51  | Extreme retrieval-zone (5 hits at L13-L20) |
+| antonym    | **5.9x**        | L24=18  | Strong retrieval-zone                      |
+| synonym    | **1.4x**        | L24=15  | Weak retrieval-zone                        |
 
 **Multilingual pilot (142 features, 5 relations):**
 
-| Relation | L21-L29/L13-L20 | Peak | Pattern |
-|----------|-----------------|------|---------|
-| hypernym | **2.5x** | L27=20 | Retrieval-zone |
-| derivation | **5.2x** | L26=7 | Retrieval-zone |
-| meronym | **1.7x** | L24=21 | Retrieval-zone |
-| antonym | 1.6x | L16=5 | Marginal (24 total hits, sparse) |
-| synonym | **0.6x** | L19=15 | **Exception: peaks at L13-L20** |
+| Relation   | L21-L29/L13-L20 | Peak   | Pattern                          |
+|------------|-----------------|--------|----------------------------------|
+| hypernym   | **2.5x**        | L27=20 | Retrieval-zone                   |
+| derivation | **5.2x**        | L26=7  | Retrieval-zone                   |
+| meronym    | **1.7x**        | L24=21 | Retrieval-zone                   |
+| antonym    | 1.6x            | L16=5  | Marginal (24 total hits, sparse) |
+| synonym    | **0.6x**        | L19=15 | **Exception: peaks at L13-L20**  |
 
 **Synonym is structurally different — see Q6.**
 
@@ -295,19 +295,19 @@ The falsifiable prediction in §1 distinguishes these: interleaved predicts mixe
 
 ## 5. Version history
 
-| Version | Date | Change |
-|---------|------|--------|
-| v0.1 | 2026-05-25 | Initial synthesis. Four-stage pipeline with classify claim. Three depth-signature subtypes. Three open questions. |
-| v0.2 | 2026-05-25 | **Major revision.** Incorporated L0-L33 extended scan data. Replaced four-stage pipeline (comprehend→classify→retrieve→format) with three-function model (comprehend→resolve-and-retrieve→format). "Classify" stage was based on truncation artifact at L20 scan boundary. All relations peak in retrieval zone L21-L29, not L13-L20. Q1 resolved. Added Q4 (late-layer activity) and Q5 (canonical relations L0-L33). |
-| v0.3 | 2026-05-25 | Q2 resolved: v3 polysemy audit (mono-first classification) on 450 L0-L33 features. Promiscuity drops with depth (22%→3%). 68 false polysemantic classifications from v2 ordering bug corrected. Q3 resolved: band metaphor dropped. Q4 partially addressed by Q2 (late-layer features are real, not artifact). |
-| v0.4 | 2026-05-25 | Q5 resolved: multilingual + subword at L0-L33 confirm retrieval-zone dominance for 10/11 relations. Synonym exception noted. |
-| v0.5 | 2026-05-25 | Three corrections. (1) Synonym elevated to Q6 with falsifiable predictions — not a footnote but signal that synonym resolution may sit earlier in the pipeline. (2) Q4 downgraded to partially resolved — polysemy audit rules out noise but not unembedding leakage; gating-selectivity test needed. (3) Hits-per-feature normalization added (§2.5): depth signature is feature-space allocation, not per-feature intensity. Claim sharpened from "features are denser" to "more of the feature space is lexical-relational." |
-| v0.6 | 2026-05-25 | Q4 gating-selectivity v1 pilot (n=5 per zone). L31/L33 more context-dependent than L23-L26 on topic-irrelevant contrast. |
-| v0.7 | 2026-05-25 | Q4 v2 with same-entity different-relation contrast and L15-L18 zone. Selectivity gradient observed. Three-regime hypothesis pre-registered as P5a/b/c. |
-| v0.8 | 2026-05-25 | P5 results refute two of three predictions. P5a partial. P5b refuted (L33 ratio 0.85 > L31 0.76). P5c refuted (synonym features inactive). |
-| v0.9 | 2026-05-25 | P5c bare-entity follow-up: synonym features at L17-L19 inactive on all conditions. Synonym depth peak may be probe artifact. |
-| v1.0 | 2026-05-25 | Sign analysis resolves Q6 — L17-L19 similar_to has 0% positive activations. Probe sign conflation artifact. |
-| v1.1 | 2026-05-25 | Full sign heatmap. Sign conflation is systematic. Post-hoc filter predicted allocation peak strengthens. |
-| v1.2 | 2026-05-25 | **VERIFICATION RUN OVERTURNS POST-HOC ANALYSIS.** Signed probes find +79-84% more features across all three pilots (total 1125→2044). Post-hoc filtering is invalid. L21-L29/L13-L20 ratio drops from 3.5x (unsigned) to 2.9x (signed). Claim 1 survives but is moderated. |
-| v1.3 | 2026-05-25 | Signed re-derivation of claims 1-3 confirmed. Claim 4 flagged as pilot-level, needing resampling. |
-| v1.4 | 2026-05-25 | **Resampling check on claim 4.** 20 random draws of n=5 per zone, all 72 M3-stable pertainym features pre-computed. H/P gradient holds in only 5/20 trials (25%) — **the relation-selectivity gradient is a sampling artifact.** L23-L26 mean H/P=0.79±0.16, L31-L33 mean H/P=0.87±0.10 — overlapping distributions, L23 actually slightly more selective than L31 on average. Topic selectivity gradient is robust (P-I: +37→+600→+1324, zero overlap). **Claim 4 final: topic selectivity sharpens with depth; relation selectivity is flat and incomplete (~0.8-1.0 H/P) at all depths. The MLP encodes relational mode but does not discriminate between specific relations.** |
+| Version | Date       | Change                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+|---------|------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| v0.1    | 2026-05-25 | Initial synthesis. Four-stage pipeline with classify claim. Three depth-signature subtypes. Three open questions.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| v0.2    | 2026-05-25 | **Major revision.** Incorporated L0-L33 extended scan data. Replaced four-stage pipeline (comprehend→classify→retrieve→format) with three-function model (comprehend→resolve-and-retrieve→format). "Classify" stage was based on truncation artifact at L20 scan boundary. All relations peak in retrieval zone L21-L29, not L13-L20. Q1 resolved. Added Q4 (late-layer activity) and Q5 (canonical relations L0-L33).                                                                                                                                                                                                                                                             |
+| v0.3    | 2026-05-25 | Q2 resolved: v3 polysemy audit (mono-first classification) on 450 L0-L33 features. Promiscuity drops with depth (22%→3%). 68 false polysemantic classifications from v2 ordering bug corrected. Q3 resolved: band metaphor dropped. Q4 partially addressed by Q2 (late-layer features are real, not artifact).                                                                                                                                                                                                                                                                                                                                                                     |
+| v0.4    | 2026-05-25 | Q5 resolved: multilingual + subword at L0-L33 confirm retrieval-zone dominance for 10/11 relations. Synonym exception noted.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| v0.5    | 2026-05-25 | Three corrections. (1) Synonym elevated to Q6 with falsifiable predictions — not a footnote but signal that synonym resolution may sit earlier in the pipeline. (2) Q4 downgraded to partially resolved — polysemy audit rules out noise but not unembedding leakage; gating-selectivity test needed. (3) Hits-per-feature normalization added (§2.5): depth signature is feature-space allocation, not per-feature intensity. Claim sharpened from "features are denser" to "more of the feature space is lexical-relational."                                                                                                                                                    |
+| v0.6    | 2026-05-25 | Q4 gating-selectivity v1 pilot (n=5 per zone). L31/L33 more context-dependent than L23-L26 on topic-irrelevant contrast.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| v0.7    | 2026-05-25 | Q4 v2 with same-entity different-relation contrast and L15-L18 zone. Selectivity gradient observed. Three-regime hypothesis pre-registered as P5a/b/c.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| v0.8    | 2026-05-25 | P5 results refute two of three predictions. P5a partial. P5b refuted (L33 ratio 0.85 > L31 0.76). P5c refuted (synonym features inactive).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| v0.9    | 2026-05-25 | P5c bare-entity follow-up: synonym features at L17-L19 inactive on all conditions. Synonym depth peak may be probe artifact.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| v1.0    | 2026-05-25 | Sign analysis resolves Q6 — L17-L19 similar_to has 0% positive activations. Probe sign conflation artifact.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| v1.1    | 2026-05-25 | Full sign heatmap. Sign conflation is systematic. Post-hoc filter predicted allocation peak strengthens.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| v1.2    | 2026-05-25 | **VERIFICATION RUN OVERTURNS POST-HOC ANALYSIS.** Signed probes find +79-84% more features across all three pilots (total 1125→2044). Post-hoc filtering is invalid. L21-L29/L13-L20 ratio drops from 3.5x (unsigned) to 2.9x (signed). Claim 1 survives but is moderated.                                                                                                                                                                                                                                                                                                                                                                                                         |
+| v1.3    | 2026-05-25 | Signed re-derivation of claims 1-3 confirmed. Claim 4 flagged as pilot-level, needing resampling.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| v1.4    | 2026-05-25 | **Resampling check on claim 4.** 20 random draws of n=5 per zone, all 72 M3-stable pertainym features pre-computed. H/P gradient holds in only 5/20 trials (25%) — **the relation-selectivity gradient is a sampling artifact.** L23-L26 mean H/P=0.79±0.16, L31-L33 mean H/P=0.87±0.10 — overlapping distributions, L23 actually slightly more selective than L31 on average. Topic selectivity gradient is robust (P-I: +37→+600→+1324, zero overlap). **Claim 4 final: topic selectivity sharpens with depth; relation selectivity is flat and incomplete (~0.8-1.0 H/P) at all depths. The MLP encodes relational mode but does not discriminate between specific relations.** |
