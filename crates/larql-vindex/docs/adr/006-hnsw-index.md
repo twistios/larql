@@ -10,11 +10,11 @@ Optional HNSW (Hierarchical Navigable Small World) graph index layered on top of
 
 ## Benchmark (dim=2560, M3 Max)
 
-| Features | Brute | HNSW | Speedup | Build Cost |
-|----------|-------|------|---------|------------|
-| 1,024 | 0.19ms | 0.15ms | 1.3x | 4ms |
-| 10,240 | 2.95ms | 1.70ms | 1.7x | 47ms |
-| 28,672 | 19.7ms | 15.5ms | 1.3x | 158ms |
+| Features | Brute  | HNSW   | Speedup | Build Cost |
+|----------|--------|--------|---------|------------|
+| 1,024    | 0.19ms | 0.15ms | 1.3x    | 4ms        |
+| 10,240   | 2.95ms | 1.70ms | 1.7x    | 47ms       |
+| 28,672   | 19.7ms | 15.5ms | 1.3x    | 158ms      |
 
 ## Implementation
 

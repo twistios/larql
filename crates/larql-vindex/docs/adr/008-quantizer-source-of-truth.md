@@ -17,14 +17,14 @@ use larql_compute::cpu::ops::q4_common::{quantize_q4_k, quantize_q6_k};
 
 ## Available Quantizers (all in q4_common.rs)
 
-| Function | Output Format | Block Size |
-|----------|--------------|------------|
-| `quantize_q4_0` | Q4_0 (18B/32vals) | 32 |
-| `quantize_q4_k` | Q4_K (148B/256vals) | 256 |
-| `quantize_q4_k_gguf` | GGUF Q4_K (144B/256vals) | 256 |
-| `quantize_q4_kf` | Q4_KF (160B/256vals) | 256 |
-| `quantize_q6_k` | Q6_K (210B/256vals) | 256 |
-| `quantize_to_q8` | Q8_0 (int8 + f32 scales) | 32 |
+| Function             | Output Format            | Block Size |
+|----------------------|--------------------------|------------|
+| `quantize_q4_0`      | Q4_0 (18B/32vals)        | 32         |
+| `quantize_q4_k`      | Q4_K (148B/256vals)      | 256        |
+| `quantize_q4_k_gguf` | GGUF Q4_K (144B/256vals) | 256        |
+| `quantize_q4_kf`     | Q4_KF (160B/256vals)     | 256        |
+| `quantize_q6_k`      | Q6_K (210B/256vals)      | 256        |
+| `quantize_to_q8`     | Q8_0 (int8 + f32 scales) | 32         |
 
 ## The Bug
 

@@ -8,11 +8,11 @@
 
 Support three parallel attention weight storage formats:
 
-| Tier | Format | Size/Layer | Use Case |
-|------|--------|-----------|----------|
-| **f32** | `attn_weights.bin` | ~50MB | CPU BLAS fallback, extraction |
-| **Q8** | `attn_weights_q8.bin` | ~13MB | High precision GPU |
-| **Q4_K** | `attn_weights_q4k.bin` | ~7.6MB | Production (Ollama-compatible) |
+| Tier     | Format                 | Size/Layer | Use Case                       |
+|----------|------------------------|------------|--------------------------------|
+| **f32**  | `attn_weights.bin`     | ~50MB      | CPU BLAS fallback, extraction  |
+| **Q8**   | `attn_weights_q8.bin`  | ~13MB      | High precision GPU             |
+| **Q4_K** | `attn_weights_q4k.bin` | ~7.6MB     | Production (Ollama-compatible) |
 
 ## Loading Priority
 

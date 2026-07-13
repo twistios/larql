@@ -38,14 +38,14 @@ typed struct rather than poking `serde_json::Value` with string keys.
 
 ## Trade-offs
 
-| | Cache (legacy) | Feature-major (W2) |
-|---|---|---|
-| Disk overhead | 0 (data shared with interleaved) | ~14 MB / layer at Gemma 4B (~500 MB / 34 layers) |
-| Heap ceiling | up to ~840 MB / VectorIndex on Gemma 4B | 0 — straight mmap |
-| First-access decode (K=100) | 77.6 ms | 31.8 µs (2440×) |
-| First-access decode (full K) | 82.9 ms | 3.24 ms (25×) |
-| Warm-cache decode | scaled-add only (fast) | scaled-add only (fast) |
-| Lock contention | Mutex on cache | none |
+|                              | Cache (legacy)                          | Feature-major (W2)                               |
+|------------------------------|-----------------------------------------|--------------------------------------------------|
+| Disk overhead                | 0 (data shared with interleaved)        | ~14 MB / layer at Gemma 4B (~500 MB / 34 layers) |
+| Heap ceiling                 | up to ~840 MB / VectorIndex on Gemma 4B | 0 — straight mmap                                |
+| First-access decode (K=100)  | 77.6 ms                                 | 31.8 µs (2440×)                                  |
+| First-access decode (full K) | 82.9 ms                                 | 3.24 ms (25×)                                    |
+| Warm-cache decode            | scaled-add only (fast)                  | scaled-add only (fast)                           |
+| Lock contention              | Mutex on cache                          | none                                             |
 
 ## When the new path actually fires
 

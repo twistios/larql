@@ -8,12 +8,12 @@
 
 Match Ollama's Q4_K_M quantization strategy:
 
-| Component | Format | Block Size | Bytes/256 vals | Origin |
-|-----------|--------|------------|----------------|--------|
-| Attention Q/K/O | Q4_K | 256 | 148 | GGUF standard |
-| Attention V | Q6_K | 256 | 210 | GGUF standard |
-| FFN gate/up | Q4_K | 256 | 148 | GGUF standard |
-| FFN down | Q6_K | 256 | 210 | GGUF standard |
+| Component       | Format | Block Size | Bytes/256 vals | Origin        |
+|-----------------|--------|------------|----------------|---------------|
+| Attention Q/K/O | Q4_K   | 256        | 148            | GGUF standard |
+| Attention V     | Q6_K   | 256        | 210            | GGUF standard |
+| FFN gate/up     | Q4_K   | 256        | 148            | GGUF standard |
+| FFN down        | Q6_K   | 256        | 210            | GGUF standard |
 
 The legacy `interleaved_q4.bin` (Q4_0, 32-value blocks, 18 bytes) path
 is kept for backwards compatibility with older vindexes and specific
@@ -50,12 +50,12 @@ bf16/f16 safetensors shards.
 
 ## Our Q4_K vs GGUF Q4_K
 
-| Field | Our Layout (148B) | GGUF Layout (144B) |
-|-------|-------------------|-------------------|
-| d, dmin | 2+2 bytes (ushort f16) | 2+2 bytes (half) |
-| Scales | 12 bytes (8×6-bit) | 12 bytes (scales+mins packed) |
-| Mins | 4 bytes (8×4-bit) | (packed into scales) |
-| Nibbles | 128 bytes | 128 bytes |
+| Field   | Our Layout (148B)      | GGUF Layout (144B)            |
+|---------|------------------------|-------------------------------|
+| d, dmin | 2+2 bytes (ushort f16) | 2+2 bytes (half)              |
+| Scales  | 12 bytes (8×6-bit)     | 12 bytes (scales+mins packed) |
+| Mins    | 4 bytes (8×4-bit)      | (packed into scales)          |
+| Nibbles | 128 bytes              | 128 bytes                     |
 
 Our format separates scales and mins for simpler code. GGUF packs both into 12 bytes for 4 fewer bytes per block. Both produce equivalent results. `quantize_q4_k_gguf()` in larql-compute can produce the GGUF format.
 

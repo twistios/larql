@@ -80,26 +80,26 @@ larql serve --dir <directory> [OPTIONS]
 larql serve "hf://chrishayuk/gemma-3-4b-it-vindex" [OPTIONS]
 ```
 
-| Flag | Description | Default |
-|------|-------------|---------|
-| `--port <PORT>` | Listen port | 8080 |
-| `--host <HOST>` | Bind address | 0.0.0.0 |
-| `--dir <DIR>` | Serve all .vindex directories in this folder | — |
-| `--no-infer` | Disable INFER endpoint (browse-only, reduces memory) | false |
-| `--cors` | Enable CORS for browser access | false |
-| `--max-concurrent <N>` | Max concurrent requests | 100 |
-| `--api-key <KEY>` | Require Bearer token auth (health exempt) | — |
-| `--rate-limit <SPEC>` | Per-IP rate limit (e.g. `100/min`, `10/sec`) | — |
-| `--trust-forwarded-for` | Trust first `X-Forwarded-For` IP for rate limiting. Enable only behind a trusted reverse proxy. | false |
-| `--cache-ttl <SECS>` | Cache TTL for DESCRIBE results (0 = disabled) | 0 |
-| `--grpc-port <PORT>` | Enable gRPC server alongside HTTP | — |
-| `--uds-path <PATH>` | Bind a Unix domain socket alongside TCP for same-host MoE shard clients (~50 µs/call faster than TCP loopback). Pre-existing socket files are unlinked. Clients use `unix:///path/to/sock` URLs. | — |
-| `--experts <START-END>` | (MoE) Serve only this expert ID range across every layer (inclusive). Used to shard the expert bank across machines. | all |
-| `--units <PATH>` | (MoE, fine-grained) JSON manifest specifying per-`(layer, expert)` ownership. Mutually exclusive with `--experts`. | — |
-| `--warmup-walk-ffn` | Pre-load inference weights + prefetch every owned-layer Q4K mmap at boot (~1.3 s + 3 GB pre-allocated). Recommended for steady-state grid shards. | false |
-| `--log-level <LEVEL>` | Logging level | info |
-| `--tls-cert <PATH>` | TLS certificate for HTTPS | — |
-| `--tls-key <PATH>` | TLS private key | — |
+| Flag                    | Description                                                                                                                                                                                      | Default |
+|-------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| `--port <PORT>`         | Listen port                                                                                                                                                                                      | 8080    |
+| `--host <HOST>`         | Bind address                                                                                                                                                                                     | 0.0.0.0 |
+| `--dir <DIR>`           | Serve all .vindex directories in this folder                                                                                                                                                     | —       |
+| `--no-infer`            | Disable INFER endpoint (browse-only, reduces memory)                                                                                                                                             | false   |
+| `--cors`                | Enable CORS for browser access                                                                                                                                                                   | false   |
+| `--max-concurrent <N>`  | Max concurrent requests                                                                                                                                                                          | 100     |
+| `--api-key <KEY>`       | Require Bearer token auth (health exempt)                                                                                                                                                        | —       |
+| `--rate-limit <SPEC>`   | Per-IP rate limit (e.g. `100/min`, `10/sec`)                                                                                                                                                     | —       |
+| `--trust-forwarded-for` | Trust first `X-Forwarded-For` IP for rate limiting. Enable only behind a trusted reverse proxy.                                                                                                  | false   |
+| `--cache-ttl <SECS>`    | Cache TTL for DESCRIBE results (0 = disabled)                                                                                                                                                    | 0       |
+| `--grpc-port <PORT>`    | Enable gRPC server alongside HTTP                                                                                                                                                                | —       |
+| `--uds-path <PATH>`     | Bind a Unix domain socket alongside TCP for same-host MoE shard clients (~50 µs/call faster than TCP loopback). Pre-existing socket files are unlinked. Clients use `unix:///path/to/sock` URLs. | —       |
+| `--experts <START-END>` | (MoE) Serve only this expert ID range across every layer (inclusive). Used to shard the expert bank across machines.                                                                             | all     |
+| `--units <PATH>`        | (MoE, fine-grained) JSON manifest specifying per-`(layer, expert)` ownership. Mutually exclusive with `--experts`.                                                                               | —       |
+| `--warmup-walk-ffn`     | Pre-load inference weights + prefetch every owned-layer Q4K mmap at boot (~1.3 s + 3 GB pre-allocated). Recommended for steady-state grid shards.                                                | false   |
+| `--log-level <LEVEL>`   | Logging level                                                                                                                                                                                    | info    |
+| `--tls-cert <PATH>`     | TLS certificate for HTTPS                                                                                                                                                                        | —       |
+| `--tls-key <PATH>`      | TLS private key                                                                                                                                                                                  | —       |
 
 **Environment variables for tuning the MoE remote-expert path** — see
 `README.md → Environment variables` for the full table. The names live
@@ -168,13 +168,13 @@ GET /v1/describe?entity=France&band=all&verbose=true
 GET /v1/describe?entity=France&limit=10
 ```
 
-| Param | Type | Description | Default |
-|-------|------|-------------|---------|
-| `entity` | string | Entity name (required) | — |
-| `band` | string | Layer band: `syntax`, `knowledge`, `output`, `all` | `knowledge` |
-| `verbose` | bool | Include TF-IDF labels, also-tokens, layer ranges | false |
-| `limit` | int | Max edges to return | 20 |
-| `min_score` | float | Minimum gate score threshold | 5.0 |
+| Param       | Type   | Description                                        | Default     |
+|-------------|--------|----------------------------------------------------|-------------|
+| `entity`    | string | Entity name (required)                             | —           |
+| `band`      | string | Layer band: `syntax`, `knowledge`, `output`, `all` | `knowledge` |
+| `verbose`   | bool   | Include TF-IDF labels, also-tokens, layer ranges   | false       |
+| `limit`     | int    | Max edges to return                                | 20          |
+| `min_score` | float  | Minimum gate score threshold                       | 5.0         |
 
 **Response:**
 
@@ -222,11 +222,11 @@ GET /v1/walk?prompt=The+capital+of+France+is&top=10
 GET /v1/walk?prompt=Einstein&top=5&layers=24-33
 ```
 
-| Param | Type | Description | Default |
-|-------|------|-------------|---------|
-| `prompt` | string | Prompt text (required) | — |
-| `top` | int | Top-K features per layer | 5 |
-| `layers` | string | Layer range (e.g. `24-33` or `14,26,27`) | all |
+| Param    | Type   | Description                              | Default |
+|----------|--------|------------------------------------------|---------|
+| `prompt` | string | Prompt text (required)                   | —       |
+| `top`    | int    | Top-K features per layer                 | 5       |
+| `layers` | string | Layer range (e.g. `24-33` or `14,26,27`) | all     |
 
 **Response:**
 
@@ -354,11 +354,11 @@ POST /v1/infer
 }
 ```
 
-| Field | Type | Description | Default |
-|-------|------|-------------|---------|
-| `prompt` | string | Prompt text (required) | — |
-| `top` | int | Top-K predictions | 5 |
-| `mode` | string | `walk` (vindex FFN) or `dense` (original FFN) or `compare` | `walk` |
+| Field    | Type   | Description                                                | Default |
+|----------|--------|------------------------------------------------------------|---------|
+| `prompt` | string | Prompt text (required)                                     | —       |
+| `top`    | int    | Top-K predictions                                          | 5       |
+| `mode`   | string | `walk` (vindex FFN) or `dense` (original FFN) or `compare` | `walk`  |
 
 **Response:**
 
@@ -596,12 +596,12 @@ top-K alternatives are gated on inference work.
 `response_format` and `tools` route the request through a
 schema-typed JSON FSM that masks the LM head per token.
 
-| Request                                         | Schema enforced                                    |
-|-------------------------------------------------|----------------------------------------------------|
-| `response_format: {"type":"text"}` (or omitted) | none (plain sampling)                              |
-| `response_format: {"type":"json_object"}`       | `Object(any)` — any structurally-valid JSON object |
+| Request                                                                                 | Schema enforced                                                       |
+|-----------------------------------------------------------------------------------------|-----------------------------------------------------------------------|
+| `response_format: {"type":"text"}` (or omitted)                                         | none (plain sampling)                                                 |
+| `response_format: {"type":"json_object"}`                                               | `Object(any)` — any structurally-valid JSON object                    |
 | `response_format: {"type":"json_schema", "json_schema":{"schema":..., "strict": bool}}` | parsed schema; `strict` flips `additionalProperties` default to false |
-| `tools: [{type:"function", function:{name, parameters}}, ...]` | `OneOf` of `{name=Const, arguments=<args>}` per tool |
+| `tools: [{type:"function", function:{name, parameters}}, ...]`                          | `OneOf` of `{name=Const, arguments=<args>}` per tool                  |
 
 `tool_choice` resolves as: `"auto"` / `"required"` (default when tools
 present) → all branches; `"none"` → no constraint; `{type:"function",
@@ -794,24 +794,24 @@ DESCRIBE "aspirin";
 
 ### 7.1 Expected Latency
 
-| Endpoint | Server Processing | Network (LAN) | Network (Internet) | Total |
-|----------|------------------|---------------|-------------------|-------|
-| /v1/describe | 12ms | 1ms | 50ms | 13-62ms |
-| /v1/walk | 0.4ms | 1ms | 50ms | 1-50ms |
-| /v1/select | 5ms | 1ms | 50ms | 6-55ms |
-| /v1/relations | 0.1ms | 1ms | 50ms | 1-50ms |
-| /v1/stats | 0.01ms | 1ms | 50ms | 1-50ms |
-| /v1/infer | 200ms | 1ms | 50ms | 200-250ms |
+| Endpoint      | Server Processing | Network (LAN) | Network (Internet) | Total     |
+|---------------|-------------------|---------------|--------------------|-----------|
+| /v1/describe  | 12ms              | 1ms           | 50ms               | 13-62ms   |
+| /v1/walk      | 0.4ms             | 1ms           | 50ms               | 1-50ms    |
+| /v1/select    | 5ms               | 1ms           | 50ms               | 6-55ms    |
+| /v1/relations | 0.1ms             | 1ms           | 50ms               | 1-50ms    |
+| /v1/stats     | 0.01ms            | 1ms           | 50ms               | 1-50ms    |
+| /v1/infer     | 200ms             | 1ms           | 50ms               | 200-250ms |
 
 Browse queries are dominated by network latency, not computation. The server processes DESCRIBE in 12ms — the rest is round-trip time.
 
 ### 7.2 Memory Usage
 
-| Mode | Memory | What's loaded |
-|------|--------|---------------|
-| Browse-only | ~6 GB (f32) / ~3 GB (f16) | gate + embed + down_meta + labels |
-| Browse + Infer | ~8 GB (f32) / ~4 GB (f16) | + attn_weights |
-| Browse + Infer + Patches | ~8 GB + patches | + per-session PatchedVindex |
+| Mode                     | Memory                    | What's loaded                     |
+|--------------------------|---------------------------|-----------------------------------|
+| Browse-only              | ~6 GB (f32) / ~3 GB (f16) | gate + embed + down_meta + labels |
+| Browse + Infer           | ~8 GB (f32) / ~4 GB (f16) | + attn_weights                    |
+| Browse + Infer + Patches | ~8 GB + patches           | + per-session PatchedVindex       |
 
 ### 7.3 Throughput
 
@@ -895,12 +895,12 @@ the OpenAI Python and JS SDKs parse errors without special-casing:
 
 `type` values used by this server:
 
-| HTTP status | OpenAI `type`              |
-|-------------|----------------------------|
-| 400         | `invalid_request_error`    |
-| 404         | `not_found_error`          |
-| 500         | `server_error`             |
-| 503         | `service_unavailable_error`|
+| HTTP status | OpenAI `type`               |
+|-------------|-----------------------------|
+| 400         | `invalid_request_error`     |
+| 404         | `not_found_error`           |
+| 500         | `server_error`              |
+| 503         | `service_unavailable_error` |
 
 Both `param` and `code` are always present (possibly `null`) — some SDKs
 hard-key on those fields.
@@ -1219,10 +1219,10 @@ larql-server output/gemma3-4b-q4k.vindex --ffn-only --layers 17-33 --port 8081
 
 `START-END` bounds are **inclusive**. A 34-layer model split into two shards:
 
-| Shard | Layers | Approximate RSS |
-|-------|--------|-----------------|
-| A | 0–16 (17 layers) | ~50% of full vindex |
-| B | 17–33 (17 layers) | ~50% of full vindex |
+| Shard | Layers            | Approximate RSS     |
+|-------|-------------------|---------------------|
+| A     | 0–16 (17 layers)  | ~50% of full vindex |
+| B     | 17–33 (17 layers) | ~50% of full vindex |
 
 **Memory model:**
 
@@ -1255,11 +1255,11 @@ POST /v1/walk-ffn {"layer": 20, "residual": [...]}
 
 **CLI options summary:**
 
-| Flag | Description |
-|------|-------------|
-| `--ffn-only` | FFN-service mode; disables infer, skips warmup, filters attn weights |
-| `--layers START-END` | Inclusive layer range to load and serve |
-| `--max-gate-cache-layers N` | LRU cap on decoded f16 gate layers in memory (0 = unlimited) |
+| Flag                        | Description                                                          |
+|-----------------------------|----------------------------------------------------------------------|
+| `--ffn-only`                | FFN-service mode; disables infer, skips warmup, filters attn weights |
+| `--layers START-END`        | Inclusive layer range to load and serve                              |
+| `--max-gate-cache-layers N` | LRU cap on decoded f16 gate layers in memory (0 = unlimited)         |
 
 ---
 
@@ -1282,12 +1282,12 @@ larql-server gemma4-26b-a4b.vindex --experts 96-127 --port 8083
 
 `START-END` bounds are **inclusive**. Gemma 4 26B A4B (128 experts/layer) split four ways:
 
-| Shard | Experts | RSS per layer file |
-|-------|---------|-------------------|
-| A | 0–31 (32 experts) | ~25% of layer file |
-| B | 32–63 | ~25% |
-| C | 64–95 | ~25% |
-| D | 96–127 | ~25% |
+| Shard | Experts           | RSS per layer file |
+|-------|-------------------|--------------------|
+| A     | 0–31 (32 experts) | ~25% of layer file |
+| B     | 32–63             | ~25%               |
+| C     | 64–95             | ~25%               |
+| D     | 96–127            | ~25%               |
 
 **Memory model.**
 
@@ -1312,9 +1312,9 @@ Each `layer_L.experts` file is mmap'd in full (virtual address only — one `mma
 
 **CLI flag summary.**
 
-| Flag | Meaning |
-|------|---------|
-| `--experts START-END` | Expert ID range to load and serve (inclusive) |
+| Flag                                     | Meaning                                                      |
+|------------------------------------------|--------------------------------------------------------------|
+| `--experts START-END`                    | Expert ID range to load and serve (inclusive)                |
 | `--experts START-END --layers START-END` | Combined expert + layer range (for fine-grained grid shards) |
 
 **Note:** `--experts` requires `ffn_layout: "per_layer"` in `index.json`. Starting a shard against a vindex without this field returns an error at startup.

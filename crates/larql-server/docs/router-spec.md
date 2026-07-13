@@ -86,40 +86,40 @@ larql-server output/gemma3-4b-q4k.vindex \
 
 ### larql-router
 
-| Flag | Default | Description |
-|------|---------|-------------|
-| `--shards <SPEC>` | — | Static shard map: `"START-END=URL[,...]"`. Optional when `--grid-port` is set. |
-| `--grid-port <PORT>` | — | Enable self-assembling grid gRPC server on this port. |
-| `--grid-key <SECRET>` | — | Shared secret. Servers must present the same key. Also read from `LARQL_GRID_KEY` env var. If not set, the grid is open (dev only). |
-| `--port <PORT>` | 9090 | HTTP listen port. |
-| `--host <ADDR>` | 0.0.0.0 | Bind address. |
-| `--timeout-secs <N>` | 120 | Per-request timeout to backend shards. |
-| `--target-replicas <N>` | 1 | Phase 4 replication target per shard range. `>1` enables auto-replication from the available pool. |
-| `--rebalance-interval <SECS>` | 30 | GT6 rebalancer tick cadence. `0` disables dynamic rebalancing entirely. |
-| `--rebalance-threshold <RATIO>` | 2.0 | GT6 latency-imbalance trigger; the slowest replica must be this many times slower than the fastest. |
-| `--hot-shard-rps <FRAC>` | — | Hot-shard load-rate replication: a shard whose max `req_per_sec` across replicas exceeds this value is treated as effectively under-replicated (`target + 1`) until the rate subsides. Unset disables the check. |
-| `--hot-shard-demote-ratio <FRAC>` | 0.8 | ADR-0014 hysteresis. An elevated shard demotes only when its rate falls below `ratio × --hot-shard-rps`. Setting to `1.0` disables hysteresis (single-threshold mode). Values outside `(0.0, 1.0]` clamp to the default. |
-| `--rtt-probe-interval-secs <N>` | 0 | Active-probe RTT cadence. When `>0`, the router periodically `GET`s `{listen_url}/v1/health` on every serving server and uses the recorded round-trip as a tie-breaker after GT3 per-layer latency in `route()`. `0` disables probing (default — GT3 already subsumes RTT in steady state). |
-| `--log-level <LEVEL>` | info | Tracing log level. |
+| Flag                              | Default | Description                                                                                                                                                                                                                                                                                 |
+|-----------------------------------|---------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `--shards <SPEC>`                 | —       | Static shard map: `"START-END=URL[,...]"`. Optional when `--grid-port` is set.                                                                                                                                                                                                              |
+| `--grid-port <PORT>`              | —       | Enable self-assembling grid gRPC server on this port.                                                                                                                                                                                                                                       |
+| `--grid-key <SECRET>`             | —       | Shared secret. Servers must present the same key. Also read from `LARQL_GRID_KEY` env var. If not set, the grid is open (dev only).                                                                                                                                                         |
+| `--port <PORT>`                   | 9090    | HTTP listen port.                                                                                                                                                                                                                                                                           |
+| `--host <ADDR>`                   | 0.0.0.0 | Bind address.                                                                                                                                                                                                                                                                               |
+| `--timeout-secs <N>`              | 120     | Per-request timeout to backend shards.                                                                                                                                                                                                                                                      |
+| `--target-replicas <N>`           | 1       | Phase 4 replication target per shard range. `>1` enables auto-replication from the available pool.                                                                                                                                                                                          |
+| `--rebalance-interval <SECS>`     | 30      | GT6 rebalancer tick cadence. `0` disables dynamic rebalancing entirely.                                                                                                                                                                                                                     |
+| `--rebalance-threshold <RATIO>`   | 2.0     | GT6 latency-imbalance trigger; the slowest replica must be this many times slower than the fastest.                                                                                                                                                                                         |
+| `--hot-shard-rps <FRAC>`          | —       | Hot-shard load-rate replication: a shard whose max `req_per_sec` across replicas exceeds this value is treated as effectively under-replicated (`target + 1`) until the rate subsides. Unset disables the check.                                                                            |
+| `--hot-shard-demote-ratio <FRAC>` | 0.8     | ADR-0014 hysteresis. An elevated shard demotes only when its rate falls below `ratio × --hot-shard-rps`. Setting to `1.0` disables hysteresis (single-threshold mode). Values outside `(0.0, 1.0]` clamp to the default.                                                                    |
+| `--rtt-probe-interval-secs <N>`   | 0       | Active-probe RTT cadence. When `>0`, the router periodically `GET`s `{listen_url}/v1/health` on every serving server and uses the recorded round-trip as a tie-breaker after GT3 per-layer latency in `route()`. `0` disables probing (default — GT3 already subsumes RTT in steady state). |
+| `--log-level <LEVEL>`             | info    | Tracing log level.                                                                                                                                                                                                                                                                          |
 
 QUIC flags (requires `--features quic` at build time):
 
-| Flag | Default | Description |
-|------|---------|-------------|
-| `--quic-port <PORT>` | — | Enable QUIC grid listener on this port alongside the TCP `--grid-port`. Servers join via `quic://router:PORT`. |
-| `--quic-cert <PEM>` | — | TLS certificate PEM. If omitted, the router auto-generates a self-signed cert and prints its SHA-256 fingerprint at startup. |
-| `--quic-key <PEM>` | — | TLS private key PEM matching `--quic-cert`. |
-| `--quic-server-name <NAME>` | `router` | TLS SNI embedded in the auto-generated self-signed cert. Clients must connect with this name. |
+| Flag                        | Default  | Description                                                                                                                  |
+|-----------------------------|----------|------------------------------------------------------------------------------------------------------------------------------|
+| `--quic-port <PORT>`        | —        | Enable QUIC grid listener on this port alongside the TCP `--grid-port`. Servers join via `quic://router:PORT`.               |
+| `--quic-cert <PEM>`         | —        | TLS certificate PEM. If omitted, the router auto-generates a self-signed cert and prints its SHA-256 fingerprint at startup. |
+| `--quic-key <PEM>`          | —        | TLS private key PEM matching `--quic-cert`.                                                                                  |
+| `--quic-server-name <NAME>` | `router` | TLS SNI embedded in the auto-generated self-signed cert. Clients must connect with this name.                                |
 
 At least one of `--shards` or `--grid-port` must be provided.
 
 ### larql-server (grid-relevant flags)
 
-| Flag | Description |
-|------|-------------|
-| `--join <URL[,URL,...]>` | Comma-separated gRPC addresses of routers to join. One announce stream per router per model. |
-| `--public-url <URL>` | HTTP URL clients should use to reach this server. Required with `--join`. Defaults to `http://HOST:PORT`. |
-| `--grid-key <SECRET>` | Shared secret matching the router's `--grid-key`. Also read from `LARQL_GRID_KEY`. |
+| Flag                     | Description                                                                                               |
+|--------------------------|-----------------------------------------------------------------------------------------------------------|
+| `--join <URL[,URL,...]>` | Comma-separated gRPC addresses of routers to join. One announce stream per router per model.              |
+| `--public-url <URL>`     | HTTP URL clients should use to reach this server. Required with `--join`. Defaults to `http://HOST:PORT`. |
+| `--grid-key <SECRET>`    | Shared secret matching the router's `--grid-key`. Also read from `LARQL_GRID_KEY`.                        |
 
 ---
 
@@ -177,16 +177,16 @@ takes priority). `layer` / `layers` (dense) and `experts` /
 
 **Error responses:**
 
-| Condition | HTTP | Body |
-|-----------|------|------|
-| Layer has no owning shard | 400 | `{"error": "layer N has no owning shard in this router"}` |
-| `(layer, expert_id)` has no owning MoE shard | 503 | `{"error": "no shard owns (layer N, expert E) in this router"}` |
-| MoE body against static-`--shards`-only router | 503 | `{"error": "MoE routing requires a self-assembling grid"}` |
-| Neither `layer` nor `layers` nor MoE shape | 400 | `{"error": "must provide 'layer' or 'layers'"}` |
-| `experts` array without `layer` | 400 | `{"error": "moe: 'experts' requires a 'layer' scalar"}` |
-| Empty `layers` / `experts` / `layer_experts` | 400 | `{"error": "empty layer list"}` |
-| Shard unreachable | 502 | `{"error": "shard http://...: ..."}` |
-| Shard returns error | forwarded | Shard status + body passed through |
+| Condition                                      | HTTP      | Body                                                            |
+|------------------------------------------------|-----------|-----------------------------------------------------------------|
+| Layer has no owning shard                      | 400       | `{"error": "layer N has no owning shard in this router"}`       |
+| `(layer, expert_id)` has no owning MoE shard   | 503       | `{"error": "no shard owns (layer N, expert E) in this router"}` |
+| MoE body against static-`--shards`-only router | 503       | `{"error": "MoE routing requires a self-assembling grid"}`      |
+| Neither `layer` nor `layers` nor MoE shape     | 400       | `{"error": "must provide 'layer' or 'layers'"}`                 |
+| `experts` array without `layer`                | 400       | `{"error": "moe: 'experts' requires a 'layer' scalar"}`         |
+| Empty `layers` / `experts` / `layer_experts`   | 400       | `{"error": "empty layer list"}`                                 |
+| Shard unreachable                              | 502       | `{"error": "shard http://...: ..."}`                            |
+| Shard returns error                            | forwarded | Shard status + body passed through                              |
 
 ### GET /v1/health
 
@@ -418,10 +418,10 @@ Batch response:
 
 Measured on Gemma 3 4B (hidden_size=3072, seq_len=1):
 
-| Format  | Request size | Shard latency (median) |
-|---------|-------------|------------------------|
-| JSON    | ~15.4 KB    | ~8.1 ms                |
-| Binary  | ~10.3 KB    | ~7.6 ms                |
+| Format | Request size | Shard latency (median) |
+|--------|--------------|------------------------|
+| JSON   | ~15.4 KB     | ~8.1 ms                |
+| Binary | ~10.3 KB     | ~7.6 ms                |
 
 ~33% smaller requests, ~0.5 ms/hop savings from eliminating JSON float
 serialization.
@@ -432,12 +432,12 @@ serialization.
 
 The reqwest client to backend shards is configured for low-latency reuse:
 
-| Setting | Value |
-|---------|-------|
-| `tcp_keepalive` | 30 s |
-| `pool_idle_timeout` | 90 s |
-| `pool_max_idle_per_host` | 16 connections |
-| Per-request timeout | `--timeout-secs` (default 120 s) |
+| Setting                  | Value                            |
+|--------------------------|----------------------------------|
+| `tcp_keepalive`          | 30 s                             |
+| `pool_idle_timeout`      | 90 s                             |
+| `pool_max_idle_per_host` | 16 connections                   |
+| Per-request timeout      | `--timeout-secs` (default 120 s) |
 
 Idle connections are kept alive to avoid TCP handshake overhead on each inference
 hop.

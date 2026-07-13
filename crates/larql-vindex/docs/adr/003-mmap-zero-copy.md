@@ -20,12 +20,12 @@ pub fn gate_vectors_f32(&self, layer: usize) -> Option<&[f32]>
 
 ### Access Patterns
 
-| Data | Access | Hint |
-|------|--------|------|
-| Gate vectors | Sequential per query | `MADV_SEQUENTIAL` |
-| Down features | Random per selected feature | `MADV_WILLNEED` on next layer |
-| Attention weights | Sequential per layer | `MADV_SEQUENTIAL` |
-| Interleaved FFN | Sequential per layer | Prefetch next layer |
+| Data              | Access                      | Hint                          |
+|-------------------|-----------------------------|-------------------------------|
+| Gate vectors      | Sequential per query        | `MADV_SEQUENTIAL`             |
+| Down features     | Random per selected feature | `MADV_WILLNEED` on next layer |
+| Attention weights | Sequential per layer        | `MADV_SEQUENTIAL`             |
+| Interleaved FFN   | Sequential per layer        | Prefetch next layer           |
 
 ### Adaptive Residency
 
