@@ -159,18 +159,18 @@ let name = ggml::type_name(ggml::TYPE_Q6_K);                // "Q6_K"
 
 ### Type Constants
 
-| Constant | Value | Name |
-|----------|-------|------|
-| `TYPE_F32` | 0 | F32 |
-| `TYPE_F16` | 1 | F16 |
-| `TYPE_Q4_0` | 2 | Q4_0 |
-| `TYPE_Q4_1` | 3 | Q4_1 |
-| `TYPE_Q8_0` | 6 | Q8_0 |
-| `TYPE_Q5_0` | 8 | Q5_0 |
-| `TYPE_Q5_1` | 9 | Q5_1 |
-| `TYPE_Q4_K` | 12 | Q4_K |
-| `TYPE_Q6_K` | 14 | Q6_K |
-| `TYPE_BF16` | 30 | BF16 |
+| Constant    | Value | Name |
+|-------------|-------|------|
+| `TYPE_F32`  | 0     | F32  |
+| `TYPE_F16`  | 1     | F16  |
+| `TYPE_Q4_0` | 2     | Q4_0 |
+| `TYPE_Q4_1` | 3     | Q4_1 |
+| `TYPE_Q8_0` | 6     | Q8_0 |
+| `TYPE_Q5_0` | 8     | Q5_0 |
+| `TYPE_Q5_1` | 9     | Q5_1 |
+| `TYPE_Q4_K` | 12    | Q4_K |
+| `TYPE_Q6_K` | 14    | Q6_K |
+| `TYPE_BF16` | 30    | BF16 |
 
 `TYPE_Q2_K`, `TYPE_Q3_K`, and `TYPE_Q5_K` names are recognized for diagnostics
 and sizing compatibility, but they are not dequantized yet; dispatch returns
@@ -211,14 +211,14 @@ Each 4-bit value encodes a small float: 1 sign bit + 2 exponent bits + 1 mantiss
 
 | Nibble | Value | Nibble | Value |
 |--------|-------|--------|-------|
-| 0000 | 0.0 | 1000 | -0.0 |
-| 0001 | 0.5 | 1001 | -0.5 |
-| 0010 | 1.0 | 1010 | -1.0 |
-| 0011 | 1.5 | 1011 | -1.5 |
-| 0100 | 2.0 | 1100 | -2.0 |
-| 0101 | 3.0 | 1101 | -3.0 |
-| 0110 | 4.0 | 1110 | -4.0 |
-| 0111 | 6.0 | 1111 | -6.0 |
+| 0000   | 0.0   | 1000   | -0.0  |
+| 0001   | 0.5   | 1001   | -0.5  |
+| 0010   | 1.0   | 1010   | -1.0  |
+| 0011   | 1.5   | 1011   | -1.5  |
+| 0100   | 2.0   | 1100   | -2.0  |
+| 0101   | 3.0   | 1101   | -3.0  |
+| 0110   | 4.0   | 1110   | -4.0  |
+| 0111   | 6.0   | 1111   | -6.0  |
 
 Final value = e8m0_scale × fp4_value.
 
@@ -252,15 +252,15 @@ panicking on a slice OOB.
 
 For a 10240×2560 FFN weight matrix (26.2M elements):
 
-| Format | Size | Ratio vs f32 |
-|--------|------|-------------|
-| f32 | 105 MB | 1.0x |
-| f16 | 52.4 MB | 0.50x |
-| Q8_0 | 27.9 MB | 0.27x |
-| Q6_K | 21.4 MB | 0.20x |
-| Q5_1 | 19.7 MB | 0.19x |
-| Q5_0 | 18.0 MB | 0.17x |
-| Q4_K | 14.6 MB | 0.14x |
-| Q4_1 | 16.4 MB | 0.16x |
-| Q4_0 | 14.7 MB | 0.14x |
-| MXFP4 | 13.9 MB | 0.13x |
+| Format | Size    | Ratio vs f32 |
+|--------|---------|--------------|
+| f32    | 105 MB  | 1.0x         |
+| f16    | 52.4 MB | 0.50x        |
+| Q8_0   | 27.9 MB | 0.27x        |
+| Q6_K   | 21.4 MB | 0.20x        |
+| Q5_1   | 19.7 MB | 0.19x        |
+| Q5_0   | 18.0 MB | 0.17x        |
+| Q4_K   | 14.6 MB | 0.14x        |
+| Q4_1   | 16.4 MB | 0.16x        |
+| Q4_0   | 14.7 MB | 0.14x        |
+| MXFP4  | 13.9 MB | 0.13x        |

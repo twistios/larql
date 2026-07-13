@@ -105,11 +105,11 @@ lm_head = embed.clone()
 
 Each architecture specifies prefixes to strip via `key_prefixes_to_strip()`:
 
-| Architecture | Prefixes | Example |
-|-------------|----------|---------|
-| Llama/Qwen/etc. | `["model."]` | `model.layers.0.` → `layers.0.` |
-| Gemma 3 | `["language_model.model.", "model."]` | multimodal wrapper |
-| Gemma 4 | `["model.language_model.model.", "model.language_model.", ...]` | deeper nesting |
+| Architecture    | Prefixes                                                        | Example                         |
+|-----------------|-----------------------------------------------------------------|---------------------------------|
+| Llama/Qwen/etc. | `["model."]`                                                    | `model.layers.0.` → `layers.0.` |
+| Gemma 3         | `["language_model.model.", "model."]`                           | multimodal wrapper              |
+| Gemma 4         | `["model.language_model.model.", "model.language_model.", ...]` | deeper nesting                  |
 
 Stripping is tried in order; first match wins.
 
@@ -134,14 +134,14 @@ Parse metadata key-value pairs:
 
 GGUF metadata keys map to config.json fields:
 
-| GGUF key | ModelConfig field |
-|----------|-----------------|
-| `{arch}.block_count` | `num_layers` |
-| `{arch}.embedding_length` | `hidden_size` |
-| `{arch}.feed_forward_length` | `intermediate_size` |
-| `{arch}.attention.head_count` | `num_q_heads` |
-| `{arch}.attention.head_count_kv` | `num_kv_heads` |
-| `{arch}.rope.freq_base` | `rope_base` |
+| GGUF key                         | ModelConfig field   |
+|----------------------------------|---------------------|
+| `{arch}.block_count`             | `num_layers`        |
+| `{arch}.embedding_length`        | `hidden_size`       |
+| `{arch}.feed_forward_length`     | `intermediate_size` |
+| `{arch}.attention.head_count`    | `num_q_heads`       |
+| `{arch}.attention.head_count_kv` | `num_kv_heads`      |
+| `{arch}.rope.freq_base`          | `rope_base`         |
 
 Absent optional GGUF metadata is omitted from the synthesized config so the
 same architecture defaults and loader fallbacks used by safetensors configs
@@ -183,14 +183,14 @@ loads from expanding FFN tensors into f32.
 
 GGUF uses different key patterns than safetensors:
 
-| GGUF key | Safetensors equivalent |
-|----------|----------------------|
-| `blk.0.attn_q.weight` | `layers.0.self_attn.q_proj.weight` |
+| GGUF key                | Safetensors equivalent                                            |
+|-------------------------|-------------------------------------------------------------------|
+| `blk.0.attn_q.weight`   | `layers.0.self_attn.q_proj.weight`                                |
 | `blk.0.attn_qkv.weight` | `layers.0.self_attn.qkv_proj.weight` (split into q/k/v post-load) |
-| `blk.0.ffn_gate.weight` | `layers.0.mlp.gate_proj.weight` |
-| `token_embd.weight` | `embed_tokens.weight` |
-| `position_embd.weight` | `wpe.weight` (lookup via `arch.position_embed_key()`) |
-| `output_norm.weight` | `norm.weight` |
+| `blk.0.ffn_gate.weight` | `layers.0.mlp.gate_proj.weight`                                   |
+| `token_embd.weight`     | `embed_tokens.weight`                                             |
+| `position_embd.weight`  | `wpe.weight` (lookup via `arch.position_embed_key()`)             |
+| `output_norm.weight`    | `norm.weight`                                                     |
 
 The replacement table is centralized in `loading/gguf.rs`; add new GGUF key
 forms there rather than scattering ad-hoc rewrites through loading code.
@@ -250,12 +250,12 @@ pub struct ModelWeights {
 
 ### Memory management methods
 
-| Method | Frees | Use case |
-|--------|-------|----------|
-| `drop_ffn_weights()` | gate/up/down projections, packed expert blocks | Walk-only inference (vindex-backed FFN) |
-| `drop_attn_weights()` | Q/K/V/O projections, QK norms | Server-side FFN-only deployment |
-| `drop_lm_head()` | Output projection matrix | Server that doesn't compute logits |
-| `drop_embed()` | Input embedding matrix | Server that receives residuals, not tokens |
+| Method                | Frees                                          | Use case                                   |
+|-----------------------|------------------------------------------------|--------------------------------------------|
+| `drop_ffn_weights()`  | gate/up/down projections, packed expert blocks | Walk-only inference (vindex-backed FFN)    |
+| `drop_attn_weights()` | Q/K/V/O projections, QK norms                  | Server-side FFN-only deployment            |
+| `drop_lm_head()`      | Output projection matrix                       | Server that doesn't compute logits         |
+| `drop_embed()`        | Input embedding matrix                         | Server that receives residuals, not tokens |
 
 All return freed bytes. Typical savings for a 4B model:
 - `drop_ffn_weights`: ~13 GB (~80% of parameters)

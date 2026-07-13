@@ -42,12 +42,12 @@ that share a contract but disagree on canonical state are
 Authoritative state that defines the engine's continuation point.
 Discarding it loses the conversation. The known kinds:
 
-| Kind | Example engines |
-|---|---|
-| Tokens (raw input ids) | `NoCacheEngine` |
-| Residual streams | `MarkovResidualEngine` |
-| Boundary residuals | `Apollo`, `BoundaryKvEngine` checkpoint frames |
-| KV tensors | `StandardEngine`, `UnlimitedContextEngine` (within window) |
+| Kind                        | Example engines                                                   |
+|-----------------------------|-------------------------------------------------------------------|
+| Tokens (raw input ids)      | `NoCacheEngine`                                                   |
+| Residual streams            | `MarkovResidualEngine`                                            |
+| Boundary residuals          | `Apollo`, `BoundaryKvEngine` checkpoint frames                    |
+| KV tensors                  | `StandardEngine`, `UnlimitedContextEngine` (within window)        |
 | Compressed residual packets | `MarkovResidualCodecEngine` (cold tier), `BoundaryPerLayerEngine` |
 
 This list is *open*. New canonical kinds may appear (e.g. a
@@ -61,27 +61,27 @@ speed. The defining property: *if it's lost, the engine can
 rebuild it from canonical state plus the model weights without
 changing its output distribution*.
 
-| Kind | Example use |
-|---|---|
-| Hot KV | `MarkovResidualEngine` post-W2 |
-| Cold KV | unused today; was the original W3 sketch |
-| Quantised KV (in-place) | `TurboQuantEngine` |
-| Rank-K projections | retrieval-augmented engines (Apollo neighbour cache) |
-| Batched residual transport | grid layer-shards |
-| Remote FFN batches | layer-sharded execution |
+| Kind                       | Example use                                          |
+|----------------------------|------------------------------------------------------|
+| Hot KV                     | `MarkovResidualEngine` post-W2                       |
+| Cold KV                    | unused today; was the original W3 sketch             |
+| Quantised KV (in-place)    | `TurboQuantEngine`                                   |
+| Rank-K projections         | retrieval-augmented engines (Apollo neighbour cache) |
+| Batched residual transport | grid layer-shards                                    |
+| Remote FFN batches         | layer-sharded execution                              |
 
 ### 2.3 Correctness contract
 
 The promise the engine makes about its output relative to a named
 reference. Five kinds today; the list is intentionally short.
 
-| Contract | Promise | Example |
-|---|---|---|
-| `exact_logits` | bit-identical logits to a named reference (almost always `StandardEngine`) | `StandardEngine`, `NoCacheEngine`, `MarkovResidualEngine` (under arch preconditions) |
-| `bounded_KL(ε)` | next-token KL ≤ ε on a calibration corpus, with ε stated | `MarkovResidualCodecEngine` (bf16 cold tier) |
-| `greedy_equivalent` | argmax matches reference; full distribution may drift | candidate for FP4 / aggressive-quant engines |
-| `confidence_gated(τ)` | conforms to one of the stricter contracts when reference top-1 margin ≥ τ; may diverge below | candidate for retrieval-with-fallback engines |
-| `task_level_retrieval` | top-K matches reference on a labelled task; no token-level claim | `Apollo` (constellation-store hit path) |
+| Contract               | Promise                                                                                      | Example                                                                              |
+|------------------------|----------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
+| `exact_logits`         | bit-identical logits to a named reference (almost always `StandardEngine`)                   | `StandardEngine`, `NoCacheEngine`, `MarkovResidualEngine` (under arch preconditions) |
+| `bounded_KL(ε)`        | next-token KL ≤ ε on a calibration corpus, with ε stated                                     | `MarkovResidualCodecEngine` (bf16 cold tier)                                         |
+| `greedy_equivalent`    | argmax matches reference; full distribution may drift                                        | candidate for FP4 / aggressive-quant engines                                         |
+| `confidence_gated(τ)`  | conforms to one of the stricter contracts when reference top-1 margin ≥ τ; may diverge below | candidate for retrieval-with-fallback engines                                        |
+| `task_level_retrieval` | top-K matches reference on a labelled task; no token-level claim                             | `Apollo` (constellation-store hit path)                                              |
 
 Contract kinds are an enum, not free text. If a new engine needs
 a new contract kind, that's a spec-extension PR — not an engine
@@ -144,13 +144,13 @@ dead weight) to the backend's masked decode entry point. The Metal
 kv cache remains the canonical K/V source of truth on the dispatch
 hot path; the engine simply doesn't shadow it.
 
-| Engine | Canonical | Derivative dropped under W10 | New tok/s ceiling |
-|---|---|---|---:|
-| `MarkovResidualEngine` | residual stream | `hot_kv`; (`rs.stored` too when `window=None`) | 106.8 (None) |
-| `MarkovResidualCodecEngine` | codec residuals | same | 98.5 (None) |
-| `UnlimitedContextEngine` | KV within window | `current_window_kv` (CPU shadow of the Metal cache) | 92.8 (HOnly) |
-| `TurboQuantEngine` | compressed K/V (destructive) | nothing — K/V IS canonical | — |
-| `StandardEngine` | KV tensors | n/a — backend-managed already | (reference, ~100) |
+| Engine                      | Canonical                    | Derivative dropped under W10                        | New tok/s ceiling |
+|-----------------------------|------------------------------|-----------------------------------------------------|------------------:|
+| `MarkovResidualEngine`      | residual stream              | `hot_kv`; (`rs.stored` too when `window=None`)      |      106.8 (None) |
+| `MarkovResidualCodecEngine` | codec residuals              | same                                                |       98.5 (None) |
+| `UnlimitedContextEngine`    | KV within window             | `current_window_kv` (CPU shadow of the Metal cache) |      92.8 (HOnly) |
+| `TurboQuantEngine`          | compressed K/V (destructive) | nothing — K/V IS canonical                          |                 — |
+| `StandardEngine`            | KV tensors                   | n/a — backend-managed already                       | (reference, ~100) |
 
 Three engines now match or exceed `standard`'s fused-kernel speed
 while dropping their CPU state shadows to 0 MB. The cut held:
@@ -218,17 +218,17 @@ Each accessor's purpose:
 
 The engines in `larql-kv` today, classified under the triple:
 
-| Engine | Canonical state | Derivative state | Contract |
-|---|---|---|---|
-| `StandardEngine` | KV tensors | — | `exact_logits` |
-| `NoCacheEngine` | tokens | — | `exact_logits` |
-| `MarkovResidualEngine` | residual stream | hot KV | `exact_logits` under arch preconditions |
-| `MarkovResidualCodecEngine` | codec-encoded residuals | hot KV | `bounded_KL(ε)` — ε stated per codec |
-| `BoundaryKvEngine` | KV tensors + chunk frames | — | `exact_logits` |
-| `BoundaryPerLayerEngine` | per-layer codec policy over residuals | hot KV | `bounded_KL(ε_l)` per-layer; calibrated |
-| `UnlimitedContextEngine` | KV tensors (within window) + per-window checkpoints + token archive | — | `exact_logits` within window |
-| `TurboQuantEngine` | quantised KV (in-place) | — | `bounded_KL` — codec round-trip ≥ cos 0.991 on real distributions |
-| `Apollo` | boundary retrieval / residual injection store | — | `task_level_retrieval` |
+| Engine                      | Canonical state                                                     | Derivative state | Contract                                                          |
+|-----------------------------|---------------------------------------------------------------------|------------------|-------------------------------------------------------------------|
+| `StandardEngine`            | KV tensors                                                          | —                | `exact_logits`                                                    |
+| `NoCacheEngine`             | tokens                                                              | —                | `exact_logits`                                                    |
+| `MarkovResidualEngine`      | residual stream                                                     | hot KV           | `exact_logits` under arch preconditions                           |
+| `MarkovResidualCodecEngine` | codec-encoded residuals                                             | hot KV           | `bounded_KL(ε)` — ε stated per codec                              |
+| `BoundaryKvEngine`          | KV tensors + chunk frames                                           | —                | `exact_logits`                                                    |
+| `BoundaryPerLayerEngine`    | per-layer codec policy over residuals                               | hot KV           | `bounded_KL(ε_l)` per-layer; calibrated                           |
+| `UnlimitedContextEngine`    | KV tensors (within window) + per-window checkpoints + token archive | —                | `exact_logits` within window                                      |
+| `TurboQuantEngine`          | quantised KV (in-place)                                             | —                | `bounded_KL` — codec round-trip ≥ cos 0.991 on real distributions |
+| `Apollo`                    | boundary retrieval / residual injection store                       | —                | `task_level_retrieval`                                            |
 
 Some entries look surprising:
 

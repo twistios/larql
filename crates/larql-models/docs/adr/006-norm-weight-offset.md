@@ -18,13 +18,13 @@ fn qk_norm_weight_offset(&self) -> f32 { 0.0 }  // default
 
 ### Per-architecture values
 
-| Architecture | `norm_weight_offset` | `qk_norm_weight_offset` | Explanation |
-|-------------|---------------------|------------------------|-------------|
-| Gemma 2 | 1.0 | 1.0 | HF saves `weight - 1`; runtime adds 1 back |
-| Gemma 3 | 1.0 | 1.0 | Same convention as Gemma 2 |
-| Gemma 4 | 0.0 | 0.0 | `Gemma4RMSNorm` applies weight directly |
-| Llama | 0.0 | N/A (no QK norm) | Standard RMSNorm |
-| Others | 0.0 | 0.0 | Standard convention |
+| Architecture | `norm_weight_offset` | `qk_norm_weight_offset` | Explanation                                |
+|--------------|----------------------|-------------------------|--------------------------------------------|
+| Gemma 2      | 1.0                  | 1.0                     | HF saves `weight - 1`; runtime adds 1 back |
+| Gemma 3      | 1.0                  | 1.0                     | Same convention as Gemma 2                 |
+| Gemma 4      | 0.0                  | 0.0                     | `Gemma4RMSNorm` applies weight directly    |
+| Llama        | 0.0                  | N/A (no QK norm)        | Standard RMSNorm                           |
+| Others       | 0.0                  | 0.0                     | Standard convention                        |
 
 ## Rationale
 

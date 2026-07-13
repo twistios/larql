@@ -16,17 +16,17 @@ The one engine that classifies K/V as canonical sits 12.9% behind.
 Same compression ratio, same correctness contract, different §2
 slot — different perf shape.
 
-| Engine | K/V slot | W10 mask reached | tok/s | gap |
-|---|---|---|---:|---:|
-| `Standard` | canonical (backend-managed) | n/a | 97.6 | — |
-| `MarkovResidual` (windowless) | **derivative** | None | 98.0 | +0.4% |
-| `MarkovResidualCodec` (windowless) | **derivative** | None | 98.1 | +0.5% |
-| `BoundaryPerLayer` (windowless) | **derivative** | None | 98.7 | +1.1% |
-| `UnlimitedContext` (window=256) | **derivative** | HOnly | 94.2 | -3.5% |
-| `TurboQuant` (bits=4) | canonical (destructive codec) | n/a | 85.0 | -12.9% |
-| `NoCache` | canonical (no K/V; re-forward) | n/a | n/a | (debug fallback) |
-| `BoundaryKv` | canonical (composes `Standard`) | n/a | — | no live Q4K bench (2026-05-21: `Q4K engine prefill failed`) |
-| `Apollo` | n/a (no K/V; retrieval injection) | n/a | — | no live Q4K bench (requires populated boundary store) |
+| Engine                             | K/V slot                          | W10 mask reached | tok/s |                                                         gap |
+|------------------------------------|-----------------------------------|------------------|------:|------------------------------------------------------------:|
+| `Standard`                         | canonical (backend-managed)       | n/a              |  97.6 |                                                           — |
+| `MarkovResidual` (windowless)      | **derivative**                    | None             |  98.0 |                                                       +0.4% |
+| `MarkovResidualCodec` (windowless) | **derivative**                    | None             |  98.1 |                                                       +0.5% |
+| `BoundaryPerLayer` (windowless)    | **derivative**                    | None             |  98.7 |                                                       +1.1% |
+| `UnlimitedContext` (window=256)    | **derivative**                    | HOnly            |  94.2 |                                                       -3.5% |
+| `TurboQuant` (bits=4)              | canonical (destructive codec)     | n/a              |  85.0 |                                                      -12.9% |
+| `NoCache`                          | canonical (no K/V; re-forward)    | n/a              |   n/a |                                            (debug fallback) |
+| `BoundaryKv`                       | canonical (composes `Standard`)   | n/a              |     — | no live Q4K bench (2026-05-21: `Q4K engine prefill failed`) |
+| `Apollo`                           | n/a (no K/V; retrieval injection) | n/a              |     — |       no live Q4K bench (requires populated boundary store) |
 
 Nine engines in `larql-kv` total; **six are bench-validated** on the
 canonical/derivative perf story. `Standard`/`NoCache` are the
