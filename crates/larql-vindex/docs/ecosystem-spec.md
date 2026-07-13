@@ -26,36 +26,36 @@ Vindex serves a different purpose from existing model formats. Where safetensors
 
 ### Comparative strengths
 
-| Dimension | safetensors | GGUF | SAE features | Vindex |
-|-----------|-------------|------|-------------|--------|
-| **Primary purpose** | Model distribution | Efficient CPU inference | Interpretability research | Knowledge access + editing |
-| **Query without inference** | No | No | Partially (need forward pass) | Yes (gate KNN, 33ms) |
-| **Edit a fact** | Retrain (hours, GPU) | Retrain + requantise | Not supported | INSERT + COMPILE (seconds, CPU) |
-| **Browse-only size (4B)** | 8 GB (full model) | 2-4 GB (full model) | 2-10 GB (on top of model) | 3 GB (gate + embed only) |
-| **GPU required** | For inference | No | For training SAE | No (browse), optional (infer) |
-| **Typed knowledge edges** | No | No | Manual labelling | Yes (probe + Wikidata + WordNet) |
-| **Hostable on CDN** | No (needs compute) | No (needs compute) | No (needs compute) | Yes (static files, dot products) |
-| **Round-trip to weights** | N/A (is the weights) | Lossy (quantisation) | No | Yes (EXTRACT → edit → COMPILE) |
+| Dimension                   | safetensors          | GGUF                    | SAE features                  | Vindex                           |
+|-----------------------------|----------------------|-------------------------|-------------------------------|----------------------------------|
+| **Primary purpose**         | Model distribution   | Efficient CPU inference | Interpretability research     | Knowledge access + editing       |
+| **Query without inference** | No                   | No                      | Partially (need forward pass) | Yes (gate KNN, 33ms)             |
+| **Edit a fact**             | Retrain (hours, GPU) | Retrain + requantise    | Not supported                 | INSERT + COMPILE (seconds, CPU)  |
+| **Browse-only size (4B)**   | 8 GB (full model)    | 2-4 GB (full model)     | 2-10 GB (on top of model)     | 3 GB (gate + embed only)         |
+| **GPU required**            | For inference        | No                      | For training SAE              | No (browse), optional (infer)    |
+| **Typed knowledge edges**   | No                   | No                      | Manual labelling              | Yes (probe + Wikidata + WordNet) |
+| **Hostable on CDN**         | No (needs compute)   | No (needs compute)      | No (needs compute)            | Yes (static files, dot products) |
+| **Round-trip to weights**   | N/A (is the weights) | Lossy (quantisation)    | No                            | Yes (EXTRACT → edit → COMPILE)   |
 
 ### Performance comparison
 
 To answer "What does the model know about France?":
 
-| Format | Method | Time | Hardware |
-|--------|--------|------|----------|
-| safetensors | Full forward pass with probing prompts | ~800ms | GPU |
-| GGUF Q4 | Quantised forward pass | ~200ms | CPU |
-| SAE features | Forward pass + SAE decode + inspection | ~2s | GPU |
-| Vindex browse | Gate KNN across 14 knowledge layers | ~33ms | CPU |
-| Vindex infer | Attention + walk FFN (full prediction) | ~200ms | CPU |
+| Format        | Method                                 | Time   | Hardware |
+|---------------|----------------------------------------|--------|----------|
+| safetensors   | Full forward pass with probing prompts | ~800ms | GPU      |
+| GGUF Q4       | Quantised forward pass                 | ~200ms | CPU      |
+| SAE features  | Forward pass + SAE decode + inspection | ~2s    | GPU      |
+| Vindex browse | Gate KNN across 14 knowledge layers    | ~33ms  | CPU      |
+| Vindex infer  | Attention + walk FFN (full prediction) | ~200ms | CPU      |
 
 ### Scaling by model size
 
-| Model | safetensors | GGUF Q4 | Vindex browse | Vindex full |
-|-------|-------------|---------|---------------|-------------|
-| 4B (Gemma 3) | 8 GB, 1 GPU | 2 GB, CPU | 3 GB, CPU | 10 GB, CPU |
-| 8B (Llama 3) | 16 GB, 1 GPU | 4 GB, CPU | 5 GB, CPU | 18 GB, CPU |
-| 70B (Llama 3) | 140 GB, multi-GPU | 35 GB, CPU | ~25 GB, CPU | ~80 GB, CPU |
+| Model          | safetensors         | GGUF Q4            | Vindex browse        | Vindex full          |
+|----------------|---------------------|--------------------|----------------------|----------------------|
+| 4B (Gemma 3)   | 8 GB, 1 GPU         | 2 GB, CPU          | 3 GB, CPU            | 10 GB, CPU           |
+| 8B (Llama 3)   | 16 GB, 1 GPU        | 4 GB, CPU          | 5 GB, CPU            | 18 GB, CPU           |
+| 70B (Llama 3)  | 140 GB, multi-GPU   | 35 GB, CPU         | ~25 GB, CPU          | ~80 GB, CPU          |
 | 405B (Llama 3) | 800 GB, GPU cluster | 200 GB, multi-node | ~120 GB, distributed | ~500 GB, distributed |
 
 ---
@@ -106,15 +106,15 @@ The vindex format is designed for distributed access. Each file is independently
 
 ### 2.2 Access Patterns
 
-| Operation | Files Needed | Server | Latency | Bandwidth |
-|-----------|-------------|--------|---------|-----------|
-| DESCRIBE | gate + embed + down_meta + labels | Knowledge | <50ms | ~1 KB response |
-| WALK | gate + embed | Knowledge | <50ms | ~1 KB response |
-| SELECT | gate + down_meta + labels | Knowledge | <10ms | ~1 KB response |
-| SHOW RELATIONS | labels only | Knowledge | <1ms | ~10 KB response |
-| STATS | index.json only | Any | <1ms | ~8 KB response |
-| INFER | gate + embed + attn_weights | Inference | ~200ms | ~1 KB response |
-| COMPILE | All files | Compile | minutes | ~10 GB output |
+| Operation      | Files Needed                      | Server    | Latency | Bandwidth       |
+|----------------|-----------------------------------|-----------|---------|-----------------|
+| DESCRIBE       | gate + embed + down_meta + labels | Knowledge | <50ms   | ~1 KB response  |
+| WALK           | gate + embed                      | Knowledge | <50ms   | ~1 KB response  |
+| SELECT         | gate + down_meta + labels         | Knowledge | <10ms   | ~1 KB response  |
+| SHOW RELATIONS | labels only                       | Knowledge | <1ms    | ~10 KB response |
+| STATS          | index.json only                   | Any       | <1ms    | ~8 KB response  |
+| INFER          | gate + embed + attn_weights       | Inference | ~200ms  | ~1 KB response  |
+| COMPILE        | All files                         | Compile   | minutes | ~10 GB output   |
 
 ### 2.3 Remote Protocol
 
@@ -186,21 +186,21 @@ Standard HTTP caching (ETag, Cache-Control: immutable) works perfectly. The chec
 
 ### 3.1 The Hardware Problem
 
-| Model | Size (f16) | Minimum Hardware for Inference |
-|-------|-----------|-------------------------------|
-| Llama 3 8B | 16 GB | 1× GPU (24GB VRAM) or 32GB RAM |
-| Llama 3 70B | 140 GB | 2-4× A100 GPUs |
-| Llama 3 405B | 800 GB | 8× A100 or 4× H100 |
+| Model        | Size (f16) | Minimum Hardware for Inference |
+|--------------|------------|--------------------------------|
+| Llama 3 8B   | 16 GB      | 1× GPU (24GB VRAM) or 32GB RAM |
+| Llama 3 70B  | 140 GB     | 2-4× A100 GPUs                 |
+| Llama 3 405B | 800 GB     | 8× A100 or 4× H100             |
 
 Most people cannot run a 70B model. The knowledge inside these models is locked behind a hardware wall.
 
 ### 3.2 What Vindex Changes
 
-| Model | Full Inference | Vindex Browse | Hardware for Browse |
-|-------|---------------|---------------|---------------------|
-| Llama 3 8B | 16 GB, GPU | ~5 GB | Any laptop |
-| Llama 3 70B | 140 GB, multi-GPU | ~25 GB | Workstation (32GB RAM) |
-| Llama 3 405B | 800 GB, GPU cluster | ~120 GB | Server or streamed |
+| Model        | Full Inference      | Vindex Browse | Hardware for Browse    |
+|--------------|---------------------|---------------|------------------------|
+| Llama 3 8B   | 16 GB, GPU          | ~5 GB         | Any laptop             |
+| Llama 3 70B  | 140 GB, multi-GPU   | ~25 GB        | Workstation (32GB RAM) |
+| Llama 3 405B | 800 GB, GPU cluster | ~120 GB       | Server or streamed     |
 
 ### 3.3 Five Strategies
 
@@ -248,13 +248,13 @@ Gate vectors at int4: 0.42 GB — a 4B model's knowledge in 400 MB
 
 ### 3.4 What Requires Full Hardware
 
-| Operation | Small Hardware | Full Hardware |
-|-----------|--------------|---------------|
-| DESCRIBE (knowledge lookup) | Yes | Yes |
-| WALK (feature scan) | Yes | Yes |
-| SELECT (knowledge query) | Yes | Yes |
-| INFER (text generation) | Decoupled only | Yes |
-| COMPILE (model editing) | No (needs all weights) | Yes |
+| Operation                   | Small Hardware         | Full Hardware |
+|-----------------------------|------------------------|---------------|
+| DESCRIBE (knowledge lookup) | Yes                    | Yes           |
+| WALK (feature scan)         | Yes                    | Yes           |
+| SELECT (knowledge query)    | Yes                    | Yes           |
+| INFER (text generation)     | Decoupled only         | Yes           |
+| COMPILE (model editing)     | No (needs all weights) | Yes           |
 
 Knowledge access works on anything, generation needs compute. Most use cases are knowledge access.
 
@@ -558,12 +558,12 @@ Vindex knowledge hosting:
 
 Knowledge hosting scales like a CDN. Inference (when needed) scales like compute. Most queries are knowledge queries.
 
-| Format | Hosting requirement | Annual cost | Marginal cost per user |
-|--------|--------------------|-----------------------|-----------------------|
-| safetensors | GPU inference cluster | ~$50,000 | Linear (more GPUs) |
-| GGUF | CPU compute nodes | ~$5,000 | Linear (more CPUs) |
-| Vindex browse | Static file server / CDN | ~$240 | Near-zero (CDN-cacheable) |
-| Vindex infer | CPU compute + static files | ~$2,500 | Linear for infer, zero for browse |
+| Format        | Hosting requirement        | Annual cost | Marginal cost per user            |
+|---------------|----------------------------|-------------|-----------------------------------|
+| safetensors   | GPU inference cluster      | ~$50,000    | Linear (more GPUs)                |
+| GGUF          | CPU compute nodes          | ~$5,000     | Linear (more CPUs)                |
+| Vindex browse | Static file server / CDN   | ~$240       | Near-zero (CDN-cacheable)         |
+| Vindex infer  | CPU compute + static files | ~$2,500     | Linear for infer, zero for browse |
 
 ---
 

@@ -15,7 +15,7 @@ support.
 From Q1 (reference Gemma 3 4B, full gate + up + down):
 
 | Projection | per-feature block @ R=16 | sub-feature tile (512 elems) @ R=16 |
-| ---------- | ------------------------ | ----------------------------------- |
+|------------|--------------------------|-------------------------------------|
 | gate       | 99.91%                   | 99.99%                              |
 | up         | 99.93%                   | 99.99%                              |
 | **down**   | **99.65%**               | **99.90%**                          |
@@ -124,7 +124,7 @@ was extended with a `--tile-sub-blocks` flag and re-run at multiple block
 sizes on Gemma 3 4B. The data:
 
 | block_elements | 4B down @R=16 | 4B down max | 31B gate @R=16 | Divides 31B (5376)? | Compression vs F16 |
-| -------------- | ------------- | ----------- | -------------- | ------------------- | ------------------ |
+|----------------|---------------|-------------|----------------|---------------------|--------------------|
 | 128            | 99.97%        | 138         | —              | ✓ (42)              | 3.70×              |
 | **256**        | **99.95%**    | **161**     | **99.9996%**   | ✓ (21)              | **3.74×**          |
 | 512            | 99.90%        | 161         | —              | **✗ (10.5)**        | 3.75×              |
@@ -155,31 +155,31 @@ precedent, not measurement. The measurement-grounded choice is 256.
 Values are F16-baseline ratios (F16 is the production dtype on Gemma 4
 31B's vindex). 4B reference; larger models proportional.
 
-| Option           | bytes/2560 elem feature × 3 projections | compression | down safety on 4B | cross-model down risk |
-| ---------------- | ---------------------------------------:| -----------:| ----------------- | --------------------- |
-| Baseline F16     | 15,360                                  | 1.00×       | N/A (exact)       | N/A                   |
-| A: uniform FP4   | 4,110                                   | **3.74×**   | 99.95% @ R=16     | unknown (could bite)  |
-| **B: FP8 down**  | 5,310                                   | **2.89×**   | flat (E4M3 absorbs) | flat                |
-| C: F16 down      | 7,860                                   | **1.95×**   | bit-identical     | flat                  |
+| Option          | bytes/2560 elem feature × 3 projections | compression | down safety on 4B   | cross-model down risk |
+|-----------------|----------------------------------------:|------------:|---------------------|-----------------------|
+| Baseline F16    |                                  15,360 |       1.00× | N/A (exact)         | N/A                   |
+| A: uniform FP4  |                                   4,110 |   **3.74×** | 99.95% @ R=16       | unknown (could bite)  |
+| **B: FP8 down** |                                   5,310 |   **2.89×** | flat (E4M3 absorbs) | flat                  |
+| C: F16 down     |                                   7,860 |   **1.95×** | bit-identical       | flat                  |
 
 Absolute storage on full 4B FFN vindex (3 projections × 34 layers ×
 10,240 features × 2,560 elements):
 
 | Option       | 4B FFN storage | saved vs F16 | delta vs A |
-| ------------ | --------------:| ------------:| ----------:|
-| F16 baseline | 5.36 GB        | —            | —          |
-| A            | 1.43 GB        | 3.93 GB      | —          |
-| B            | 1.85 GB        | 3.51 GB      | +420 MB    |
-| C            | 2.74 GB        | 2.62 GB      | +1.31 GB   |
+|--------------|---------------:|-------------:|-----------:|
+| F16 baseline |        5.36 GB |            — |          — |
+| A            |        1.43 GB |      3.93 GB |          — |
+| B            |        1.85 GB |      3.51 GB |    +420 MB |
+| C            |        2.74 GB |      2.62 GB |   +1.31 GB |
 
 Absolute storage on full 31B FFN vindex (3 × 60 × 21,504 × 5,376):
 
 | Option       | 31B FFN storage | saved vs F16 | delta vs A |
-| ------------ | ---------------:| ------------:| ----------:|
-| F16 baseline | 41.6 GB         | —            | —          |
-| A            | 11.1 GB         | 30.5 GB      | —          |
-| B            | 14.4 GB         | 27.2 GB      | +3.3 GB    |
-| C            | 21.2 GB         | 20.4 GB      | +10.1 GB   |
+|--------------|----------------:|-------------:|-----------:|
+| F16 baseline |         41.6 GB |            — |          — |
+| A            |         11.1 GB |      30.5 GB |          — |
+| B            |         14.4 GB |      27.2 GB |    +3.3 GB |
+| C            |         21.2 GB |      20.4 GB |   +10.1 GB |
 
 Option B costs ~8% of the FFN vindex on 31B relative to Option A. Real,
 not a rounding error; the "barely worse than A" framing from the earlier
@@ -288,13 +288,13 @@ testing, which is not the current expectation.
   argmax measures a downstream property dominated by the model's
   own calibration. Mixing them in one contract conflates them.
 
-  | Metric                  | Loose (exploratory)  | Tight (production) |
-  | ----------------------- | -------------------- | ------------------ |
-  | **Logit cos mean**      | **≥ 0.99**           | **≥ 0.998**        |
-  | **Symmetric KL p95**    | **≤ 0.30**           | **≤ 0.10**         |
-  | Top-5 Jaccard mean      | ≥ 0.70               | ≥ 0.85             |
-  | Symmetric KL mean       | ≤ 0.10               | ≤ 0.02             |
-  | Argmax agreement        | report only          | ≥ 95%              |
+  | Metric               | Loose (exploratory) | Tight (production) |
+  |----------------------|---------------------|--------------------|
+  | **Logit cos mean**   | **≥ 0.99**          | **≥ 0.998**        |
+  | **Symmetric KL p95** | **≤ 0.30**          | **≤ 0.10**         |
+  | Top-5 Jaccard mean   | ≥ 0.70              | ≥ 0.85             |
+  | Symmetric KL mean    | ≤ 0.10              | ≤ 0.02             |
+  | Argmax agreement     | report only         | ≥ 95%              |
 
   Bold rows are the format-fidelity gates. **Argmax is tracked but not
   gated at the loose level** — it surfaces user-visible token flips but

@@ -67,12 +67,12 @@ or missing uses the legacy gate/up/down path from `dtype`.
 
 Legal values for `projections.{gate|up|down}.precision`:
 
-| Value  | Meaning                                      | File suffix                |
-| ------ | -------------------------------------------- | -------------------------- |
-| `fp4`  | MXFP4-style block-quantised                  | `_fp4.bin`                 |
-| `fp8`  | FP8 E4M3 with per-block scale                | `_fp8.bin`                 |
-| `f16`  | Bit-identical F16, standard layout           | *legacy filename (no suffix)* |
-| `f32`  | Bit-identical F32                            | *legacy filename (no suffix)* |
+| Value | Meaning                            | File suffix                   |
+|-------|------------------------------------|-------------------------------|
+| `fp4` | MXFP4-style block-quantised        | `_fp4.bin`                    |
+| `fp8` | FP8 E4M3 with per-block scale      | `_fp8.bin`                    |
+| `f16` | Bit-identical F16, standard layout | *legacy filename (no suffix)* |
+| `f32` | Bit-identical F32                  | *legacy filename (no suffix)* |
 
 Mixing precisions per-projection within one vindex is the point of the
 format. Example layouts:
@@ -144,11 +144,11 @@ BLOCK_0 | BLOCK_1 | ... | BLOCK_{B-1}      where B = hidden / 256
 
 For each block (137 bytes total):
 
-| Offset (bytes) | Size  | Contents                                       |
-| -------------- | ----- | ---------------------------------------------- |
-| 0–127          | 128 B | 256 FP4 values, 2 per byte (see §5.1)          |
+| Offset (bytes) | Size  | Contents                                      |
+|----------------|-------|-----------------------------------------------|
+| 0–127          | 128 B | 256 FP4 values, 2 per byte (see §5.1)         |
 | 128–135        | 8 B   | 8 FP8 E4M3 sub-block scales (one per 32-elem) |
-| 136            | 1 B   | 1 FP8 E4M3 block scale                         |
+| 136            | 1 B   | 1 FP8 E4M3 block scale                        |
 
 **Cache rationale for interleaving scales with values:** the walk kernel
 reads feature vectors one at a time. Keeping each feature's values and
@@ -168,11 +168,11 @@ byte[i] = (fp4_value[2i+1] << 4) | (fp4_value[2i] & 0x0F)
 
 FP4 E2M1 value format (4 bits = 1 sign + 2 exponent + 1 mantissa):
 
-| Bits     | Meaning                                                   |
-| -------- | --------------------------------------------------------- |
-| 3        | Sign (0 = positive)                                       |
-| 2–1      | Biased exponent (bias = 1)                                |
-| 0        | Mantissa fraction                                         |
+| Bits | Meaning                    |
+|------|----------------------------|
+| 3    | Sign (0 = positive)        |
+| 2–1  | Biased exponent (bias = 1) |
+| 0    | Mantissa fraction          |
 
 Representable values: `{±0, ±0.5, ±1.0, ±1.5, ±2.0, ±3.0, ±4.0, ±6.0}`.
 This encoding matches MXFP4 / Open Compute Project OCP-MXFP4 v1.0. Any
@@ -212,10 +212,10 @@ For each layer's FP8 projection file (`down_features_fp8.bin`):
 Same outer structure as FP4 (layer → feature → block). Each block is
 257 bytes:
 
-| Offset (bytes) | Size  | Contents                           |
-| -------------- | ----- | ---------------------------------- |
-| 0–255          | 256 B | 256 FP8 E4M3 values                |
-| 256            | 1 B   | 1 FP8 E4M3 block scale             |
+| Offset (bytes) | Size  | Contents               |
+|----------------|-------|------------------------|
+| 0–255          | 256 B | 256 FP8 E4M3 values    |
+| 256            | 1 B   | 1 FP8 E4M3 block scale |
 
 No sub-block scales — FP8 E4M3 has sufficient dynamic range that
 per-32-element scaling is unnecessary. The block scale still exists to

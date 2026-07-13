@@ -91,16 +91,16 @@ cost.
 Per `moe_dispatch.rs:82-128`, `MoeScratch::new` allocates **10 buffers
 once** at the per-decode shape:
 
-| Buffer | Size formula | Gemma 4 26B A4B (top_k=8, hidden=2560, inter=2112) |
-|---|---|---|
-| `gate_buf` | `top_k × inter × row_bytes` | ~2.2 MB |
-| `up_buf` | `top_k × inter × row_bytes` | ~2.2 MB |
-| `down_bufs[0..top_k]` | `top_k × hidden × down_row_bytes` | 8 × ~150 KB = ~1.2 MB |
-| `x_buf` | `hidden × 4` | 10 KB |
-| `g_out` | `top_k × inter × 4` | ~67 KB |
-| `u_out` | `top_k × inter × 4` | ~67 KB |
-| `act_buf` | `top_k × inter_padded × 4` | ~74 KB (zero-init at construction) |
-| `expert_outs` | `top_k × hidden × 4` | ~80 KB |
+| Buffer                | Size formula                      | Gemma 4 26B A4B (top_k=8, hidden=2560, inter=2112) |
+|-----------------------|-----------------------------------|----------------------------------------------------|
+| `gate_buf`            | `top_k × inter × row_bytes`       | ~2.2 MB                                            |
+| `up_buf`              | `top_k × inter × row_bytes`       | ~2.2 MB                                            |
+| `down_bufs[0..top_k]` | `top_k × hidden × down_row_bytes` | 8 × ~150 KB = ~1.2 MB                              |
+| `x_buf`               | `hidden × 4`                      | 10 KB                                              |
+| `g_out`               | `top_k × inter × 4`               | ~67 KB                                             |
+| `u_out`               | `top_k × inter × 4`               | ~67 KB                                             |
+| `act_buf`             | `top_k × inter_padded × 4`        | ~74 KB (zero-init at construction)                 |
+| `expert_outs`         | `top_k × hidden × 4`              | ~80 KB                                             |
 
 Total: ~6 MB held resident. Reused for every decode token, every MoE
 layer within the token.
