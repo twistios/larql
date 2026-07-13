@@ -103,11 +103,11 @@ In a three-engine bits/char comparison (HF/PyTorch on CPU, Apple MLX,
 and a third-party Rust forward path loading `tokenizer.json` via the
 `tokenizers` crate) on a 1 KB Frankenstein excerpt:
 
-| Engine | Tokenization source | Tokens | bits/char |
-|---|---|---:|---:|
-| HF / PyTorch (F32) | `AutoTokenizer` (GPT-2 regex) | 263 | 1.0378 |
-| MLX | `AutoTokenizer` (GPT-2 regex) | 263 | 1.0378 |
-| Rust forward via `tokenizer.json` | cl100k regex | 243 | 0.5975 |
+| Engine                            | Tokenization source           | Tokens | bits/char |
+|-----------------------------------|-------------------------------|-------:|----------:|
+| HF / PyTorch (F32)                | `AutoTokenizer` (GPT-2 regex) |    263 |    1.0378 |
+| MLX                               | `AutoTokenizer` (GPT-2 regex) |    263 |    1.0378 |
+| Rust forward via `tokenizer.json` | cl100k regex                  |    243 |    0.5975 |
 
 HF and MLX agree to five decimals. The Rust path is off by 42 % — and
 its forward pass is bit-identical to HF/MLX **given the same input**,

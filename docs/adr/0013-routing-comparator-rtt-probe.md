@@ -235,13 +235,13 @@ real production transport.
 
 ## Implementation pointers
 
-| File | Role |
-|---|---|
-| `crates/larql-router/src/grid/routing.rs::compare_servers_for_route` | The cascade itself, free function |
-| `crates/larql-router/src/grid/routing.rs::route` | Uses `min_by` with the comparator over `route_table[layer]` entries |
-| `crates/larql-router/src/grid/mod.rs::GridState::update_rtt_ms` | Mutator called by the probe loop |
-| `crates/larql-router/src/tasks/rtt_probe.rs` | Probe task: config, spawn, probe_round, probe_one |
-| `crates/larql-router/src/grid/status.rs::status_response` | f32 → u32 ms rounding for the wire (proto field width) |
+| File                                                                 | Role                                                                |
+|----------------------------------------------------------------------|---------------------------------------------------------------------|
+| `crates/larql-router/src/grid/routing.rs::compare_servers_for_route` | The cascade itself, free function                                   |
+| `crates/larql-router/src/grid/routing.rs::route`                     | Uses `min_by` with the comparator over `route_table[layer]` entries |
+| `crates/larql-router/src/grid/mod.rs::GridState::update_rtt_ms`      | Mutator called by the probe loop                                    |
+| `crates/larql-router/src/tasks/rtt_probe.rs`                         | Probe task: config, spawn, probe_round, probe_one                   |
+| `crates/larql-router/src/grid/status.rs::status_response`            | f32 → u32 ms rounding for the wire (proto field width)              |
 
 ### Test coverage
 
@@ -256,7 +256,7 @@ real production transport.
 
 Per-file coverage as of 2026-05-16:
 
-| File | Line coverage |
-|---|---|
-| `grid/routing.rs` | 97.84% |
-| `tasks/rtt_probe.rs` | 94.86% |
+| File                 | Line coverage |
+|----------------------|---------------|
+| `grid/routing.rs`    | 97.84%        |
+| `tasks/rtt_probe.rs` | 94.86%        |

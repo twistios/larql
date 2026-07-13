@@ -244,31 +244,31 @@ bench-all: bench-wire bench-routing bench-grid
 
 ## Metrics Reference
 
-| Metric | Unit | Collected by | Used for |
-|---|---|---|---|
-| `tok_per_s` | tokens/s | `larql bench` | throughput baseline |
-| `ms_per_tok.{mean,p50,p95,p99}` | ms | `larql bench` | latency SLO |
-| `wire_bytes_per_tok` | bytes | `larql bench` | bandwidth reduction proof |
-| `encode_us`, `decode_us` | µs | `larql bench` | wire codec overhead |
-| `per_layer_rtt_ms[]` | ms | grid heartbeat (GT3) | bottleneck layer ID |
-| `shard_efficiency` | ratio | `larql bench --bench-grid` | scaling overhead |
-| encode/decode throughput | MB/s | criterion `wire_codec.rs` | codec regression |
-| `route()` latency | ns | criterion `routing.rs` | router regression |
+| Metric                          | Unit     | Collected by               | Used for                  |
+|---------------------------------|----------|----------------------------|---------------------------|
+| `tok_per_s`                     | tokens/s | `larql bench`              | throughput baseline       |
+| `ms_per_tok.{mean,p50,p95,p99}` | ms       | `larql bench`              | latency SLO               |
+| `wire_bytes_per_tok`            | bytes    | `larql bench`              | bandwidth reduction proof |
+| `encode_us`, `decode_us`        | µs       | `larql bench`              | wire codec overhead       |
+| `per_layer_rtt_ms[]`            | ms       | grid heartbeat (GT3)       | bottleneck layer ID       |
+| `shard_efficiency`              | ratio    | `larql bench --bench-grid` | scaling overhead          |
+| encode/decode throughput        | MB/s     | criterion `wire_codec.rs`  | codec regression          |
+| `route()` latency               | ns       | criterion `routing.rs`     | router regression         |
 
 ---
 
 ## Implementation Files
 
-| File | Change |
-|---|---|
-| `crates/larql-cli/src/commands/primary/bench_cmd.rs` | ADD `--bench-grid`, `--wire`, `--transport`, `--concurrent`, `--output json`, `--output-file` |
-| `crates/larql-cli/src/commands/primary/bench/grid.rs` | NEW — grid scaling sweep logic |
-| `crates/larql-cli/src/commands/primary/bench/wire.rs` | NEW — wire format comparison |
-| `crates/larql-cli/src/commands/primary/bench/transport.rs` | NEW — transport comparison |
-| `crates/larql-inference/benches/wire_codec.rs` | NEW — criterion codec bench |
-| `crates/larql-router/benches/routing.rs` | NEW — criterion routing bench |
-| `crates/larql-router/Cargo.toml` | ADD `criterion` dev-dep; `[[bench]]` entry |
-| `scripts/bench-grid-regress.sh` | NEW — CI regression gate |
-| `scripts/bench_compare.py` | NEW — JSON baseline comparison |
-| `bench/baselines/` | NEW directory — committed baseline JSONs |
-| `Makefile` | ADD `bench-wire`, `bench-routing`, `bench-grid`, `bench-all` targets |
+| File                                                       | Change                                                                                        |
+|------------------------------------------------------------|-----------------------------------------------------------------------------------------------|
+| `crates/larql-cli/src/commands/primary/bench_cmd.rs`       | ADD `--bench-grid`, `--wire`, `--transport`, `--concurrent`, `--output json`, `--output-file` |
+| `crates/larql-cli/src/commands/primary/bench/grid.rs`      | NEW — grid scaling sweep logic                                                                |
+| `crates/larql-cli/src/commands/primary/bench/wire.rs`      | NEW — wire format comparison                                                                  |
+| `crates/larql-cli/src/commands/primary/bench/transport.rs` | NEW — transport comparison                                                                    |
+| `crates/larql-inference/benches/wire_codec.rs`             | NEW — criterion codec bench                                                                   |
+| `crates/larql-router/benches/routing.rs`                   | NEW — criterion routing bench                                                                 |
+| `crates/larql-router/Cargo.toml`                           | ADD `criterion` dev-dep; `[[bench]]` entry                                                    |
+| `scripts/bench-grid-regress.sh`                            | NEW — CI regression gate                                                                      |
+| `scripts/bench_compare.py`                                 | NEW — JSON baseline comparison                                                                |
+| `bench/baselines/`                                         | NEW directory — committed baseline JSONs                                                      |
+| `Makefile`                                                 | ADD `bench-wire`, `bench-routing`, `bench-grid`, `bench-all` targets                          |

@@ -59,13 +59,13 @@ Large matmul (> calibrated threshold):  Metal GPU (cached weight buffers)
 
 The threshold adapts to hardware via auto-calibration:
 
-| Operation | FLOPs | Route |
-|-----------|-------|-------|
-| QK^T (per head) | 18K | CPU |
-| scores * V (per head) | 18K | CPU |
-| Q/K/V/O projection | 79M | Calibrated |
-| FFN gate/up | 315M | Metal (cached) |
-| Logits | 1.3B | Metal (cached) |
+| Operation             | FLOPs | Route          |
+|-----------------------|-------|----------------|
+| QK^T (per head)       | 18K   | CPU            |
+| scores * V (per head) | 18K   | CPU            |
+| Q/K/V/O projection    | 79M   | Calibrated     |
+| FFN gate/up           | 315M  | Metal (cached) |
+| Logits                | 1.3B  | Metal (cached) |
 
 ### Usage
 
@@ -100,39 +100,39 @@ Two BLAS calls per position per head, both hitting AMX. The temporary buffer is 
 
 ### Supported features
 
-| Feature | Status |
-|---------|--------|
-| Grouped-Query Attention (GQA) | Supported (any Q/KV ratio) |
-| Softcap (Gemma2) | Supported |
-| Attention weight capture | Supported (last token) |
-| Causal masking | Built-in |
-| f64 softmax accumulation | Preserved |
-| RoPE | Applied before attention (unchanged) |
-| Per-head Q/K norm | Applied before attention (unchanged) |
+| Feature                       | Status                               |
+|-------------------------------|--------------------------------------|
+| Grouped-Query Attention (GQA) | Supported (any Q/KV ratio)           |
+| Softcap (Gemma2)              | Supported                            |
+| Attention weight capture      | Supported (last token)               |
+| Causal masking                | Built-in                             |
+| f64 softmax accumulation      | Preserved                            |
+| RoPE                          | Applied before attention (unchanged) |
+| Per-head Q/K norm             | Applied before attention (unchanged) |
 
 ### Performance
 
 Benchmarked on Apple Silicon (M-series), Gemma-3 4B dimensions:
 
-| Config | BLAS-fused | Materialized ref | Winner |
-|--------|-----------|-----------------|--------|
-| seq=1, hd=32 | 3 us | 7 us | Fused 2.2x |
-| seq=6, hd=32 | 20 us | 13 us | Ref 1.6x |
-| seq=6, hd=128 | 29 us | 36 us | Fused 1.3x |
-| seq=6, hd=256 | 42 us | 67 us | Fused 1.6x |
-| seq=96 | 652 us | 524 us | Ref 1.2x |
-| seq=192 | 2,140 us | 1,836 us | Ref 1.2x |
+| Config        | BLAS-fused | Materialized ref | Winner     |
+|---------------|------------|------------------|------------|
+| seq=1, hd=32  | 3 us       | 7 us             | Fused 2.2x |
+| seq=6, hd=32  | 20 us      | 13 us            | Ref 1.6x   |
+| seq=6, hd=128 | 29 us      | 36 us            | Fused 1.3x |
+| seq=6, hd=256 | 42 us      | 67 us            | Fused 1.6x |
+| seq=96        | 652 us     | 524 us           | Ref 1.2x   |
+| seq=192       | 2,140 us   | 1,836 us         | Ref 1.2x   |
 
 At the actual Gemma-3 head dimension (256), fused is **1.6x faster** than the materialized path.
 
 ### Memory
 
 | seq_len | Materialized (10 heads, f32) | Fused (hd=256, f64 acc) | Savings |
-|---------|------------------------------|------------------------|---------|
-| 6 | 1.4 KB | 12 KB | n/a |
-| 128 | 640 KB | 256 KB | 2.5x |
-| 512 | 10 MB | 1 MB | 10x |
-| 2048 | 160 MB | 4 MB | 40x |
+|---------|------------------------------|-------------------------|---------|
+| 6       | 1.4 KB                       | 12 KB                   | n/a     |
+| 128     | 640 KB                       | 256 KB                  | 2.5x    |
+| 512     | 10 MB                        | 1 MB                    | 10x     |
+| 2048    | 160 MB                       | 4 MB                    | 40x     |
 
 ## Quick wins from this session
 
@@ -183,33 +183,33 @@ cargo test -p larql-inference --test test_walkers           # 12 walker integrat
 
 ### Test coverage
 
-| Area | Tests | What's covered |
-|------|-------|----------------|
-| Backend (unit) | 21 | Shape, correctness vs f64 reference, identity, zeros, batch, tall/skinny/wide, trait |
-| Backend (integration) | 13+6 | Transformer-scale dims, QKV/FFN/logits shapes, factory, Metal vs CPU, batch, fallback |
-| Fused attention | 18 | Single token, causal mask, GQA (2x, 5x), softcap, capture, reference agreement, edge cases |
-| FFN | 9 | SiLU, GELU, dense shape, activation, highway, multi-position |
-| Attention/residual | 10 | RoPE, GQA, RMS norm, layer norm, per-head norm |
-| Trace stores | 14 | Write/read, bounds, tiers, additive property |
-| Walkers | 12 | Weight/attention walkers, vector extractor, forward pass |
-| Utils | 10 | Top-k, rounding, entity sorting, thresholds |
+| Area                  | Tests | What's covered                                                                             |
+|-----------------------|-------|--------------------------------------------------------------------------------------------|
+| Backend (unit)        | 21    | Shape, correctness vs f64 reference, identity, zeros, batch, tall/skinny/wide, trait       |
+| Backend (integration) | 13+6  | Transformer-scale dims, QKV/FFN/logits shapes, factory, Metal vs CPU, batch, fallback      |
+| Fused attention       | 18    | Single token, causal mask, GQA (2x, 5x), softcap, capture, reference agreement, edge cases |
+| FFN                   | 9     | SiLU, GELU, dense shape, activation, highway, multi-position                               |
+| Attention/residual    | 10    | RoPE, GQA, RMS norm, layer norm, per-head norm                                             |
+| Trace stores          | 14    | Write/read, bounds, tiers, additive property                                               |
+| Walkers               | 12    | Weight/attention walkers, vector extractor, forward pass                                   |
+| Utils                 | 10    | Top-k, rounding, entity sorting, thresholds                                                |
 
 ## Codepath coverage
 
 The fused attention and backend changes are exercised by every inference codepath:
 
-| Path | Entry point | Attention | FFN |
-|------|-------------|-----------|-----|
-| Dense inference | `predict()` | fused GQA | WeightFfn |
-| Walk inference | `predict_with_ffn()` | fused GQA | WalkFfn |
-| Routed inference | `predict_with_router()` | fused GQA | per-layer |
-| Strategy inference | `predict_with_strategy()` | fused GQA | per-layer mode |
-| Residual trace | `trace_forward()` | fused GQA | WeightFfn |
-| Decomposed trace | `trace_residuals()` | fused GQA (capture) | caller-provided FfnBackend |
-| CachedFfn calibration | `run_attention_public()` | fused GQA | (calibration only) |
-| Server /v1/infer | `predict_with_ffn()` | fused GQA | WalkFfn or dense |
-| Python `WalkModel.trace()` | `trace_residuals()` | fused GQA (capture) | WalkFfn |
-| CLI commands | `predict*()` variants | fused GQA | depends on command |
+| Path                       | Entry point               | Attention           | FFN                        |
+|----------------------------|---------------------------|---------------------|----------------------------|
+| Dense inference            | `predict()`               | fused GQA           | WeightFfn                  |
+| Walk inference             | `predict_with_ffn()`      | fused GQA           | WalkFfn                    |
+| Routed inference           | `predict_with_router()`   | fused GQA           | per-layer                  |
+| Strategy inference         | `predict_with_strategy()` | fused GQA           | per-layer mode             |
+| Residual trace             | `trace_forward()`         | fused GQA           | WeightFfn                  |
+| Decomposed trace           | `trace_residuals()`       | fused GQA (capture) | caller-provided FfnBackend |
+| CachedFfn calibration      | `run_attention_public()`  | fused GQA           | (calibration only)         |
+| Server /v1/infer           | `predict_with_ffn()`      | fused GQA           | WalkFfn or dense           |
+| Python `WalkModel.trace()` | `trace_residuals()`       | fused GQA (capture) | WalkFfn                    |
+| CLI commands               | `predict*()` variants     | fused GQA           | depends on command         |
 
 Sparse FFN, WalkFfn, streaming extraction, and vindex operations do not call attention directly — they only implement FfnBackend. Attention always runs through the same `gqa_attention_with_weights()` path.
 

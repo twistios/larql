@@ -29,11 +29,11 @@ blocked BLAS `sgemm`. The `backend` hook is unwired (`let _ = backend`; CPU only
 
 `larql dev walk --predict` on `gemma3-4b-q4k` (10240 features/layer), 9 tokens:
 
-| K | wall (9 tok) |
-|---|---:|
-| dense (MAX) | 28.84 s |
-| top-k 2048 (20%) | 29.28 s |
-| top-k 512 (5%) | 28.64 s |
+| K                | wall (9 tok) |
+|------------------|-------------:|
+| dense (MAX)      |      28.84 s |
+| top-k 2048 (20%) |      29.28 s |
+| top-k 512 (5%)   |      28.64 s |
 
 **No speedup from sparsity.** Root cause: `walk --predict` runs at **~0.5 tok/s
 — the non-KV-cached full-recompute path** (re-forwards the whole growing
@@ -64,13 +64,13 @@ dominate, and the FFN — sparse or dense — is a masked fraction. The
 (decode shape), no attention/lm_head, across K. gemma3-4b-q4k, layer 17, 10240
 features, 300 iters:
 
-| route | µs/call | vs dense |
-|---|---:|---:|
-| **dense** (k=MAX, `kquant_native` contiguous matvec) | **2021** | 1.0× |
-| sparse k=2048 (20%) | 7647 | **3.8× slower** |
-| sparse k=512 (5%) | 6511 | 3.2× slower |
-| sparse k=128 (1%) | 6092 | 3.0× slower |
-| sparse k=32 (0.3%) | 6034 | 3.0× slower |
+| route                                                |  µs/call |        vs dense |
+|------------------------------------------------------|---------:|----------------:|
+| **dense** (k=MAX, `kquant_native` contiguous matvec) | **2021** |            1.0× |
+| sparse k=2048 (20%)                                  |     7647 | **3.8× slower** |
+| sparse k=512 (5%)                                    |     6511 |     3.2× slower |
+| sparse k=128 (1%)                                    |     6092 |     3.0× slower |
+| sparse k=32 (0.3%)                                   |     6034 |     3.0× slower |
 
 **The sparse walk is ~3× slower than dense at *every* K, and barely improves as K
 shrinks** (7647 → 6034 from 20% → 0.3%). The cost is **fixed, not
@@ -92,12 +92,12 @@ token-deterministic) — and computes the gate score for **only those K features
 (`local_pool_gate_knn`, O(K) Q4K row-dots), *never* doing the full gate
 projection. Same harness, same K sweep, head-to-head with gate-KNN:
 
-| route | k=2048 (20%) | k=512 (5%) | k=128 (1%) | k=32 (0.3%) |
-|---|---:|---:|---:|---:|
-| dense (k=MAX) | **2039 µs** (1.0×) | — | — | — |
-| gate-KNN (full projection) | 8488 µs | 7748 µs | 6919 µs | 6294 µs |
-| **cheap-route (O(K) selection)** | **1557 µs** | **517 µs** | **245 µs** | **138 µs** |
-| cheap-route vs dense | **1.3× faster** | **3.9×** | **8.3×** | **14.8×** |
+| route                            |       k=2048 (20%) | k=512 (5%) | k=128 (1%) | k=32 (0.3%) |
+|----------------------------------|-------------------:|-----------:|-----------:|------------:|
+| dense (k=MAX)                    | **2039 µs** (1.0×) |          — |          — |           — |
+| gate-KNN (full projection)       |            8488 µs |    7748 µs |    6919 µs |     6294 µs |
+| **cheap-route (O(K) selection)** |        **1557 µs** | **517 µs** | **245 µs** |  **138 µs** |
+| cheap-route vs dense             |    **1.3× faster** |   **3.9×** |   **8.3×** |   **14.8×** |
 
 Two things change at once:
 1. **Sparse beats dense at every K** (1.3× → 14.8× as K shrinks).
@@ -140,10 +140,10 @@ divergence below is real, not a kernel bug.
 **Sparsity at *every* layer collapses the model** (gemma3-4b, 34 layers, 4
 prompts):
 
-| router | k=2048 (20%) | k=512 (5%) | k=128 (1%) | k=32 (0.3%) |
-|---|---:|---:|---:|---:|
-| gate-KNN (smart) | 8.4 bits / 0% | 14.1 / 0% | 24.2 / 0% | 27.2 / 0% |
-| cheap-route (dumb) | 37.1 / 0% | 37.5 / 0% | 33.0 / 0% | 35.6 / 0% |
+| router             |  k=2048 (20%) | k=512 (5%) | k=128 (1%) | k=32 (0.3%) |
+|--------------------|--------------:|-----------:|-----------:|------------:|
+| gate-KNN (smart)   | 8.4 bits / 0% |  14.1 / 0% |  24.2 / 0% |   27.2 / 0% |
+| cheap-route (dumb) |     37.1 / 0% |  37.5 / 0% |  33.0 / 0% |   35.6 / 0% |
 
 Even the *smart* router at 20%-of-features-per-layer is unusable (0% top-1). This
 is the stacked-ablation collapse signature: per-layer error that's
@@ -153,11 +153,11 @@ multiplicatively across depth** and breaks `final_norm` + `lm_head`.
 **Confined to a thin late band it survives** — the hourglass (dense early, sparse
 late), K=512:
 
-| sparse depth | gate-KNN | cheap-route |
-|---|---:|---:|
-| last 4/34 | KL 0.71 / 50% | KL 1.75 / 75% |
-| last 9/34 | **KL 0.46 / 75%** | KL 10.1 / 25% |
-| last 17/34 | KL 5.3 / 25% | KL 15.8 / 0% |
+| sparse depth |          gate-KNN |   cheap-route |
+|--------------|------------------:|--------------:|
+| last 4/34    |     KL 0.71 / 50% | KL 1.75 / 75% |
+| last 9/34    | **KL 0.46 / 75%** | KL 10.1 / 25% |
+| last 17/34   |      KL 5.3 / 25% |  KL 15.8 / 0% |
 
 Two results (4 prompts → top-1% is coarse, KL is the reliable signal):
 1. **Sparsity is only survivable in a thin late band.** Even gate-KNN holds at
@@ -187,10 +187,10 @@ the strided route (precomputed once, no gate projection). Added as a third
 hourglass router, K=512:
 
 | sparse band | gate-KNN (smart, slow) | strided (dumb, fast) | **static-imp (informed, fast)** |
-|---|---:|---:|---:|
-| last 4/34 | KL 0.71 / 50% | 1.75 / 75% | **0.71 / 100% / q@p 0.86** |
-| last 9/34 | KL 0.46 / 75% | 10.1 / 25% | 2.76 / 50% |
-| last 17/34 | 5.3 / 25% | 15.8 / 0% | 21.5 / 0% |
+|-------------|-----------------------:|---------------------:|--------------------------------:|
+| last 4/34   |          KL 0.71 / 50% |           1.75 / 75% |      **0.71 / 100% / q@p 0.86** |
+| last 9/34   |          KL 0.46 / 75% |           10.1 / 25% |                      2.76 / 50% |
+| last 17/34  |              5.3 / 25% |            15.8 / 0% |                       21.5 / 0% |
 
 (4 prompts → top-1% is coarse; KL is the reliable signal.)
 
@@ -237,11 +237,11 @@ residual is already in the per-position loop, so the ranking *is* per-position
 content-addressing). If gate-KNN's true top-K live inside the static top-P, this
 recovers gate-KNN accuracy at O(P) ≪ O(num_features). Sweep P at K=512:
 
-| sparse band | gate-KNN | static-imp | 2-stage P=2048 | P=4096 | P=8192 |
-|---|---:|---:|---:|---:|---:|
-| last 4/34 | 0.71 | 0.71 | 0.80 | 0.92 | 5.68 |
-| last 9/34 | **0.46** | 2.76 | 2.74 | **2.56** | 3.32 |
-| last 17/34 | 5.3 | 21.5 | 21.3 | 18.4 | 22.8 |
+| sparse band | gate-KNN | static-imp | 2-stage P=2048 |   P=4096 | P=8192 |
+|-------------|---------:|-----------:|---------------:|---------:|-------:|
+| last 4/34   |     0.71 |       0.71 |           0.80 |     0.92 |   5.68 |
+| last 9/34   | **0.46** |       2.76 |           2.74 | **2.56** |   3.32 |
+| last 17/34  |      5.3 |       21.5 |           21.3 |     18.4 |   22.8 |
 
 (KL bits; 4 prompts — KL is the reliable signal.)
 
@@ -275,11 +275,11 @@ static pool + dequantized score would widen the band with no clustering at all.
 
 9-layer band, K=512 (gate-KNN baseline 0.46):
 
-| P | 2-stage (Q4K score) | de-confound (f32 score) |
-|---|---:|---:|
-| 2048 | 2.74 | 3.44 |
-| 4096 | 2.56 | **2.01** |
-| 8192 | 3.32 | 2.75 |
+| P    | 2-stage (Q4K score) | de-confound (f32 score) |
+|------|--------------------:|------------------------:|
+| 2048 |                2.74 |                    3.44 |
+| 4096 |                2.56 |                **2.01** |
+| 8192 |                3.32 |                    2.75 |
 
 **Reading (a) is confirmed: the candidate set is the wall.** With gate-KNN's
 *exact* full-precision score, ranking the static top-P-by-‖down_row‖ pool still
@@ -308,10 +308,10 @@ The n=4 hourglass numbers above are a small sample (top-1 bounces 25/50/75%).
 Re-running just the load-bearing comparison — gate-KNN vs the best static pool
 (f32-ranked, P=4096) at the 9-layer band — over **30 prompts**:
 
-| config (sparse last 9/34) | mean | median | min | max |
-|---|---:|---:|---:|---:|
-| gate-KNN (content-addressed) | 2.43 | 1.30 | 0.008 | 14.53 |
-| static pool f32 P=4096 | 4.85 | 3.74 | 0.026 | 15.68 |
+| config (sparse last 9/34)    | mean | median |   min |   max |
+|------------------------------|-----:|-------:|------:|------:|
+| gate-KNN (content-addressed) | 2.43 |   1.30 | 0.008 | 14.53 |
+| static pool f32 P=4096       | 4.85 |   3.74 | 0.026 | 15.68 |
 
 Mean gap **1.99×**, median gap **2.86×**; gate-KNN beats static on **21/30**
 prompts. Two corrections to the n=4 story:
@@ -355,12 +355,12 @@ band, K=512). **All KL is measured against *dense* (KL 0 = dense); gate-KNN is
 itself a lossy top-K truncation of the gate projection, not a floor.** Lower =
 closer to dense.
 
-| router | in-dist median (n=30) | OOD median (n=18) |
-|---|---:|---:|
-| gate-KNN (full projection) | 1.30 | 1.23 |
-| cell-router, full cell pool | 0.88 | 0.43 |
-| cell-router, ranked → K=512 | 0.79 | 0.40 |
-| static pool P=2048 | 6.09 | 1.38 |
+| router                      | in-dist median (n=30) | OOD median (n=18) |
+|-----------------------------|----------------------:|------------------:|
+| gate-KNN (full projection)  |                  1.30 |              1.23 |
+| cell-router, full cell pool |                  0.88 |              0.43 |
+| cell-router, ranked → K=512 |                  0.79 |              0.40 |
+| static pool P=2048          |                  6.09 |              1.38 |
 
 Unpaired medians (the table) suggest cell-router beats gate-KNN — but they
 mislead under a heavy tail, and an **absolute cross-distribution comparison is
@@ -371,11 +371,11 @@ off absolute KL across two difficulties). The difficulty-controlled test is the
 difficulty), and disaggregated by sub-distribution because code / non-English /
 prose behave nothing alike:
 
-| comparison (Δ = a − b, neg ⇒ a closer to dense) | in-dist (n=30) | OOD code (6) | OOD intl (6) | OOD prose (6) | OOD agg (18) |
-|---|---|---|---|---|---|
-| cell-full vs gate-KNN | +0.07, p=0.64 | −0.65, p=0.094 | −0.24, p=0.29 | +0.04, p=1.0 | −0.29, p=0.074 |
-| cell-rank→K vs gate-KNN | −0.02, p=0.58 | −0.49, p=0.036 | **+0.74**, p=0.83 | −0.01, p=1.0 | −0.04, p=0.21 |
-| cell-full vs static | −3.09, **p=0.0001** | +0.00, p=0.68 | −3.80, p=0.036 | −0.90, p=0.036 | −1.05, **p=0.0023** |
+| comparison (Δ = a − b, neg ⇒ a closer to dense) | in-dist (n=30)      | OOD code (6)   | OOD intl (6)      | OOD prose (6)  | OOD agg (18)        |
+|-------------------------------------------------|---------------------|----------------|-------------------|----------------|---------------------|
+| cell-full vs gate-KNN                           | +0.07, p=0.64       | −0.65, p=0.094 | −0.24, p=0.29     | +0.04, p=1.0   | −0.29, p=0.074      |
+| cell-rank→K vs gate-KNN                         | −0.02, p=0.58       | −0.49, p=0.036 | **+0.74**, p=0.83 | −0.01, p=1.0   | −0.04, p=0.21       |
+| cell-full vs static                             | −3.09, **p=0.0001** | +0.00, p=0.68  | −3.80, p=0.036    | −0.90, p=0.036 | −1.05, **p=0.0023** |
 
 > **Read the per-category OOD p-values as direction-of-effect, not significance.**
 > At n=6 the exact two-sided Wilcoxon floor is p = 2/2⁶ = **0.031** (all six
@@ -448,12 +448,12 @@ its job (matches gate-KNN), but K=512 sparsity is not generation-faithful.
 
 **K-vs-agreement sweep (gate-KNN, the ceiling):**
 
-| | K=512 | K=1024 | K=2048 | K=4096 |
-|---|---|---|---|---|
-| in-dist, last 4 | 66.7 | 72.2 | 83.3 | **100.0** |
-| in-dist, last 9 | 61.1 | 72.2 | 80.6 | **97.2** |
-| OOD, last 4 | 72.2 | 75.0 | 75.0 | 86.1 |
-| OOD, last 9 | 61.1 | 66.7 | 66.7 | 88.9 |
+|                 | K=512 | K=1024 | K=2048 | K=4096    |
+|-----------------|-------|--------|--------|-----------|
+| in-dist, last 4 | 66.7  | 72.2   | 83.3   | **100.0** |
+| in-dist, last 9 | 61.1  | 72.2   | 80.6   | **97.2**  |
+| OOD, last 4     | 72.2  | 75.0   | 75.0   | 86.1      |
+| OOD, last 9     | 61.1  | 66.7   | 66.7   | 88.9      |
 
 Faithfulness arrives at **K≈4096 (40% of 10240 feats)** in-distribution (OOD
 ~87–89%, near). The verdict is **not** "sparse FFN doesn't generate" — it's
@@ -469,9 +469,9 @@ The optimization (task #24) — **gather the selected K rows contiguous, then ru
 the kernel** — was built and measured (`examples/walk_ffn_gather_gemm.rs`), and it
 **flips faithful-K from slower-than-dense to faster** (isolated FFN, seq_len=1):
 
-| K | scattered (current) | gather Q4K + fused | dense |
-|---|---|---|---|
-| 2048 (20%) | 1563µs (1.40×) | **1284µs (1.70×)** | 2181µs |
+| K                    | scattered (current)        | gather Q4K + fused | dense  |
+|----------------------|----------------------------|--------------------|--------|
+| 2048 (20%)           | 1563µs (1.40×)             | **1284µs (1.70×)** | 2181µs |
 | 4096 (40%, faithful) | 2713µs (**0.80×, slower**) | **1600µs (1.36×)** | 2181µs |
 
 The *implementation* was the whole story: gathering Q4K **bytes** contiguous and
@@ -506,10 +506,10 @@ feature-major quantised down (gate/up are already feature-major). That was then
 **validated in-memory** (build the feature-major Q4K down via
 `kquant_ffn_layer(2)` → re-quantize, gather it correctly):
 
-| K | scattered | gather (correct feature-major Q4K down) | down requant err |
-|---|---|---|---|
-| 2048 | 1.31× | **1.69×** | 6e-3 |
-| 4096 (faithful) | 0.76× | **1.29×** | 6e-3 |
+| K               | scattered | gather (correct feature-major Q4K down) | down requant err |
+|-----------------|-----------|-----------------------------------------|------------------|
+| 2048            | 1.31×     | **1.69×**                               | 6e-3             |
+| 4096 (faithful) | 0.76×     | **1.29×**                               | 6e-3             |
 
 The win **survives correctness** — 1.29× at faithful K, `|err|/‖ref‖ = 6e-3`
 (just the Q4K-vs-Q6K precision drop on the re-quantized down; a feature-major
@@ -548,11 +548,11 @@ Pre-committed bar: net forward tok/s **> dense**. Measured three ways
 (`examples/walk_ffn_decode_timing.rs`), each hitting a distinct confound — and
 **none clears the bar**:
 
-| measurement | result | confound |
-|---|---|---|
-| isolated FFN, seq_len=1 (`gather_q4k_gemm`) | **1.29× faster** ✓ | the clean kernel number |
-| full forward, seq_len=9 | 0.82× / 0.72× ✗ | **prefill**: dense uses batched BLAS gemm over 9 positions; per-position gather loses |
-| full forward, seq_len=1 (decode shape) | **0.15× / 0.11×** ✗✗ | full-forward gather is ~6× *slower* despite correct output — and it is **not** the kernel (isolated is 1.29×) and **not** memory pressure (137 GB RAM, 3.9 GB resident) |
+| measurement                                 | result               | confound                                                                                                                                                                |
+|---------------------------------------------|----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| isolated FFN, seq_len=1 (`gather_q4k_gemm`) | **1.29× faster** ✓   | the clean kernel number                                                                                                                                                 |
+| full forward, seq_len=9                     | 0.82× / 0.72× ✗      | **prefill**: dense uses batched BLAS gemm over 9 positions; per-position gather loses                                                                                   |
+| full forward, seq_len=1 (decode shape)      | **0.15× / 0.11×** ✗✗ | full-forward gather is ~6× *slower* despite correct output — and it is **not** the kernel (isolated is 1.29×) and **not** memory pressure (137 GB RAM, 3.9 GB resident) |
 
 The seq_len=1 collapse (the gather firing per trace, output top-1 ✓, yet ~550 ms
 per sparse layer vs the isolated kernel's 1.6 ms) is an unresolved
@@ -583,13 +583,13 @@ per feature* or *more work per byte*. Tested the most graph-native:
 4-bit = KL 0.011 vs f32, matching real Q4K). KL vs f32 reference, 4 prompts
 (in-dist + code + non-English):
 
-| schedule | avg bits | bw vs Q4 | KL (bits) | top-1 |
-|---|---:|---:|---:|---:|
-| uniform 4-bit | 4.00 | 1.00× | 0.011 | 100% |
-| **uniform 3-bit** | 3.00 | **0.75×** | **0.052** | **100%** |
-| uniform 2-bit | 2.00 | 0.50× | 18.06 | 0% |
-| head10/4 tail90/3 | 3.10 | 0.78× | 0.070 | 100% |
-| head40/4 tail60/2 | 2.80 | 0.70× | 11.75 | 0% |
+| schedule          | avg bits |  bw vs Q4 | KL (bits) |    top-1 |
+|-------------------|---------:|----------:|----------:|---------:|
+| uniform 4-bit     |     4.00 |     1.00× |     0.011 |     100% |
+| **uniform 3-bit** |     3.00 | **0.75×** | **0.052** | **100%** |
+| uniform 2-bit     |     2.00 |     0.50× |     18.06 |       0% |
+| head10/4 tail90/3 |     3.10 |     0.78× |     0.070 |     100% |
+| head40/4 tail60/2 |     2.80 |     0.70× |     11.75 |       0% |
 
 **Graded precision buys nothing — the precision floor is universal at 3 bits.**
 2-bit collapses for *every* feature group (even behind an 8-bit head); 3-bit is
@@ -616,11 +616,11 @@ lesson on the sequence axis: single-step KL/top-1 can't see drift.
 lied.** f32 / Q4 / Q3 teacher-forced on entropic prose
 (`examples/walk_ffn_nll.rs`, 74 positions):
 
-| arm | mean | **median** | p90 | p99 | max | mean Δ vs f32 | p90 Δ | p99 Δ | worst-token Δ |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| f32 | 4.24 | **2.21** | 11.4 | 20.3 | 31.9 | — | — | — | — |
-| Q4 | 4.49 | **2.39** | 10.8 | 19.6 | 39.9 | +0.25 | +1.16 | +2.68 | +7.95 |
-| Q3 | 4.23 | **2.50** | 9.9 | 20.3 | 25.0 | −0.01 | +2.45 | +3.93 | +5.50 |
+| arm | mean | **median** |  p90 |  p99 |  max | mean Δ vs f32 | p90 Δ | p99 Δ | worst-token Δ |
+|-----|-----:|-----------:|-----:|-----:|-----:|--------------:|------:|------:|--------------:|
+| f32 | 4.24 |   **2.21** | 11.4 | 20.3 | 31.9 |             — |     — |     — |             — |
+| Q4  | 4.49 |   **2.39** | 10.8 | 19.6 | 39.9 |         +0.25 | +1.16 | +2.68 |         +7.95 |
+| Q3  | 4.23 |   **2.50** |  9.9 | 20.3 | 25.0 |         −0.01 | +2.45 | +3.93 |         +5.50 |
 
 flip rate Q3-vs-Q4 = **27%**. The **mean** ladder doesn't just miss the cost — it
 *inverts* the decision: f32 → Q4 → Q3 = 4.24 → 4.49 → **4.23** says Q3 ≈ f32,
@@ -659,13 +659,13 @@ is dense), but "stream each weight in fewer bits" (the FFN is 3-bit-tolerant).
 along? Because the spendable variance lives on the **gate-vs-down axis**, not the
 importance axis. Grading by *component* (uniform per gate/up/down) confirms it:
 
-| gate/up/down bits | bw vs Q4 | KL (bits) | top-1 |
-|---|---:|---:|---:|
-| 3 / 3 / 3 (uniform-3) | 0.75× | 0.052 | 100% |
-| 3 / 3 / **2** | 0.67× | 1.16 | 75% |
-| 3 / 3 / **1** | 0.58× | 18.6 | 0% |
-| **2** / 2 / 3 | 0.58× | 15.6 | 0% |
-| 4 / 4 / 2 | 0.83× | 0.67 | 100% |
+| gate/up/down bits     | bw vs Q4 | KL (bits) | top-1 |
+|-----------------------|---------:|----------:|------:|
+| 3 / 3 / 3 (uniform-3) |    0.75× |     0.052 |  100% |
+| 3 / 3 / **2**         |    0.67× |      1.16 |   75% |
+| 3 / 3 / **1**         |    0.58× |      18.6 |    0% |
+| **2** / 2 / 3         |    0.58× |      15.6 |    0% |
+| 4 / 4 / 2             |    0.83× |      0.67 |  100% |
 
 **`gate@2` collapses (KL 15.6, routing breaks); `down@2` survives (KL 1.16,
 alive).** A corrupted gate/up flips *which* features fire — a discrete routing
@@ -774,12 +774,12 @@ KV-cached decode step), never within-prefill cross-position (that would be the
 spatial cosine wearing a temporal label). `examples/walk_ffn_temporal_reuse.rs`,
 6 entropic passages, per-zone distribution (median / p10 / worst), not mean:
 
-| zone | residual cosine (med/p10/worst) | pool Jaccard (med/p10/worst) | delta TwoNN |
-|---|---|---|---:|
-| pre-commit L0–4 | 0.764 / 0.073 / −0.04 | 0.19 / 0.13 / 0.11 | 5.8 |
-| **highway L5–20** | **0.997 / 0.969 / 0.916** | 0.61 / 0.50 / 0.39 | **22.3** |
-| retrieval L21–29 | 0.987 / 0.976 / 0.957 | 0.44 / 0.32 / 0.19 | 22.1 |
-| format L30–33 | 0.978 / 0.968 / 0.952 | 0.39 / 0.31 / 0.22 | 22.2 |
+| zone              | residual cosine (med/p10/worst) | pool Jaccard (med/p10/worst) | delta TwoNN |
+|-------------------|---------------------------------|------------------------------|------------:|
+| pre-commit L0–4   | 0.764 / 0.073 / −0.04           | 0.19 / 0.13 / 0.11           |         5.8 |
+| **highway L5–20** | **0.997 / 0.969 / 0.916**       | 0.61 / 0.50 / 0.39           |    **22.3** |
+| retrieval L21–29  | 0.987 / 0.976 / 0.957           | 0.44 / 0.32 / 0.19           |        22.1 |
+| format L30–33     | 0.978 / 0.968 / 0.952           | 0.39 / 0.31 / 0.22           |        22.2 |
 
 Pre-committed reading resolves:
 - **Delta-walk LIVE.** Highway delta TwoNN **22.3 ≤ 30** (lands on ~22 = the known
@@ -816,11 +816,11 @@ linearization error `‖f(base+δ)−(f(base)+Jδ)‖/‖f(base+δ)‖` (finite-
 **targeting the FFN-INPUT residual (post-attn-norm) — what the FFN actually
 sees — not #27's layer-input residual.** `examples/walk_ffn_delta_walk.rs`:
 
-| zone | ‖δ‖/‖base‖ med/p90/worst | lin-error med/p90/worst |
-|---|---|---|
-| highway L5–20 | **0.854** / 1.02 / 1.30 | **0.691** / 1.10 / 2.39 |
-| retrieval L21–29 | 0.901 / 1.13 / 1.45 | 0.592 / 0.90 / 1.49 |
-| format L30–33 | 0.920 / 1.12 / 1.34 | 0.488 / 0.69 / 1.24 |
+| zone             | ‖δ‖/‖base‖ med/p90/worst | lin-error med/p90/worst |
+|------------------|--------------------------|-------------------------|
+| highway L5–20    | **0.854** / 1.02 / 1.30  | **0.691** / 1.10 / 2.39 |
+| retrieval L21–29 | 0.901 / 1.13 / 1.45      | 0.592 / 0.90 / 1.49     |
+| format L30–33    | 0.920 / 1.12 / 1.34      | 0.488 / 0.69 / 1.24     |
 
 **Both kill bars (amp ≳0.20, lin-error ≳0.15) blown out 4–5×.** The FFN-input
 delta is ~0.85× the base magnitude (near-full-amplitude), and the **exact**

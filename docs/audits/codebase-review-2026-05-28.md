@@ -19,15 +19,15 @@ actions are tracked in [`ROADMAP.md`](../../ROADMAP.md) §"Codebase hardening
 
 ## Surface health (objective, pre-sweep)
 
-| Signal | Result |
-|---|---|
-| `cargo clippy --workspace --all-targets` | 2 warnings total (unused `ProjectorWeights` import + dead `total_tiles` field, both `larql-cli`) |
-| TODO/FIXME/XXX markers | 39 |
-| `.unwrap()` / `.expect()` / `panic!()` | 6,319 / 1,895 / 458 (overwhelmingly tests + infallible invariants) |
-| `unimplemented!()` | 22 |
-| `unsafe` blocks | 405 (concentrated in `larql-compute-metal` + `larql-python`) |
-| `#[allow(...)]` | 308 |
-| Coverage (snapshot 2026-05-16) | compute 96.9 / metal 96.8 / kv 95.1 / router 93.4 / vindex 91.5 / router-protocol 90.6 / models 86.8 / server 78.6 / **inference 70.7** / **cli 12.0** |
+| Signal                                   | Result                                                                                                                                                 |
+|------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `cargo clippy --workspace --all-targets` | 2 warnings total (unused `ProjectorWeights` import + dead `total_tiles` field, both `larql-cli`)                                                       |
+| TODO/FIXME/XXX markers                   | 39                                                                                                                                                     |
+| `.unwrap()` / `.expect()` / `panic!()`   | 6,319 / 1,895 / 458 (overwhelmingly tests + infallible invariants)                                                                                     |
+| `unimplemented!()`                       | 22                                                                                                                                                     |
+| `unsafe` blocks                          | 405 (concentrated in `larql-compute-metal` + `larql-python`)                                                                                           |
+| `#[allow(...)]`                          | 308                                                                                                                                                    |
+| Coverage (snapshot 2026-05-16)           | compute 96.9 / metal 96.8 / kv 95.1 / router 93.4 / vindex 91.5 / router-protocol 90.6 / models 86.8 / server 78.6 / **inference 70.7** / **cli 12.0** |
 
 ## Verdict
 

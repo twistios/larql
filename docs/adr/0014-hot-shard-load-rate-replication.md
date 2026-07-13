@@ -307,14 +307,14 @@ exactly this.
 
 ## Implementation pointers
 
-| File | Role |
-|---|---|
-| `crates/larql-router/src/grid/mod.rs::GridState::elevated_ranges` | The set itself (private field) |
-| `crates/larql-router/src/grid/hot_shard.rs` | `hot_layer_ranges` + `mark_elevated` + `demote_elevated` + `elevated_ranges_snapshot` |
-| `crates/larql-router/src/grid/replication.rs::effective_target_for` | The cascade `target_replicas + bump`; consumed by under/over_replicated_ranges |
-| `crates/larql-router/src/tasks/rebalancer/hot_shard.rs::check_hot_shards` | The rebalancer tick — set-difference elevate/demote |
-| `crates/larql-router/src/tasks/rebalancer/mod.rs` | Loop ordering: hot_shard → under_rep → over_rep |
-| CLI flag | `--hot-shard-rps <FRAC>` on `larql-router` |
+| File                                                                      | Role                                                                                  |
+|---------------------------------------------------------------------------|---------------------------------------------------------------------------------------|
+| `crates/larql-router/src/grid/mod.rs::GridState::elevated_ranges`         | The set itself (private field)                                                        |
+| `crates/larql-router/src/grid/hot_shard.rs`                               | `hot_layer_ranges` + `mark_elevated` + `demote_elevated` + `elevated_ranges_snapshot` |
+| `crates/larql-router/src/grid/replication.rs::effective_target_for`       | The cascade `target_replicas + bump`; consumed by under/over_replicated_ranges        |
+| `crates/larql-router/src/tasks/rebalancer/hot_shard.rs::check_hot_shards` | The rebalancer tick — set-difference elevate/demote                                   |
+| `crates/larql-router/src/tasks/rebalancer/mod.rs`                         | Loop ordering: hot_shard → under_rep → over_rep                                       |
+| CLI flag                                                                  | `--hot-shard-rps <FRAC>` on `larql-router`                                            |
 
 ### Test coverage
 
@@ -328,7 +328,7 @@ exactly this.
 
 Per-file line coverage as of 2026-05-16:
 
-| File | Line coverage |
-|---|---|
-| `grid/hot_shard.rs` | 100.00% |
-| `tasks/rebalancer/hot_shard.rs` | 90.99% |
+| File                            | Line coverage |
+|---------------------------------|---------------|
+| `grid/hot_shard.rs`             | 100.00%       |
+| `tasks/rebalancer/hot_shard.rs` | 90.99%        |

@@ -4,13 +4,13 @@ Every FFN feature has a gate vector (what activates it) and a down vector (what 
 
 ## Circuit types
 
-| Type | Cosine range | Behaviour |
-|---|---|---|
-| **Identity** | > 0.5 | Reads X, writes X back (self-reinforcement) |
-| **Transform** | 0.2 – 0.5 | Reads X, writes a related form (morphological, syntactic) |
-| **Projector** | -0.2 – 0.2 | Reads X, writes something unrelated (factual bridge) |
-| **Suppressor** | -0.5 – -0.2 | Weak direction flip (gating, interference) |
-| **Inverter** | < -0.5 | Strong direction flip (format enforcement, suppression) |
+| Type           | Cosine range | Behaviour                                                 |
+|----------------|--------------|-----------------------------------------------------------|
+| **Identity**   | > 0.5        | Reads X, writes X back (self-reinforcement)               |
+| **Transform**  | 0.2 – 0.5    | Reads X, writes a related form (morphological, syntactic) |
+| **Projector**  | -0.2 – 0.2   | Reads X, writes something unrelated (factual bridge)      |
+| **Suppressor** | -0.5 – -0.2  | Weak direction flip (gating, interference)                |
+| **Inverter**   | < -0.5       | Strong direction flip (format enforcement, suppression)   |
 
 ## Layer architecture (Gemma 3-4B-IT)
 

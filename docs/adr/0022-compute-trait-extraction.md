@@ -141,14 +141,14 @@ clean split.
 
 Six steps, each its own commit, each with parity verification:
 
-| Step | Move | LOC | Verification |
-|---:|---|---:|---|
-| 1 | `residual.rs` leaf functions → `larql-compute/src/residual.rs`. Inference shim re-exports + adds `*_for_arch` wrappers with env-override behaviour preserved. | ~413 | Existing unit tests move with the code + new tests pin the explicit-`eps` contract. Workspace builds clean; clippy clean; fmt clean. |
-| 2 | `run_attention_*`, `run_ffn`, `apply_norm`, related helpers → `larql-compute/src/forward/`. Inference re-exports under `crate::forward::*`. `forward_overrides` moves down or each call site computes its effective param before calling. | ~496 | Existing forward-pass integration tests must pass byte-for-byte; bench numbers unchanged. |
-| 3 | `KvDispatch` trait + handle types (`KvHandle`, `ResidualHandle`, `CompressionCodec`, `KvHandleInner`, `ResidualHandleInner`) + `CpuBackend` impl → `larql-compute/src/kv_dispatch/`. Inference re-exports under `crate::kv_dispatch::*`. | ~1651 | Bit-parity tests from `compute-backend-redesign.md` §10.2 sub-step 2c must pass byte-for-byte vs legacy CPU forward functions. |
-| 4 | `AsyncComputeBackend` trait + handle types + `CpuBackend` impl → `larql-compute/src/async_compute/`. | ~1066 | Engine async parity tests. |
-| 5 | Metal impls of both traits → `larql-compute-metal/src/{kv_dispatch_impl.rs, async_compute_impl.rs}`. `larql-inference/src/{kv_dispatch,async_compute_backend}/metal.rs` deleted. | ~767 | `cargo test --workspace --features metal` on macOS green; `cargo build --workspace` on non-Mac green. |
-| 6 | Trim `#[cfg(feature = "metal")]` dispatcher sites in `layer_graph/hybrid.rs`, `layer_graph/generate/gpu/{mod,decode_loop}.rs`. Orchestration cfg branches stay; trait-impl cfg branches disappear once the impls are sibling-crate types accessed via dispatch. | ~20 sites | Full test suite + `--features metal` on macOS. Decode tok/s bench unchanged ±2%. |
+| Step | Move                                                                                                                                                                                                                                                            |       LOC | Verification                                                                                                                         |
+|-----:|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------:|--------------------------------------------------------------------------------------------------------------------------------------|
+|    1 | `residual.rs` leaf functions → `larql-compute/src/residual.rs`. Inference shim re-exports + adds `*_for_arch` wrappers with env-override behaviour preserved.                                                                                                   |      ~413 | Existing unit tests move with the code + new tests pin the explicit-`eps` contract. Workspace builds clean; clippy clean; fmt clean. |
+|    2 | `run_attention_*`, `run_ffn`, `apply_norm`, related helpers → `larql-compute/src/forward/`. Inference re-exports under `crate::forward::*`. `forward_overrides` moves down or each call site computes its effective param before calling.                       |      ~496 | Existing forward-pass integration tests must pass byte-for-byte; bench numbers unchanged.                                            |
+|    3 | `KvDispatch` trait + handle types (`KvHandle`, `ResidualHandle`, `CompressionCodec`, `KvHandleInner`, `ResidualHandleInner`) + `CpuBackend` impl → `larql-compute/src/kv_dispatch/`. Inference re-exports under `crate::kv_dispatch::*`.                        |     ~1651 | Bit-parity tests from `compute-backend-redesign.md` §10.2 sub-step 2c must pass byte-for-byte vs legacy CPU forward functions.       |
+|    4 | `AsyncComputeBackend` trait + handle types + `CpuBackend` impl → `larql-compute/src/async_compute/`.                                                                                                                                                            |     ~1066 | Engine async parity tests.                                                                                                           |
+|    5 | Metal impls of both traits → `larql-compute-metal/src/{kv_dispatch_impl.rs, async_compute_impl.rs}`. `larql-inference/src/{kv_dispatch,async_compute_backend}/metal.rs` deleted.                                                                                |      ~767 | `cargo test --workspace --features metal` on macOS green; `cargo build --workspace` on non-Mac green.                                |
+|    6 | Trim `#[cfg(feature = "metal")]` dispatcher sites in `layer_graph/hybrid.rs`, `layer_graph/generate/gpu/{mod,decode_loop}.rs`. Orchestration cfg branches stay; trait-impl cfg branches disappear once the impls are sibling-crate types accessed via dispatch. | ~20 sites | Full test suite + `--features metal` on macOS. Decode tok/s bench unchanged ±2%.                                                     |
 
 **Per-step quality gate (every commit):**
 - `cargo build --workspace` clean
@@ -312,19 +312,19 @@ the original ADR ordering (Step 2: forward-pass functions then trait;
 Steps 3–4: traits and their impls) underestimated the dependency
 cascade. The real order to break the cycle:
 
-| Sub-step | What | Status |
-|---|---|---|
-| 2a | `test_fixtures` to larql-models | ✓ landed |
-| 2b | `forward/embed.rs` + `forward/ops.rs` (leaf math) | ✓ landed |
-| 2c | `FfnBackend` trait + activations | ✓ landed |
-| 2d | `attention/{rope,gqa}.rs` (primitives, no inference deps) | pending |
-| 2e | `attention/{block,decode,gpu,mod}.rs` (the spine — `SharedKV`, `run_attention_*`) | pending |
-| 2e2 | `forward/layer.rs` (`run_layer_with_ffn`) + `forward/ple.rs` | pending |
-| 2f | `forward/predict/raw.rs` (`forward_from_layer`) | pending |
-| 3 | `KvDispatch` trait + handles + CpuBackend impl → compute | pending |
-| 4 | `AsyncComputeBackend` trait + handles + CpuBackend impl → compute | pending |
-| 5 | Metal impls of both traits → larql-compute-metal | pending |
-| 6 | Trim dispatcher `#[cfg(feature = "metal")]` sites in inference | pending |
+| Sub-step | What                                                                              | Status   |
+|----------|-----------------------------------------------------------------------------------|----------|
+| 2a       | `test_fixtures` to larql-models                                                   | ✓ landed |
+| 2b       | `forward/embed.rs` + `forward/ops.rs` (leaf math)                                 | ✓ landed |
+| 2c       | `FfnBackend` trait + activations                                                  | ✓ landed |
+| 2d       | `attention/{rope,gqa}.rs` (primitives, no inference deps)                         | pending  |
+| 2e       | `attention/{block,decode,gpu,mod}.rs` (the spine — `SharedKV`, `run_attention_*`) | pending  |
+| 2e2      | `forward/layer.rs` (`run_layer_with_ffn`) + `forward/ple.rs`                      | pending  |
+| 2f       | `forward/predict/raw.rs` (`forward_from_layer`)                                   | pending  |
+| 3        | `KvDispatch` trait + handles + CpuBackend impl → compute                          | pending  |
+| 4        | `AsyncComputeBackend` trait + handles + CpuBackend impl → compute                 | pending  |
+| 5        | Metal impls of both traits → larql-compute-metal                                  | pending  |
+| 6        | Trim dispatcher `#[cfg(feature = "metal")]` sites in inference                    | pending  |
 
 `forward_from_layer` (the original Step 2 target) is now the LAST
 forward-pass move — it sits on top of `forward/layer.rs`, which sits
@@ -558,10 +558,10 @@ Both are mechanical / documentation changes — ~2-3 hours combined.
 Inventory: 23 `#[cfg(all(feature = "metal", target_os = "macos"))]`
 sites in `larql-inference`. Categorisation:
 
-| Trim status | Sites | Action |
-|---|---:|---|
-| Removable (orphaned empty markers) | 2 | Deleted `kv_dispatch/metal.rs` and `async_compute_backend/metal.rs` (both empty after Steps 3e/4). |
-| Necessary orchestration | 21 | Kept. These genuinely need the cfg gate. |
+| Trim status                        | Sites | Action                                                                                             |
+|------------------------------------|------:|----------------------------------------------------------------------------------------------------|
+| Removable (orphaned empty markers) |     2 | Deleted `kv_dispatch/metal.rs` and `async_compute_backend/metal.rs` (both empty after Steps 3e/4). |
+| Necessary orchestration            |    21 | Kept. These genuinely need the cfg gate.                                                           |
 
 The 21 remaining sites are all real Metal-aware orchestration:
 
@@ -673,13 +673,13 @@ explicit notes on:
 
 ### Test count summary
 
-| Crate | Pre-ADR | Post-ADR | Delta |
-|---|---:|---:|---:|
-| larql-models | ~266 | 272 | +6 |
-| larql-compute | ~140 | 449 | **+309** |
-| larql-compute-metal | (Apple-only) | (Apple-only) | — |
-| larql-inference | ~1500 | 1067 | −433 (tests followed files) |
-| **Workspace touched** | ~1900 | **1788** | net −112 (consolidation) |
+| Crate                 |      Pre-ADR |     Post-ADR |                       Delta |
+|-----------------------|-------------:|-------------:|----------------------------:|
+| larql-models          |         ~266 |          272 |                          +6 |
+| larql-compute         |         ~140 |          449 |                    **+309** |
+| larql-compute-metal   | (Apple-only) | (Apple-only) |                           — |
+| larql-inference       |        ~1500 |         1067 | −433 (tests followed files) |
+| **Workspace touched** |        ~1900 |     **1788** |    net −112 (consolidation) |
 
 All four touched crates: `cargo build` clean, `cargo test --lib`
 green, `cargo clippy --tests --no-deps -- -D warnings` clean,
@@ -748,13 +748,13 @@ Step 7 fix:
 
 ### Bench recovery (Gemma 3 4B Q4K Metal, 50 tokens)
 
-| Engine | Original | Post-refactor (regression) | Post-Step-7 + blit-fusion | Δ vs original |
-|---|---:|---:|---:|---:|
-| standard | 105.9 | 44.8 (-57%) | 99.4 | **-6% (vtable dispatch overhead)** |
-| markov-rs | 58.0 | 25.2 (-57%) | 75.3 | **+30%** ✓ |
-| markov-rs-codec | 58.4 | 24.8 (-58%) | 79.0 | **+35%** ✓ |
-| unlimited-context | 56.0 | 23.6 (-58%) | 82.7 | **+48%** ✓ |
-| turbo-quant (10 tok) | 33.0 | 12.2 (-63%) | 37.7 | **+14%** ✓ |
+| Engine               | Original | Post-refactor (regression) | Post-Step-7 + blit-fusion |                      Δ vs original |
+|----------------------|---------:|---------------------------:|--------------------------:|-----------------------------------:|
+| standard             |    105.9 |                44.8 (-57%) |                      99.4 | **-6% (vtable dispatch overhead)** |
+| markov-rs            |     58.0 |                25.2 (-57%) |                      75.3 |                         **+30%** ✓ |
+| markov-rs-codec      |     58.4 |                24.8 (-58%) |                      79.0 |                         **+35%** ✓ |
+| unlimited-context    |     56.0 |                23.6 (-58%) |                      82.7 |                         **+48%** ✓ |
+| turbo-quant (10 tok) |     33.0 |                12.2 (-63%) |                      37.7 |                         **+14%** ✓ |
 
 Four of five engines net positive vs original — concurrent blit-fusion
 optimisation (in `decode/mod.rs`, fuses per-layer Metal blits) lands as

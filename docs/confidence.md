@@ -28,12 +28,12 @@ This gives confidence in [0, 1] normalized within each layer.
 
 Different layers serve different functions in the transformer:
 
-| Layer range | Role | Signal type |
-|---|---|---|
-| L0–L14 | Dark accumulation | Structural, low factual confidence |
-| L14–L25 | Relation differentiation | Mixed, relations emerging |
-| L26 | Fact explosion | Highest factual confidence |
-| L27–L33 | Refinement | Copy, format, consolidation |
+| Layer range | Role                     | Signal type                        |
+|-------------|--------------------------|------------------------------------|
+| L0–L14      | Dark accumulation        | Structural, low factual confidence |
+| L14–L25     | Relation differentiation | Mixed, relations emerging          |
+| L26         | Fact explosion           | Highest factual confidence         |
+| L27–L33     | Refinement               | Copy, format, consolidation        |
 
 A confidence of 0.8 at L26 means "strong factual edge." A confidence of 0.8 at L3 means "strong structural edge." Both are valid but serve different purposes. Per-layer normalization keeps scores comparable within their function. The `layer` field lets you weight across layers at query time.
 
@@ -41,10 +41,10 @@ A confidence of 0.8 at L26 means "strong factual edge." A confidence of 0.8 at L
 
 Empirical results from Gemma 3-4B show that **confidence and selectivity measure different things:**
 
-| Score | What it measures | Peaks at | Correlates with |
-|---|---|---|---|
+| Score            | What it measures                      | Peaks at                  | Correlates with                           |
+|------------------|---------------------------------------|---------------------------|-------------------------------------------|
 | `c` (confidence) | Combined signal: `c_in × c_out / max` | Early/mid layers (L6–L12) | Structural edges — function words, syntax |
-| `selectivity` | Input specificity: `c_in / max(c_in)` | Late layers (L25–L33) | Factual edges — proper nouns, entities |
+| `selectivity`    | Input specificity: `c_in / max(c_in)` | Late layers (L25–L33)     | Factual edges — proper nouns, entities    |
 
 Early layers have features that fire broadly (low c_in) but write strongly to common tokens (high c_out). This gives high confidence but low selectivity — these are structural edges ("the", "is", "a").
 
@@ -72,14 +72,14 @@ Late layers have features that fire specifically for entities (high c_in) but wr
 }
 ```
 
-| Field | Description |
-|---|---|
-| `c` | Normalized confidence [0, 1] — `(c_in × c_out) / max` per layer |
+| Field         | Description                                                        |
+|---------------|--------------------------------------------------------------------|
+| `c`           | Normalized confidence [0, 1] — `(c_in × c_out) / max` per layer    |
 | `selectivity` | Normalized input selectivity [0, 1] — `c_in / max(c_in)` per layer |
-| `c_in` | Raw input selectivity (gate projection magnitude) |
-| `c_out` | Raw output strength (down projection magnitude) |
-| `layer` | Source transformer layer |
-| `feature` | Source FFN feature index |
+| `c_in`        | Raw input selectivity (gate projection magnitude)                  |
+| `c_out`       | Raw output strength (down projection magnitude)                    |
+| `layer`       | Source transformer layer                                           |
+| `feature`     | Source FFN feature index                                           |
 
 ## Filtering at query time
 
@@ -110,20 +110,20 @@ larql weight-extract google/gemma-3-4b-it \
 
 Stats file contains per-layer:
 
-| Field | Description |
-|---|---|
-| `mean_confidence` | Average normalized confidence (c_in × c_out) |
-| `max_confidence` | Highest confidence edge |
-| `mean_selectivity` | Average normalized selectivity (c_in) |
-| `max_selectivity` | Highest selectivity edge |
-| `mean_c_in` | Average raw input selectivity |
-| `mean_c_out` | Average raw output strength |
-| `self_loop_count` | Edges where subject == object (identity reinforcement) |
-| `self_loop_pct` | Self-loop percentage |
-| `top_subjects` | Top 10 subjects by frequency, with avg confidence |
-| `top_objects` | Top 10 objects by frequency, with avg confidence |
-| `edges_found` | Total edges extracted from this layer |
-| `features_scanned` | Number of FFN features walked |
+| Field              | Description                                            |
+|--------------------|--------------------------------------------------------|
+| `mean_confidence`  | Average normalized confidence (c_in × c_out)           |
+| `max_confidence`   | Highest confidence edge                                |
+| `mean_selectivity` | Average normalized selectivity (c_in)                  |
+| `max_selectivity`  | Highest selectivity edge                               |
+| `mean_c_in`        | Average raw input selectivity                          |
+| `mean_c_out`       | Average raw output strength                            |
+| `self_loop_count`  | Edges where subject == object (identity reinforcement) |
+| `self_loop_pct`    | Self-loop percentage                                   |
+| `top_subjects`     | Top 10 subjects by frequency, with avg confidence      |
+| `top_objects`      | Top 10 objects by frequency, with avg confidence       |
+| `edges_found`      | Total edges extracted from this layer                  |
+| `features_scanned` | Number of FFN features walked                          |
 
 **Validation targets:**
 - Factual layers (L25+) should have the highest `mean_selectivity`
@@ -135,11 +135,11 @@ Stats file contains per-layer:
 
 For Gemma 3-4B-IT (34 layers, 10240 features/layer):
 
-| Metric | Approximate value |
-|---|---|
-| Total edges | ~8M |
-| Edges at c >= 0.1 | ~500K–1M |
-| Edges at c >= 0.5 | ~30K–50K |
-| JSON file (complete) | ~1.5 GB |
-| JSON file (c >= 0.1) | ~200 MB |
-| MessagePack (complete) | ~700 MB |
+| Metric                 | Approximate value |
+|------------------------|-------------------|
+| Total edges            | ~8M               |
+| Edges at c >= 0.1      | ~500K–1M          |
+| Edges at c >= 0.5      | ~30K–50K          |
+| JSON file (complete)   | ~1.5 GB           |
+| JSON file (c >= 0.1)   | ~200 MB           |
+| MessagePack (complete) | ~700 MB           |

@@ -27,9 +27,9 @@ let result = predict_with_ffn(weights, tokenizer, &token_ids, 5, &ffn);
 
 ## Benchmarks
 
-| K | FFN time | vs Dense | Match rate |
-|---|----------|----------|------------|
-| 64 | 8.0ms | 0.75x | 10% |
-| 512 | 9.4ms | 0.64x | 20% |
-| 4096 | 21.9ms | 0.28x | 70% |
-| 8092 | 6.0ms | 1.01x (fallback) | 100% |
+| K    | FFN time | vs Dense         | Match rate |
+|------|----------|------------------|------------|
+| 64   | 8.0ms    | 0.75x            | 10%        |
+| 512  | 9.4ms    | 0.64x            | 20%        |
+| 4096 | 21.9ms   | 0.28x            | 70%        |
+| 8092 | 6.0ms    | 1.01x (fallback) | 100%       |

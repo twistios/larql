@@ -27,11 +27,11 @@ on a *fresh/uncached* blob. The probe self-checks via the major-fault count (SPI
 
 ## Result — `granite-4.1-30b-q4k` `gate_vectors.bin` (17.2 GB, fresh/cold)
 
-| access pattern | p50 | p99 | mean | eff. bandwidth | faults |
-|---|---:|---:|---:|---:|---|
-| **cold sparse (scattered, F_NOCACHE pread)** | **100µs** | 140µs | 102µs | 153 MB/s | genuine disk |
-| cold sequential (mmap, MADV_RANDOM) | 18µs | 160µs | 28µs | 556 MB/s | 1,048,576 verified major |
-| warm (resident mmap) | 0.04µs | 0.2µs | 0.1µs | 207 GB/s | 0 major |
+| access pattern                               |       p50 |   p99 |  mean | eff. bandwidth | faults                   |
+|----------------------------------------------|----------:|------:|------:|---------------:|--------------------------|
+| **cold sparse (scattered, F_NOCACHE pread)** | **100µs** | 140µs | 102µs |       153 MB/s | genuine disk             |
+| cold sequential (mmap, MADV_RANDOM)          |      18µs | 160µs |  28µs |       556 MB/s | 1,048,576 verified major |
+| warm (resident mmap)                         |    0.04µs | 0.2µs | 0.1µs |       207 GB/s | 0 major                  |
 
 A cold **scattered** 16 KB read — the real top-k-expert access pattern — is **~100µs
 median / 140µs p99** (153 MB/s for pure-random; sequential offsets get ~5× more from

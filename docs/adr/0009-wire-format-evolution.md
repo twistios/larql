@@ -42,11 +42,11 @@ Add two new content-types alongside the existing f32 format. All three
 coexist; the server falls back gracefully when the client does not advertise
 a preference.
 
-| Content-Type | Dtype | Bytes/value | Change |
-|---|---|---|---|
-| `application/x-larql-ffn` | f32 LE | 4 | existing (unchanged) |
-| `application/x-larql-ffn-f16` | f16 LE (IEEE 754) | 2 | new — **default for grid** |
-| `application/x-larql-ffn-i8` | i8 symmetric | 1 + 8 byte header | new — opt-in |
+| Content-Type                  | Dtype             | Bytes/value       | Change                     |
+|-------------------------------|-------------------|-------------------|----------------------------|
+| `application/x-larql-ffn`     | f32 LE            | 4                 | existing (unchanged)       |
+| `application/x-larql-ffn-f16` | f16 LE (IEEE 754) | 2                 | new — **default for grid** |
+| `application/x-larql-ffn-i8`  | i8 symmetric      | 1 + 8 byte header | new — opt-in               |
 
 **f16 becomes the default** for the `RemoteWalkBackend` and `RemoteMoeBackend`
 clients (all grid traffic). Non-grid HTTP clients that omit `Accept` continue
@@ -149,14 +149,14 @@ The accuracy threshold may differ by model family and quantisation format:
 
 ## Implementation
 
-| File | Change |
-|---|---|
-| `crates/larql-server/src/wire.rs` | Add `F16_CT`, `I8_CT` constants; `fn preferred_response_ct(accept: &str) -> &str` |
-| `crates/larql-server/src/env_flags.rs` | Add `F16_WIRE = "LARQL_F16_WIRE"`, `I8_WIRE = "LARQL_I8_WIRE"` |
-| `crates/larql-server/src/routes/walk_ffn.rs` | Inspect Accept header; branch encode_binary_output to f16/i8 paths |
-| `crates/larql-inference/src/ffn/remote/codec.rs` | Add `encode_f16_request`, `decode_f16_single/batch`, `encode_i8_request`, `decode_i8_single/batch` |
-| `crates/larql-inference/src/ffn/remote/http.rs` | Set `Accept` header based on `WireFormat` enum; decode by response Content-Type |
-| `crates/larql-inference/benches/wire_codec.rs` | New criterion bench: encode/decode throughput (MB/s) at hidden_size 2560/4096/5120, seq_len 1/32/256 |
+| File                                             | Change                                                                                               |
+|--------------------------------------------------|------------------------------------------------------------------------------------------------------|
+| `crates/larql-server/src/wire.rs`                | Add `F16_CT`, `I8_CT` constants; `fn preferred_response_ct(accept: &str) -> &str`                    |
+| `crates/larql-server/src/env_flags.rs`           | Add `F16_WIRE = "LARQL_F16_WIRE"`, `I8_WIRE = "LARQL_I8_WIRE"`                                       |
+| `crates/larql-server/src/routes/walk_ffn.rs`     | Inspect Accept header; branch encode_binary_output to f16/i8 paths                                   |
+| `crates/larql-inference/src/ffn/remote/codec.rs` | Add `encode_f16_request`, `decode_f16_single/batch`, `encode_i8_request`, `decode_i8_single/batch`   |
+| `crates/larql-inference/src/ffn/remote/http.rs`  | Set `Accept` header based on `WireFormat` enum; decode by response Content-Type                      |
+| `crates/larql-inference/benches/wire_codec.rs`   | New criterion bench: encode/decode throughput (MB/s) at hidden_size 2560/4096/5120, seq_len 1/32/256 |
 
 ---
 

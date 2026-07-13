@@ -27,10 +27,10 @@ please verify with the snippet below.)
 The shipped `tokenizer.json` and `tokenizer_config.json` declare
 **incompatible** tokenizers:
 
-| File | Source of truth | Pre-tokenization regex |
-|---|---|---|
-| `tokenizer_config.json` | `"tokenizer_class": "GPT2Tokenizer"` | Classic GPT-2: `'s|'t|'re|'ve|'m|'ll|'d| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+` |
-| `tokenizer.json` | `pre_tokenizer.pretokenizers[0].pattern.Regex` | **cl100k_base** (GPT-4 / Llama 3 style): `(?i:'s|'t|'re|'ve|'m|'ll|'d)|[^\r\n\p{L}\p{N}]?\p{L}+|\p{N}{1,3}| ?[^\s\p{L}\p{N}]+[\r\n]*|\s*[\r\n]+|\s+(?!\S)|\s+` |
+| File                    | Source of truth                                | Pre-tokenization regex                           |
+|-------------------------|------------------------------------------------|--------------------------------------------------|
+| `tokenizer_config.json` | `"tokenizer_class": "GPT2Tokenizer"`           | Classic GPT-2: `'s                               |'t|'re|'ve|'m|'ll|'d| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+` |
+| `tokenizer.json`        | `pre_tokenizer.pretokenizers[0].pattern.Regex` | **cl100k_base** (GPT-4 / Llama 3 style): `(?i:'s |'t|'re|'ve|'m|'ll|'d)|[^\r\n\p{L}\p{N}]?\p{L}+|\p{N}{1,3}| ?[^\s\p{L}\p{N}]+[\r\n]*|\s*[\r\n]+|\s+(?!\S)|\s+` |
 
 Both files share the same vocab + merges (`vocab.json` + `merges.txt`,
 also embedded inside `tokenizer.json`), but the two pre-tokenizer
@@ -112,11 +112,11 @@ LARQL's three-engine shannon-verify gate showed the cost cleanly. The
 LARQL Rust forward path is correct *given the input* — but the input
 differs from what HF/MLX feed the same model:
 
-| Engine | Tokenization source | Tokens | bits/char | Δ vs HF |
-|---|---|---:|---:|---:|
-| LARQL Rust (pre-fix) | `tokenizer.json` (cl100k) | 243 | 0.5975 | −42.43 % |
-| MLX | HF AutoTokenizer (GPT-2) | 263 | 1.0378 | −0.000 % |
-| HF / PyTorch | HF AutoTokenizer (GPT-2) | 263 | 1.0378 | — |
+| Engine               | Tokenization source       | Tokens | bits/char |  Δ vs HF |
+|----------------------|---------------------------|-------:|----------:|---------:|
+| LARQL Rust (pre-fix) | `tokenizer.json` (cl100k) |    243 |    0.5975 | −42.43 % |
+| MLX                  | HF AutoTokenizer (GPT-2)  |    263 |    1.0378 | −0.000 % |
+| HF / PyTorch         | HF AutoTokenizer (GPT-2)  |    263 |    1.0378 |        — |
 
 bits/char is supposed to be tokenization-invariant (the total
 information content of the text is fixed). It isn't here because the

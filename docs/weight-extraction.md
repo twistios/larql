@@ -84,23 +84,23 @@ larql stats output/gemma-3-4b-knowledge.larql.json
 
 ## Timing summary (Gemma 3-4B-IT on Apple Silicon Mac)
 
-| Step | Time |
-|---|---|
-| Vindex extraction (browse, f16) | ~45 min |
-| Weight walk (34 layers, 8.5M edges) | ~40 min |
+| Step                                         | Time    |
+|----------------------------------------------|---------|
+| Vindex extraction (browse, f16)              | ~45 min |
+| Weight walk (34 layers, 8.5M edges)          | ~40 min |
 | Vector extract (6 components, 1.29M vectors) | ~45 min |
-| Residual capture (50 entities × 1 layer) | ~10 min |
+| Residual capture (50 entities × 1 layer)     | ~10 min |
 
 ## Commands used
 
-| Command | What it does |
-|---|---|
-| `larql extract-index` | Build a .vindex from model weights |
-| `larql repl` | Launch the LQL interactive REPL |
-| `larql lql` | Execute a single LQL statement |
-| `larql weight-extract` | Extract edges from FFN weights (zero forward passes) |
-| `larql vector-extract` | Extract weight vectors to NDJSON |
-| `larql residuals capture` | Forward passes for seed entities, capture hidden states |
-| `larql attention-extract` | Extract edges from attention OV circuits |
-| `larql stats` | Display graph statistics |
-| `larql query` / `larql describe` | Query the edge graph |
+| Command                          | What it does                                            |
+|----------------------------------|---------------------------------------------------------|
+| `larql extract-index`            | Build a .vindex from model weights                      |
+| `larql repl`                     | Launch the LQL interactive REPL                         |
+| `larql lql`                      | Execute a single LQL statement                          |
+| `larql weight-extract`           | Extract edges from FFN weights (zero forward passes)    |
+| `larql vector-extract`           | Extract weight vectors to NDJSON                        |
+| `larql residuals capture`        | Forward passes for seed entities, capture hidden states |
+| `larql attention-extract`        | Extract edges from attention OV circuits                |
+| `larql stats`                    | Display graph statistics                                |
+| `larql query` / `larql describe` | Query the edge graph                                    |

@@ -58,20 +58,20 @@ Same listener, same auth (none today — `/metrics` is unauth like
 
 ### Metric set (tier 1 — minimum viable)
 
-| Name | Type | Labels | Source |
-|---|---|---|---|
-| `larql_router_build_info` | Gauge | `version`, `crate_version` | Static, set at startup; value always `1` |
-| `larql_router_grid_servers` | Gauge | `state` ∈ {`serving`, `available`} | Scrape-time from `GridState` |
-| `larql_router_grid_models` | Gauge | — | Scrape-time |
-| `larql_router_grid_coverage_gaps` | Gauge | — | Scrape-time |
-| `larql_router_grid_elevated_ranges` | Gauge | — | Scrape-time |
-| `larql_router_target_replicas` | Gauge | — | Scrape-time |
-| `larql_router_grid_registers_total` | Counter | — | Event-driven |
-| `larql_router_grid_deregisters_total` | Counter | `reason` ∈ {`stream_close`, `dropping`, `stale`} | Event-driven |
-| `larql_router_rebalancer_actions_total` | Counter | `action` ∈ {`replicate`, `drop`, `elevate`, `demote`, `evict`, `unassign_imbalance`} | Event-driven |
-| `larql_router_rtt_probes_total` | Counter | `outcome` ∈ {`success`, `non_2xx`, `error`} | Event-driven |
-| `larql_router_walk_ffn_requests_total` | Counter | `status` ∈ {`success`, `error_4xx`, `error_5xx`} | Event-driven |
-| `larql_router_walk_ffn_duration_seconds` | Histogram | — | Event-driven |
+| Name                                     | Type      | Labels                                                                               | Source                                   |
+|------------------------------------------|-----------|--------------------------------------------------------------------------------------|------------------------------------------|
+| `larql_router_build_info`                | Gauge     | `version`, `crate_version`                                                           | Static, set at startup; value always `1` |
+| `larql_router_grid_servers`              | Gauge     | `state` ∈ {`serving`, `available`}                                                   | Scrape-time from `GridState`             |
+| `larql_router_grid_models`               | Gauge     | —                                                                                    | Scrape-time                              |
+| `larql_router_grid_coverage_gaps`        | Gauge     | —                                                                                    | Scrape-time                              |
+| `larql_router_grid_elevated_ranges`      | Gauge     | —                                                                                    | Scrape-time                              |
+| `larql_router_target_replicas`           | Gauge     | —                                                                                    | Scrape-time                              |
+| `larql_router_grid_registers_total`      | Counter   | —                                                                                    | Event-driven                             |
+| `larql_router_grid_deregisters_total`    | Counter   | `reason` ∈ {`stream_close`, `dropping`, `stale`}                                     | Event-driven                             |
+| `larql_router_rebalancer_actions_total`  | Counter   | `action` ∈ {`replicate`, `drop`, `elevate`, `demote`, `evict`, `unassign_imbalance`} | Event-driven                             |
+| `larql_router_rtt_probes_total`          | Counter   | `outcome` ∈ {`success`, `non_2xx`, `error`}                                          | Event-driven                             |
+| `larql_router_walk_ffn_requests_total`   | Counter   | `status` ∈ {`success`, `error_4xx`, `error_5xx`}                                     | Event-driven                             |
+| `larql_router_walk_ffn_duration_seconds` | Histogram | —                                                                                    | Event-driven                             |
 
 ### Cardinality discipline
 
@@ -198,19 +198,19 @@ could split metrics onto a private port; not in this ADR.
 
 ## Implementation pointers
 
-| File | Role |
-|---|---|
-| `crates/larql-router/Cargo.toml` | Add `prometheus = "0.13"` dependency |
-| `crates/larql-router/src/metrics.rs` | `RouterMetrics` struct + handles + `Registry` + `refresh_gauges` |
-| `crates/larql-router/src/lib.rs` | `pub mod metrics;` |
-| `crates/larql-router/src/http.rs` | `/metrics` route, `handle_metrics` handler, observe walk-ffn duration + status |
-| `crates/larql-router/src/grid/mod.rs::GridState::register` | `metrics.grid_registers.inc()` |
-| `crates/larql-router/src/grid/mod.rs::GridState::deregister` | `metrics.grid_deregisters.with_label_values(...).inc()` |
-| `crates/larql-router/src/grid/hot_shard.rs::{mark_elevated, demote_elevated}` | `metrics.rebalancer_actions.with_label_values(...).inc()` |
-| `crates/larql-router/src/tasks/rebalancer/*.rs` | counter bumps in `check_*` |
-| `crates/larql-router/src/tasks/rebalancer/mod.rs::rebalancer_task` | call `metrics.refresh_gauges(&state)` at end of each tick |
-| `crates/larql-router/src/tasks/rtt_probe.rs::probe_one` | outcome counter bump |
-| `crates/larql-router/src/main.rs` | construct `Arc<RouterMetrics>` at startup, pass to `AppState` and to `rebalancer::spawn` / `rtt_probe::spawn` |
+| File                                                                          | Role                                                                                                          |
+|-------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
+| `crates/larql-router/Cargo.toml`                                              | Add `prometheus = "0.13"` dependency                                                                          |
+| `crates/larql-router/src/metrics.rs`                                          | `RouterMetrics` struct + handles + `Registry` + `refresh_gauges`                                              |
+| `crates/larql-router/src/lib.rs`                                              | `pub mod metrics;`                                                                                            |
+| `crates/larql-router/src/http.rs`                                             | `/metrics` route, `handle_metrics` handler, observe walk-ffn duration + status                                |
+| `crates/larql-router/src/grid/mod.rs::GridState::register`                    | `metrics.grid_registers.inc()`                                                                                |
+| `crates/larql-router/src/grid/mod.rs::GridState::deregister`                  | `metrics.grid_deregisters.with_label_values(...).inc()`                                                       |
+| `crates/larql-router/src/grid/hot_shard.rs::{mark_elevated, demote_elevated}` | `metrics.rebalancer_actions.with_label_values(...).inc()`                                                     |
+| `crates/larql-router/src/tasks/rebalancer/*.rs`                               | counter bumps in `check_*`                                                                                    |
+| `crates/larql-router/src/tasks/rebalancer/mod.rs::rebalancer_task`            | call `metrics.refresh_gauges(&state)` at end of each tick                                                     |
+| `crates/larql-router/src/tasks/rtt_probe.rs::probe_one`                       | outcome counter bump                                                                                          |
+| `crates/larql-router/src/main.rs`                                             | construct `Arc<RouterMetrics>` at startup, pass to `AppState` and to `rebalancer::spawn` / `rtt_probe::spawn` |
 
 ### Test coverage
 

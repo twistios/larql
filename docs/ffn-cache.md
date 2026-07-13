@@ -77,12 +77,12 @@ This is validated in `examples/ffn_cache_demo.rs` (Scenario 3) and is the correc
 
 ## Expected Hit Rates
 
-| Scenario | L1 | L2 (warmed) |
-|---|---|---|
-| Repeated identical residual (same token) | ~100% | — |
-| Paraphrase collapse (cos ≈ 0.99) | 60–90% | — |
-| Common factual queries | 10–20% | 60–80% |
-| Novel entities / unusual prompts | 5–10% | 20–30% |
+| Scenario                                 | L1     | L2 (warmed) |
+|------------------------------------------|--------|-------------|
+| Repeated identical residual (same token) | ~100%  | —           |
+| Paraphrase collapse (cos ≈ 0.99)         | 60–90% | —           |
+| Common factual queries                   | 10–20% | 60–80%      |
+| Novel entities / unusual prompts         | 5–10%  | 20–30%      |
 
 ---
 
@@ -104,10 +104,10 @@ This prints baseline (no cache), cold-cache, warm-cache (100% hit), and rotating
 
 Both L1 and L2 use a simple capacity cap per layer: once `max_entries` is reached, new entries are silently dropped. There is no LRU eviction in the current implementation.
 
-| Tier | Default capacity | Approximate memory |
-|---|---|---|
-| L1 | 4096 per layer | ≤1.3GB total (34 layers × 4096 × 10KB) |
-| L2 | 4096 per layer | ≤1.3GB total |
+| Tier | Default capacity | Approximate memory                     |
+|------|------------------|----------------------------------------|
+| L1   | 4096 per layer   | ≤1.3GB total (34 layers × 4096 × 10KB) |
+| L2   | 4096 per layer   | ≤1.3GB total                           |
 
 For most inference sessions the working set is far smaller — typical generation sessions see 10–200 unique feature sets per layer.
 

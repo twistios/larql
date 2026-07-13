@@ -112,21 +112,21 @@ goes away (nothing left to dequantize → also kills that slice of the load tax)
 `run_attention_block_decode_step_backend` (decode.rs:111), in order, with what a
 Q4K-direct path changes (✅ swap) vs preserves byte-for-byte (➖ keep):
 
-| Step | decode.rs | Cost shape (per token) | Q4K-direct? |
-|---|---|---|---|
-| input RMS-norm | :136 `apply_norm` | O(hidden) | ➖ keep f32 |
-| **Q proj** | :145 `dot_proj_gpu(h_norm, w_q)` | hidden × q_dim matvec | ✅ **swap → q4k_matvec** |
-| Q bias | :146 | O(q_dim) | ➖ keep |
-| QK-norm (Gemma) | :159 `rms_norm_heads` | O(q_dim) | ➖ keep |
-| RoPE(Q) | :171 `apply_rope_partial_at_full` | O(q_dim) | ➖ keep |
-| **K proj** | :191 `dot_proj_gpu(h_norm, w_k)` | hidden × kv_dim | ✅ **swap** |
-| **V proj** | :192 `dot_proj_gpu(h_norm, w_v)` | hidden × kv_dim | ✅ **swap** |
-| K/V bias, V-norm, K-norm | :193-214 | O(kv_dim) | ➖ keep |
-| RoPE(K) | :215 | O(kv_dim) | ➖ keep |
-| **KV-concat memcpy** | :227-248 | **O(cached_len × kv_dim)** — grows | ➖ keep f32 |
-| **GQA decode step** | :251 `gqa_attention_decode_step` (decode.rs:29) | **O(cached_len × head_dim × num_q)** — grows | ➖ keep f32 |
-| **O proj** | :255 `dot_proj_gpu(attn_out, w_o)` | q_dim × hidden | ✅ **swap** |
-| O bias, post-norm, residual | :256-280 | O(hidden) | ➖ keep |
+| Step                        | decode.rs                                       | Cost shape (per token)                       | Q4K-direct?             |
+|-----------------------------|-------------------------------------------------|----------------------------------------------|-------------------------|
+| input RMS-norm              | :136 `apply_norm`                               | O(hidden)                                    | ➖ keep f32              |
+| **Q proj**                  | :145 `dot_proj_gpu(h_norm, w_q)`                | hidden × q_dim matvec                        | ✅ **swap → q4k_matvec** |
+| Q bias                      | :146                                            | O(q_dim)                                     | ➖ keep                  |
+| QK-norm (Gemma)             | :159 `rms_norm_heads`                           | O(q_dim)                                     | ➖ keep                  |
+| RoPE(Q)                     | :171 `apply_rope_partial_at_full`               | O(q_dim)                                     | ➖ keep                  |
+| **K proj**                  | :191 `dot_proj_gpu(h_norm, w_k)`                | hidden × kv_dim                              | ✅ **swap**              |
+| **V proj**                  | :192 `dot_proj_gpu(h_norm, w_v)`                | hidden × kv_dim                              | ✅ **swap**              |
+| K/V bias, V-norm, K-norm    | :193-214                                        | O(kv_dim)                                    | ➖ keep                  |
+| RoPE(K)                     | :215                                            | O(kv_dim)                                    | ➖ keep                  |
+| **KV-concat memcpy**        | :227-248                                        | **O(cached_len × kv_dim)** — grows           | ➖ keep f32              |
+| **GQA decode step**         | :251 `gqa_attention_decode_step` (decode.rs:29) | **O(cached_len × head_dim × num_q)** — grows | ➖ keep f32              |
+| **O proj**                  | :255 `dot_proj_gpu(attn_out, w_o)`              | q_dim × hidden                               | ✅ **swap**              |
+| O bias, post-norm, residual | :256-280                                        | O(hidden)                                    | ➖ keep                  |
 
 The function's own comment (decode.rs:104-108) already asserts the thesis:
 *"GQA softmax + weighted-V stays on CPU — that's O(cached_len × head_dim × num_q)
@@ -137,13 +137,13 @@ True at short context; see the caveat below.
 
 Projection weights per layer (the ✅ rows):
 
-| | sliding layer | global layer |
-|---|---|---|
-| Q `[q_dim, hidden]` | [4096, 2816] = 11.5M | [8192, 2816] = 23.1M |
-| K `[kv_dim, hidden]` | [2048, 2816] = 5.8M | [2048, 2816] = 5.8M |
-| V `[kv_dim, hidden]` | [2048, 2816] = 5.8M | [2048, 2816] = 5.8M |
-| O `[hidden, q_dim]` | [2816, 4096] = 11.5M | [2816, 8192] = 23.1M |
-| **total / layer** | **~34.6M** | **~57.7M** |
+|                      | sliding layer        | global layer         |
+|----------------------|----------------------|----------------------|
+| Q `[q_dim, hidden]`  | [4096, 2816] = 11.5M | [8192, 2816] = 23.1M |
+| K `[kv_dim, hidden]` | [2048, 2816] = 5.8M  | [2048, 2816] = 5.8M  |
+| V `[kv_dim, hidden]` | [2048, 2816] = 5.8M  | [2048, 2816] = 5.8M  |
+| O `[hidden, q_dim]`  | [2816, 4096] = 11.5M | [2816, 8192] = 23.1M |
+| **total / layer**    | **~34.6M**           | **~57.7M**           |
 
 Per-token weight **bandwidth** (the bound — these are matvecs at seq_len=1):
 - **f32 today** (post-dequant, read from RAM): ~138 MB/layer (sliding) → ~4 GB/token across 30 layers for attention weights alone.
@@ -255,15 +255,15 @@ unaccelerated f32 GQA, across a cached_len sweep at 26B dims. **Projection cost
 is flat & bandwidth-bound (~40 ms/token blended, constant); GQA grows with
 cached_len.** Blended per-token (25 sliding + 5 global, W=1024 sliding cap):
 
-| ctx | proj ms | gqa ms | **proj %** |
-|---:|---:|---:|---:|
-| 32 | 40.0 | 0.68 | **98.3%** |
-| 128 | 41.6 | 1.1 | **97.4%** |
-| 512 | 39.5 | 3.4 | **92.1%** |
-| 1024 | 40.7 | 8.4 | **82.8%** |
-| 2048 | 40.7 | 13.8 | **74.8%** |
-| 4096 | 40.6 | 22.8 | **64.1%** |
-| 8192 | 40.6 | 40.2 | **50.3%** |
+|  ctx | proj ms | gqa ms | **proj %** |
+|-----:|--------:|-------:|-----------:|
+|   32 |    40.0 |   0.68 |  **98.3%** |
+|  128 |    41.6 |    1.1 |  **97.4%** |
+|  512 |    39.5 |    3.4 |  **92.1%** |
+| 1024 |    40.7 |    8.4 |  **82.8%** |
+| 2048 |    40.7 |   13.8 |  **74.8%** |
+| 4096 |    40.6 |   22.8 |  **64.1%** |
+| 8192 |    40.6 |   40.2 |  **50.3%** |
 
 **Reading:** at the band where the 28% was measured (ctx ≈ 32–128) projections
 are **97–98%** of the attention block — Q4K-direct addresses ~all of the 28%.
@@ -277,10 +277,10 @@ The decisive question: does `q4k_matvec` actually beat Apple AMX/Accelerate f32
 sgemm, or does AMX throughput eat the 7× bandwidth cut? Per-projection, same
 matrix, q4k weights quantized once outside the timed loop:
 
-| | f32 ms | q4k ms | **speedup** |
-|---|---:|---:|---:|
-| sliding block (Q+K+V+O) | 1.225 | 0.594 | **2.06×** |
-| global block (Q+K+V+O) | 2.073 | 0.824 | **2.51×** |
+|                         | f32 ms | q4k ms | **speedup** |
+|-------------------------|-------:|-------:|------------:|
+| sliding block (Q+K+V+O) |  1.225 |  0.594 |   **2.06×** |
+| global block (Q+K+V+O)  |  2.073 |  0.824 |   **2.51×** |
 
 **Reading:** Q4K-direct wins **2.06–2.51×** on the projection — the bandwidth cut
 nets out (realized speedup < the 7× byte ratio because AMX f32 is already

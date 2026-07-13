@@ -8,13 +8,13 @@
 
 ## Results (N=40)
 
-| layer | relation train | relation **synonym-gen** | per-synonym | entity top-1 (cosine-NN) |
-|---|---|---|---|---|
-| L6  | 1.00 | **1.00** | all 1.00 | 0.12 |
-| L10 | 1.00 | **1.00** | all 1.00 | 0.17 |
-| L14 | 1.00 | **1.00** | all 1.00 | 0.07 |
-| L20 | 1.00 | 0.99 | cash 0.93, rest 1.00 | 0.20 |
-| L26 | 1.00 | **1.00** | all 1.00 | **0.78** |
+| layer | relation train | relation **synonym-gen** | per-synonym          | entity top-1 (cosine-NN) |
+|-------|----------------|--------------------------|----------------------|--------------------------|
+| L6    | 1.00           | **1.00**                 | all 1.00             | 0.12                     |
+| L10   | 1.00           | **1.00**                 | all 1.00             | 0.17                     |
+| L14   | 1.00           | **1.00**                 | all 1.00             | 0.07                     |
+| L20   | 1.00           | 0.99                     | cash 0.93, rest 1.00 | 0.20                     |
+| L26   | 1.00           | **1.00**                 | all 1.00             | **0.78**                 |
 
 (Relation = softmax probe over 3 relation classes; synonym-gen = accuracy on held-out relation words, the real metric. Entity = cosine-NN top-1, capital-train keys / paraphrase query — the FR1 object, for the asymmetry.)
 

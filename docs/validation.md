@@ -24,12 +24,12 @@ Each result is a cosine similarity search against 262,208 token embeddings. The 
 
 ### What the graph captures vs what inference produces
 
-| Graph edge | Graph answer | Model inference | Same knowledge? |
-|---|---|---|---|
-| Toulouse → French | French | "a city in southern France" | Yes — different expression |
-| Rome → Roman | Roman | "Italian" | Yes — different facet |
-| Dutch → Dutch | Dutch, Netherlands, Amsterdam | "Dutch" | Yes — exact match |
-| € → euros | euros, EU, Spain | "the euro" | Yes — same concept |
+| Graph edge        | Graph answer                  | Model inference             | Same knowledge?            |
+|-------------------|-------------------------------|-----------------------------|----------------------------|
+| Toulouse → French | French                        | "a city in southern France" | Yes — different expression |
+| Rome → Roman      | Roman                         | "Italian"                   | Yes — different facet      |
+| Dutch → Dutch     | Dutch, Netherlands, Amsterdam | "Dutch"                     | Yes — exact match          |
+| € → euros         | euros, EU, Spain              | "the euro"                  | Yes — same concept         |
 
 The graph stores **associations** (what's connected in the weights). The model generates **text** (fluent continuation). Both encode the same underlying knowledge, expressed differently.
 

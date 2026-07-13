@@ -59,10 +59,10 @@ one in isolation.
 
 ## Baselines
 
-| date | model | vindex | bucket | paths tested | min cos | max rel L2 | Paris ΔP | n_obs | verdict |
-|---|---|---|---|---|---|---|---|---|---|
-| 2026-05-01 | google/gemma-3-4b-it | gemma3-4b-f16 | Exact | sparse, full_mmap, exact | 0.999997 | 1.881e-3 | 1.43e-4 | 1,326 | 3/3 PASS |
-| 2026-05-01 | google/gemma-3-4b-it | gemma3-4b-q4k-v2 | Quantized | sparse, interleaved_q4k | 0.992737 | 1.205e-1 | 2.58e-2 | 1,326 | 2/2 PASS |
+| date       | model                | vindex           | bucket    | paths tested             | min cos  | max rel L2 | Paris ΔP | n_obs | verdict  |
+|------------|----------------------|------------------|-----------|--------------------------|----------|------------|----------|-------|----------|
+| 2026-05-01 | google/gemma-3-4b-it | gemma3-4b-f16    | Exact     | sparse, full_mmap, exact | 0.999997 | 1.881e-3   | 1.43e-4  | 1,326 | 3/3 PASS |
+| 2026-05-01 | google/gemma-3-4b-it | gemma3-4b-q4k-v2 | Quantized | sparse, interleaved_q4k  | 0.992737 | 1.205e-1   | 2.58e-2  | 1,326 | 2/2 PASS |
 
 ### 2026-05-01 — Gemma 3 4B f16 (Exact baseline)
 

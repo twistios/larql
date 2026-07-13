@@ -31,11 +31,11 @@ regression in the 8B export, not an intentional design.
 
 ## Consumer-side impact
 
-| Consumer | Behaviour |
-|---|---|
-| `transformers.AutoModelForCausalLM` | Loads both, silently overwrites the tied head with the redundant `lm_head.weight`. Forward correct; ~10 s extra load time and ~822 MB extra peak host RAM. |
-| `mlx_lm` (Apple MLX) | **Fails to load.** `mlx.nn.Module.load_weights(..., strict=True)` raises `ValueError: Received 1 parameters not in model: lm_head.weight`. The MLX Granite implementation correctly sets up a tied head from the config flag, so there's no slot for the redundant tensor. |
-| Third-party loaders that key off `tie_word_embeddings` | Behaviour depends on whether they pre-emptively allocate the tied head or look for `lm_head.weight` first. Either way they encounter an inconsistency. |
+| Consumer                                               | Behaviour                                                                                                                                                                                                                                                                  |
+|--------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `transformers.AutoModelForCausalLM`                    | Loads both, silently overwrites the tied head with the redundant `lm_head.weight`. Forward correct; ~10 s extra load time and ~822 MB extra peak host RAM.                                                                                                                 |
+| `mlx_lm` (Apple MLX)                                   | **Fails to load.** `mlx.nn.Module.load_weights(..., strict=True)` raises `ValueError: Received 1 parameters not in model: lm_head.weight`. The MLX Granite implementation correctly sets up a tied head from the config flag, so there's no slot for the redundant tensor. |
+| Third-party loaders that key off `tie_word_embeddings` | Behaviour depends on whether they pre-emptively allocate the tied head or look for `lm_head.weight` first. Either way they encounter an inconsistency.                                                                                                                     |
 
 ## Reproduction
 

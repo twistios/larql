@@ -219,16 +219,16 @@ the floor.
 
 ## Implementation pointers
 
-| File | Role |
-|---|---|
-| `crates/larql-router/src/grid/routing.rs::route_with_rank` | New ranked-replica accessor (top-`max` URLs, saturation-filtered) |
-| `crates/larql-router/src/grid/routing.rs::route_expert_with_rank` | MoE sibling — top-`max` URLs for `(layer, expert_id)` |
-| `crates/larql-router/src/http.rs::AppState` | New `hedge_after: Option<Duration>` field |
-| `crates/larql-router/src/dispatch.rs::hedged_post_json` | New helper: race primary against delayed secondary |
-| `crates/larql-router/src/http.rs::handle_walk_ffn_inner` | Dense fan-out branches through `hedged_post_json` when `hedge_after.is_some()` |
-| `crates/larql-router/src/http.rs::handle_moe_dispatch` | MoE fan-out same |
-| `crates/larql-router/src/metrics.rs::RouterMetrics` | New counters `route_hedge_fires_total`, `route_hedge_wins_total` |
-| `crates/larql-router/src/main.rs` | `--hedge-after-ms <M>` flag |
+| File                                                              | Role                                                                           |
+|-------------------------------------------------------------------|--------------------------------------------------------------------------------|
+| `crates/larql-router/src/grid/routing.rs::route_with_rank`        | New ranked-replica accessor (top-`max` URLs, saturation-filtered)              |
+| `crates/larql-router/src/grid/routing.rs::route_expert_with_rank` | MoE sibling — top-`max` URLs for `(layer, expert_id)`                          |
+| `crates/larql-router/src/http.rs::AppState`                       | New `hedge_after: Option<Duration>` field                                      |
+| `crates/larql-router/src/dispatch.rs::hedged_post_json`           | New helper: race primary against delayed secondary                             |
+| `crates/larql-router/src/http.rs::handle_walk_ffn_inner`          | Dense fan-out branches through `hedged_post_json` when `hedge_after.is_some()` |
+| `crates/larql-router/src/http.rs::handle_moe_dispatch`            | MoE fan-out same                                                               |
+| `crates/larql-router/src/metrics.rs::RouterMetrics`               | New counters `route_hedge_fires_total`, `route_hedge_wins_total`               |
+| `crates/larql-router/src/main.rs`                                 | `--hedge-after-ms <M>` flag                                                    |
 
 ### Test coverage
 

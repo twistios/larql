@@ -148,14 +148,14 @@ store.residual(42)  # boundary 42 — zero-copy from mmap
 
 The answer does not exist in the residual stream until layer 24. Then it appears in a sudden phase transition:
 
-| Layer | % top-1 | Mean P(answer) | Event |
-|-------|---------|----------------|-------|
-| L22 | 0% | 0.001 | Nothing |
-| L23 | 3% | 0.010 | FFN fires (+56 logits) |
-| **L24** | **30%** | **0.258** | **Attention fires (+106 logits)** |
-| **L25** | **60%** | **0.514** | **FFN fires (+94 logits)** |
-| **L26** | **84%** | **0.796** | Both fire together |
-| L27 | 91% | 0.813 | Stabilizing |
+| Layer   | % top-1 | Mean P(answer) | Event                             |
+|---------|---------|----------------|-----------------------------------|
+| L22     | 0%      | 0.001          | Nothing                           |
+| L23     | 3%      | 0.010          | FFN fires (+56 logits)            |
+| **L24** | **30%** | **0.258**      | **Attention fires (+106 logits)** |
+| **L25** | **60%** | **0.514**      | **FFN fires (+94 logits)**        |
+| **L26** | **84%** | **0.796**      | Both fire together                |
+| L27     | 91%     | 0.813          | Stabilizing                       |
 
 Attention and FFN alternate: attention fires at even layers (L24, L26), FFN at every layer but especially odd layers (L23, L25, L27). A two-stroke engine.
 
@@ -188,14 +188,14 @@ L27-L33:      rank 1     (stable — refinement and calibration)
 
 The trace enables tiered storage for infinite context without KV cache:
 
-| Tier | Content | Per window | 370K tokens | Compression | Accuracy |
-|------|---------|-----------|-------------|-------------|----------|
-| 1 | Boundary residual | 10 KB | 18.9 MB | 3,100x | 13/15 (no replay needed) |
-| 3 | + deltas L23-27 | 110 KB | 199 MB | 282x | 13/15 (0.97 cos) |
-| 4 | + deltas L23-33 | 230 KB | 416 MB | 135x | 15/15 (bit-perfect) |
-| 4+int8 | Template + quantized residuals | 58 KB | 110 MB | 511x | 12/12 (0.9999 cos) |
-| Hybrid | Tier 1 default + int8 Tier 4 | mixed | 55 MB | 1,012x | full |
-| KV cache | Q,K per token per layer | ~30 MB/win | 56,000 MB | 1x | full |
+| Tier     | Content                        | Per window | 370K tokens | Compression | Accuracy                 |
+|----------|--------------------------------|------------|-------------|-------------|--------------------------|
+| 1        | Boundary residual              | 10 KB      | 18.9 MB     | 3,100x      | 13/15 (no replay needed) |
+| 3        | + deltas L23-27                | 110 KB     | 199 MB      | 282x        | 13/15 (0.97 cos)         |
+| 4        | + deltas L23-33                | 230 KB     | 416 MB      | 135x        | 15/15 (bit-perfect)      |
+| 4+int8   | Template + quantized residuals | 58 KB      | 110 MB      | 511x        | 12/12 (0.9999 cos)       |
+| Hybrid   | Tier 1 default + int8 Tier 4   | mixed      | 55 MB       | 1,012x      | full                     |
+| KV cache | Q,K per token per layer        | ~30 MB/win | 56,000 MB   | 1x          | full                     |
 
 ### How Tier 4 Works
 
@@ -221,12 +221,12 @@ At int8 quantization: 58 KB/window, 0.9999 cosine to ground truth.
 
 Not all vectors compress equally:
 
-| Vector type | Template cosine | Compresses well? |
-|------------|----------------|-----------------|
-| L22 boundary residual | 0.996 | Yes (12x) |
-| Attention deltas L25,L27-L29 | 0.98+ | Yes (5-9x) |
-| FFN deltas L24-L28 | 0.55 | No (1.2x) — entity-specific knowledge |
-| Attention deltas L24,L26 | 0.64-0.81 | Partially |
+| Vector type                  | Template cosine | Compresses well?                      |
+|------------------------------|-----------------|---------------------------------------|
+| L22 boundary residual        | 0.996           | Yes (12x)                             |
+| Attention deltas L25,L27-L29 | 0.98+           | Yes (5-9x)                            |
+| FFN deltas L24-L28           | 0.55            | No (1.2x) — entity-specific knowledge |
+| Attention deltas L24,L26     | 0.64-0.81       | Partially                             |
 
 The FFN deltas are where the knowledge lives. They can't be templated away — each entity activates different FFN features.
 

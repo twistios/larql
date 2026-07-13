@@ -63,13 +63,13 @@ are rejected immediately with HTTP 400:
 
 ### Implementation
 
-| Location | What it does |
-|---|---|
+| Location                                            | What it does                                                                                       |
+|-----------------------------------------------------|----------------------------------------------------------------------------------------------------|
 | `larql-vindex::VectorIndex::load_vindex_with_range` | Accepts `Option<(usize, usize)>` range; restricts anon mmap allocation and dequant to owned layers |
-| `VectorIndex::is_layer_owned(layer)` | Returns false for out-of-range layers; called before any accessor touches mmap data |
-| `VectorIndex::set_layer_range` | Sets the range after construction |
-| `larql-server --layers` | Parses `"START-END"`, calls `load_vindex_with_range` |
-| `routes/walk_ffn.rs` | Checks `is_layer_owned` for every requested layer before dispatch; returns 400 on mismatch |
+| `VectorIndex::is_layer_owned(layer)`                | Returns false for out-of-range layers; called before any accessor touches mmap data                |
+| `VectorIndex::set_layer_range`                      | Sets the range after construction                                                                  |
+| `larql-server --layers`                             | Parses `"START-END"`, calls `load_vindex_with_range`                                               |
+| `routes/walk_ffn.rs`                                | Checks `is_layer_owned` for every requested layer before dispatch; returns 400 on mismatch         |
 
 ---
 
@@ -133,15 +133,15 @@ to an unreachable shard will return HTTP 502 with the upstream error.
 
 ### Implementation
 
-| Location | What it does |
-|---|---|
-| `crates/larql-router/src/main.rs` | CLI, HTTP handler, static shard dispatch, `resolve_all` |
-| `crates/larql-router/src/grid.rs` | `GridState` (O(1) route cache), `GridServiceImpl` (gRPC) |
-| `crates/larql-router-protocol/` | Shared proto types (`grid.proto`) and tonic stubs |
-| `crates/larql-server/src/announce.rs` | Background announce task; reconnect with backoff |
-| `parse_shards("0-16=http://...")` | Parses `--shards` spec; inclusive→exclusive end |
-| `handle_walk_ffn` | Dispatch: `resolve_all` (single lock) → proxy or parallel fan-out |
-| `proxy_to` | Single-shard proxy; propagates HTTP error status |
+| Location                              | What it does                                                      |
+|---------------------------------------|-------------------------------------------------------------------|
+| `crates/larql-router/src/main.rs`     | CLI, HTTP handler, static shard dispatch, `resolve_all`           |
+| `crates/larql-router/src/grid.rs`     | `GridState` (O(1) route cache), `GridServiceImpl` (gRPC)          |
+| `crates/larql-router-protocol/`       | Shared proto types (`grid.proto`) and tonic stubs                 |
+| `crates/larql-server/src/announce.rs` | Background announce task; reconnect with backoff                  |
+| `parse_shards("0-16=http://...")`     | Parses `--shards` spec; inclusive→exclusive end                   |
+| `handle_walk_ffn`                     | Dispatch: `resolve_all` (single lock) → proxy or parallel fan-out |
+| `proxy_to`                            | Single-shard proxy; propagates HTTP error status                  |
 
 ### Validation
 
@@ -200,13 +200,13 @@ See full option reference in `docs/specs/larql-router-spec.md §3`.
 
 Key flags:
 
-| Flag | Default | Description |
-|---|---|---|
-| `--shards` | — | Static `START-END=URL` shard map |
-| `--grid-port` | — | Enable self-assembling grid gRPC server |
-| `--grid-key` | — | Shared auth secret (`LARQL_GRID_KEY` env var) |
-| `--port` | 9090 | HTTP listen port |
-| `--timeout-secs` | 120 | Per-request timeout to backend shards |
+| Flag             | Default | Description                                   |
+|------------------|---------|-----------------------------------------------|
+| `--shards`       | —       | Static `START-END=URL` shard map              |
+| `--grid-port`    | —       | Enable self-assembling grid gRPC server       |
+| `--grid-key`     | —       | Shared auth secret (`LARQL_GRID_KEY` env var) |
+| `--port`         | 9090    | HTTP listen port                              |
+| `--timeout-secs` | 120     | Per-request timeout to backend shards         |
 
 ---
 
@@ -218,10 +218,10 @@ serialization overhead on both the client and server.
 
 ### Performance (Gemma 3 4B, hidden_size=3072, seq_len=1)
 
-| Format  | Request size | p50 latency |
-|---------|-------------|-------------|
-| JSON    | ~15.4 KB    | ~8.1 ms     |
-| Binary  | ~10.3 KB    | ~7.6 ms     |
+| Format | Request size | p50 latency |
+|--------|--------------|-------------|
+| JSON   | ~15.4 KB     | ~8.1 ms     |
+| Binary | ~10.3 KB     | ~7.6 ms     |
 
 ~33% smaller requests, ~0.5 ms/hop faster.
 

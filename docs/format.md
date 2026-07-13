@@ -58,13 +58,13 @@ Optional. Defines relation metadata and type inference rules.
 
 **`relations`** — array of relation metadata. All fields optional except `name`.
 
-| Field | Type | Default | Description |
-|---|---|---|---|
-| `name` | string | required | Relation identifier |
-| `subject_types` | string[] | `[]` | Expected subject node types |
-| `object_types` | string[] | `[]` | Expected object node types |
-| `reversible` | bool | `true` | Whether the relation has a meaningful reverse |
-| `reverse_name` | string? | `null` | Name of the reverse relation |
+| Field           | Type     | Default  | Description                                   |
+|-----------------|----------|----------|-----------------------------------------------|
+| `name`          | string   | required | Relation identifier                           |
+| `subject_types` | string[] | `[]`     | Expected subject node types                   |
+| `object_types`  | string[] | `[]`     | Expected object node types                    |
+| `reversible`    | bool     | `true`   | Whether the relation has a meaningful reverse |
+| `reverse_name`  | string?  | `null`   | Name of the reverse relation                  |
 
 **`type_rules`** — array of inference rules. If a node has any of the listed outgoing or incoming relations, it's assigned the given type. First match wins. If no rule matches, the node type is `"unknown"`.
 
@@ -78,15 +78,15 @@ Array of compact edge objects.
 {"s": "France", "r": "capital-of", "o": "Paris", "c": 0.89, "src": "parametric"}
 ```
 
-| Field | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `s` | string | yes | — | Subject (trigger entity) |
-| `r` | string | yes | — | Relation |
-| `o` | string | yes | — | Object (answer entity) |
-| `c` | f64 | no | `1.0` | Confidence score [0, 1] |
-| `src` | string? | no | omitted | Source type. Omitted when `"unknown"` |
-| `meta` | object? | no | omitted | Arbitrary metadata. Omitted when empty |
-| `inj` | [int, f64]? | no | omitted | Injection point. Omitted when absent |
+| Field  | Type        | Required | Default | Description                            |
+|--------|-------------|----------|---------|----------------------------------------|
+| `s`    | string      | yes      | —       | Subject (trigger entity)               |
+| `r`    | string      | yes      | —       | Relation                               |
+| `o`    | string      | yes      | —       | Object (answer entity)                 |
+| `c`    | f64         | no       | `1.0`   | Confidence score [0, 1]                |
+| `src`  | string?     | no       | omitted | Source type. Omitted when `"unknown"`  |
+| `meta` | object?     | no       | omitted | Arbitrary metadata. Omitted when empty |
+| `inj`  | [int, f64]? | no       | omitted | Injection point. Omitted when absent   |
 
 **Source types:** `"parametric"`, `"document"`, `"installed"`, `"wikidata"`, `"manual"`, `"unknown"`
 
@@ -111,13 +111,13 @@ Edges from `weight-extract` include confidence scoring metadata:
 }
 ```
 
-| Meta field | Type | Description |
-|---|---|---|
-| `layer` | int | Transformer layer index (0-based) |
-| `feature` | int | FFN feature index within the layer |
-| `c_in` | f64 | Raw input selectivity — W_gate projection magnitude |
-| `c_out` | f64 | Raw output strength — W_down projection magnitude |
-| `selectivity` | f64 | Normalized input selectivity — `c_in / max(c_in)` per layer [0, 1] |
+| Meta field    | Type | Description                                                        |
+|---------------|------|--------------------------------------------------------------------|
+| `layer`       | int  | Transformer layer index (0-based)                                  |
+| `feature`     | int  | FFN feature index within the layer                                 |
+| `c_in`        | f64  | Raw input selectivity — W_gate projection magnitude                |
+| `c_out`       | f64  | Raw output strength — W_down projection magnitude                  |
+| `selectivity` | f64  | Normalized input selectivity — `c_in / max(c_in)` per layer [0, 1] |
 
 **Scoring:**
 - `c` (confidence) = `(c_in × c_out) / max(c_in × c_out)` per layer. Combined signal strength.
@@ -144,11 +144,11 @@ Edges from `attention-extract` include OV circuit metadata:
 }
 ```
 
-| Meta field | Type | Description |
-|---|---|---|
-| `layer` | int | Transformer layer index |
-| `head` | int | Attention head index |
-| `circuit` | string | Circuit type (currently always `"OV"`) |
+| Meta field | Type   | Description                            |
+|------------|--------|----------------------------------------|
+| `layer`    | int    | Transformer layer index                |
+| `head`     | int    | Attention head index                   |
+| `circuit`  | string | Circuit type (currently always `"OV"`) |
 
 ## Vector NDJSON format
 
@@ -166,17 +166,17 @@ Used by `vector-extract` and `residuals capture`. One JSON object per line. Firs
 {"id": "L26_F9298", "layer": 26, "feature": 9298, "dim": 2560, "vector": [0.012, -0.003, ...], "top_token": "Paris", "top_token_id": 4196, "c_score": 12.4, "top_k": [{"token": "Paris", "token_id": 4196, "logit": 12.4}, ...]}
 ```
 
-| Field | Type | Description |
-|---|---|---|
-| `id` | string | Unique identifier (e.g. `L26_F9298`, `France_L25`, `T4196`) |
-| `layer` | int | Source layer (0 for embeddings) |
-| `feature` | int | Feature/head/token index |
-| `dim` | int | Vector dimensionality |
-| `vector` | float[] | The raw weight or residual vector |
-| `top_token` | string | Highest-scoring token from vocab projection |
-| `top_token_id` | int | Token ID of top token |
-| `c_score` | float | Score of top token (logit magnitude or norm) |
-| `top_k` | object[] | Top-k tokens with scores |
+| Field          | Type     | Description                                                 |
+|----------------|----------|-------------------------------------------------------------|
+| `id`           | string   | Unique identifier (e.g. `L26_F9298`, `France_L25`, `T4196`) |
+| `layer`        | int      | Source layer (0 for embeddings)                             |
+| `feature`      | int      | Feature/head/token index                                    |
+| `dim`          | int      | Vector dimensionality                                       |
+| `vector`       | float[]  | The raw weight or residual vector                           |
+| `top_token`    | string   | Highest-scoring token from vocab projection                 |
+| `top_token_id` | int      | Token ID of top token                                       |
+| `c_score`      | float    | Score of top token (logit magnitude or norm)                |
+| `top_k`        | object[] | Top-k tokens with scores                                    |
 
 ### Residual records
 
@@ -190,22 +190,22 @@ The `top_token` is derived by projecting the residual onto the embedding matrix 
 
 ### File naming
 
-| Component | File | Description |
-|---|---|---|
-| `ffn_down` | `ffn_down.vectors.jsonl` | FFN output directions |
-| `ffn_gate` | `ffn_gate.vectors.jsonl` | FFN input selectivity |
-| `ffn_up` | `ffn_up.vectors.jsonl` | FFN up projection |
-| `attn_ov` | `attn_ov.vectors.jsonl` | Attention OV circuit |
-| `attn_qk` | `attn_qk.vectors.jsonl` | Attention Q/K heads |
-| `embeddings` | `embeddings.vectors.jsonl` | Token embeddings |
-| residuals | user-specified | Entity residual streams |
+| Component    | File                       | Description             |
+|--------------|----------------------------|-------------------------|
+| `ffn_down`   | `ffn_down.vectors.jsonl`   | FFN output directions   |
+| `ffn_gate`   | `ffn_gate.vectors.jsonl`   | FFN input selectivity   |
+| `ffn_up`     | `ffn_up.vectors.jsonl`     | FFN up projection       |
+| `attn_ov`    | `attn_ov.vectors.jsonl`    | Attention OV circuit    |
+| `attn_qk`    | `attn_qk.vectors.jsonl`    | Attention Q/K heads     |
+| `embeddings` | `embeddings.vectors.jsonl` | Token embeddings        |
+| residuals    | user-specified             | Entity residual streams |
 
 ## Serialization formats
 
-| Extension | Format | Notes |
-|---|---|---|
-| `.larql.json`, `.json` | JSON (pretty-printed) | Human-readable. Python interop. |
-| `.larql.bin`, `.bin`, `.msgpack` | MessagePack | Binary. ~53% smaller. ~10% faster I/O. |
+| Extension                        | Format                | Notes                                  |
+|----------------------------------|-----------------------|----------------------------------------|
+| `.larql.json`, `.json`           | JSON (pretty-printed) | Human-readable. Python interop.        |
+| `.larql.bin`, `.bin`, `.msgpack` | MessagePack           | Binary. ~53% smaller. ~10% faster I/O. |
 
 Both formats encode the same structure. Format is auto-detected from the file extension on load.
 

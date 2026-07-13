@@ -141,17 +141,17 @@ larql serve
 
 ## Implementation Files
 
-| File | Change |
-|---|---|
-| `crates/larql-router-protocol/src/transport/` | NEW directory |
+| File                                                 | Change                                            |
+|------------------------------------------------------|---------------------------------------------------|
+| `crates/larql-router-protocol/src/transport/`        | NEW directory                                     |
 | `crates/larql-router-protocol/src/transport/quic.rs` | QUIC client/server endpoint setup, stream wrapper |
-| `crates/larql-router-protocol/src/transport/mod.rs` | Re-export; feature-gated |
-| `crates/larql-router-protocol/Cargo.toml` | Add `quinn` optional dep + `quic` feature |
-| `crates/larql-router/src/main.rs` | Spawn `QuicGridEndpoint` when `--quic-port` given |
-| `crates/larql-server/src/announce.rs` | Parse `quic://` scheme; use QUIC transport |
-| `crates/larql-server/src/bootstrap.rs` | Accept `--quic-port`; generate self-signed cert |
-| `crates/larql-server/Cargo.toml` | Add `quinn` optional dep + `quic` feature |
-| `crates/larql-router/Cargo.toml` | Add `quinn` optional dep + `quic` feature |
+| `crates/larql-router-protocol/src/transport/mod.rs`  | Re-export; feature-gated                          |
+| `crates/larql-router-protocol/Cargo.toml`            | Add `quinn` optional dep + `quic` feature         |
+| `crates/larql-router/src/main.rs`                    | Spawn `QuicGridEndpoint` when `--quic-port` given |
+| `crates/larql-server/src/announce.rs`                | Parse `quic://` scheme; use QUIC transport        |
+| `crates/larql-server/src/bootstrap.rs`               | Accept `--quic-port`; generate self-signed cert   |
+| `crates/larql-server/Cargo.toml`                     | Add `quinn` optional dep + `quic` feature         |
+| `crates/larql-router/Cargo.toml`                     | Add `quinn` optional dep + `quic` feature         |
 
 ---
 

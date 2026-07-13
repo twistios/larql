@@ -8,12 +8,12 @@
 
 ## Results (N=150, chance@5 = 0.033)
 
-| layer | PARA top1 | top3 | top5 | top10 | margin mean | gate@0.75 fires | confident-wrong | CROSS top5 |
-|---|---|---|---|---|---|---|---|---|
-| L20 | 0.16 | 0.31 | 0.38 | 0.47 | 0.0001 | 150/150 | **126 (84%)** | 0.23 |
-| L22 | 0.38 | 0.50 | 0.57 | 0.62 | 0.0002 | 150/150 | 93 (62%) | 0.45 |
-| L24 | 0.86 | 0.92 | 0.93 | 0.95 | 0.0030 | 150/150 | 21 (14%) | **1.00** |
-| **L26** | **0.89** | 0.94 | 0.95 | 0.97 | 0.0106 | 150/150 | **17 (11%)** | **1.00** |
+| layer   | PARA top1 | top3 | top5 | top10 | margin mean | gate@0.75 fires | confident-wrong | CROSS top5 |
+|---------|-----------|------|------|-------|-------------|-----------------|-----------------|------------|
+| L20     | 0.16      | 0.31 | 0.38 | 0.47  | 0.0001      | 150/150         | **126 (84%)**   | 0.23       |
+| L22     | 0.38      | 0.50 | 0.57 | 0.62  | 0.0002      | 150/150         | 93 (62%)        | 0.45       |
+| L24     | 0.86      | 0.92 | 0.93 | 0.95  | 0.0030      | 150/150         | 21 (14%)        | **1.00**   |
+| **L26** | **0.89**  | 0.94 | 0.95 | 0.97  | 0.0106      | 150/150         | **17 (11%)**    | **1.00**   |
 
 (Confident-wrong = top-1 cosine > 0.75 **and** wrong entity. Since the gate fires on all 150, this is also the absolute fraction of routed queries that inject a wrong fact.)
 
@@ -62,10 +62,10 @@ Env knobs: `LARQL_KNN_VERIFY` (enable), `LARQL_KNN_TOPK` (candidates, default 5)
 
 **End-to-end validation** (real Gemma-3-4B vindex, via `larql lql` INSERT MODE KNN + INFER, reproducing FR1's measured collision — Germany's paraphrase routes top-1 to Spain):
 
-| query | LEGACY (top-1+0.75) | VERIFIED (FR1 build) |
-|---|---|---|
+| query                       | LEGACY (top-1+0.75)                      | VERIFIED (FR1 build)                         |
+|-----------------------------|------------------------------------------|----------------------------------------------|
 | "Germany's capital city is" | **SpainX** ❌ (cos 0.90, confident-wrong) | **GermanyX** ✓ (verify picks rank-2 Germany) |
-| "Poland's capital city is" | PolandX ✓ | PolandX ✓ (no regression) |
+| "Poland's capital city is"  | PolandX ✓                                | PolandX ✓ (no regression)                    |
 
 5 new unit tests (`verified_*`) cover: entity-in-prompt overrides, entity-absent abstains (the cos=1.0 confident-wrong fix), top-k rescue of a rank-2 correct entity, resolved-layer-first, below-floor abstain. Clippy clean.
 

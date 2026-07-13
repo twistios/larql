@@ -321,17 +321,17 @@ date. Rejected — we'd be perpetually waiting.
 
 ## Implementation pointers (forward)
 
-| File | Role (after impl) |
-|---|---|
-| `crates/larql-router-protocol/Cargo.toml` | `[features] http3 = ["dep:h3", "dep:h3-quinn", "quic"]` |
-| `crates/larql-router-protocol/src/transport/h3.rs` | `H3Client` + `H3Server` scaffolding |
-| `crates/larql-router/Cargo.toml` | `[features] http3 = ["larql-router-protocol/http3"]` |
-| `crates/larql-router/src/main.rs` | `--http3-shards` flag |
-| `crates/larql-router/src/cli_helpers.rs` | `build_shard_client` returns transport-trait |
-| `crates/larql-router/src/dispatch.rs` | use trait dispatch instead of direct `reqwest::Client` calls |
-| `crates/larql-server/Cargo.toml` | `[features] http3 = ["larql-router-protocol/http3"]` |
-| `crates/larql-server/src/bootstrap.rs` | spawn h3 listener on `--http3-port` |
-| `crates/larql-server/src/routes.rs` | h3 → axum adapter |
+| File                                               | Role (after impl)                                            |
+|----------------------------------------------------|--------------------------------------------------------------|
+| `crates/larql-router-protocol/Cargo.toml`          | `[features] http3 = ["dep:h3", "dep:h3-quinn", "quic"]`      |
+| `crates/larql-router-protocol/src/transport/h3.rs` | `H3Client` + `H3Server` scaffolding                          |
+| `crates/larql-router/Cargo.toml`                   | `[features] http3 = ["larql-router-protocol/http3"]`         |
+| `crates/larql-router/src/main.rs`                  | `--http3-shards` flag                                        |
+| `crates/larql-router/src/cli_helpers.rs`           | `build_shard_client` returns transport-trait                 |
+| `crates/larql-router/src/dispatch.rs`              | use trait dispatch instead of direct `reqwest::Client` calls |
+| `crates/larql-server/Cargo.toml`                   | `[features] http3 = ["larql-router-protocol/http3"]`         |
+| `crates/larql-server/src/bootstrap.rs`             | spawn h3 listener on `--http3-port`                          |
+| `crates/larql-server/src/routes.rs`                | h3 → axum adapter                                            |
 
 ### Test coverage strategy
 

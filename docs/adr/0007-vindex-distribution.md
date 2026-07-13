@@ -80,20 +80,20 @@ prints.
 Each part matches one or more filename patterns. `index.json` is always
 copied regardless of the part set.
 
-| Part | Files |
-|---|---|
-| `embed` | `embeddings.bin` |
-| `norms` | `norms.bin` |
-| `attn` | `attn_weights*.bin` (includes q4/q4k/q8 variants + manifests) |
-| `gate` | `gate_vectors.bin`, `gate_vectors_q4.bin` |
-| `down_meta` | `down_meta.bin`, `down_meta.jsonl` |
-| `ffn` | `interleaved*.bin` + manifests, `up_weights.bin`, `down_weights.bin`, `up_features.bin`, `down_features.bin` |
-| `lm_head` | `lm_head*.bin` |
-| `router` | `router_weights.bin` |
-| `tokenizer` | `tokenizer.json` |
-| `manifest` | `weight_manifest.json` |
-| `labels` | `feature_labels.json`, `feature_clusters.jsonl`, `relation_clusters.json` |
-| `readme` | `README.md` |
+| Part        | Files                                                                                                        |
+|-------------|--------------------------------------------------------------------------------------------------------------|
+| `embed`     | `embeddings.bin`                                                                                             |
+| `norms`     | `norms.bin`                                                                                                  |
+| `attn`      | `attn_weights*.bin` (includes q4/q4k/q8 variants + manifests)                                                |
+| `gate`      | `gate_vectors.bin`, `gate_vectors_q4.bin`                                                                    |
+| `down_meta` | `down_meta.bin`, `down_meta.jsonl`                                                                           |
+| `ffn`       | `interleaved*.bin` + manifests, `up_weights.bin`, `down_weights.bin`, `up_features.bin`, `down_features.bin` |
+| `lm_head`   | `lm_head*.bin`                                                                                               |
+| `router`    | `router_weights.bin`                                                                                         |
+| `tokenizer` | `tokenizer.json`                                                                                             |
+| `manifest`  | `weight_manifest.json`                                                                                       |
+| `labels`    | `feature_labels.json`, `feature_clusters.jsonl`, `relation_clusters.json`                                    |
+| `readme`    | `README.md`                                                                                                  |
 
 ### Presets
 
@@ -102,19 +102,19 @@ deployment:
 
 **2-tier (default — client holds embed locally)**
 
-| Preset | Parts | Pairs with |
-|---|---|---|
-| `client` | embed + norms + attn + tokenizer + manifest + labels | `larql run --ffn URL` |
-| `server` | embed + norms + gate + down_meta + ffn + tokenizer + manifest + labels | `larql serve --ffn-only` |
-| `browse` | embed + gate + down_meta + tokenizer + labels + readme | DESCRIBE / WALK / SELECT (no forward pass) |
+| Preset   | Parts                                                                  | Pairs with                                 |
+|----------|------------------------------------------------------------------------|--------------------------------------------|
+| `client` | embed + norms + attn + tokenizer + manifest + labels                   | `larql run --ffn URL`                      |
+| `server` | embed + norms + gate + down_meta + ffn + tokenizer + manifest + labels | `larql serve --ffn-only`                   |
+| `browse` | embed + gate + down_meta + tokenizer + labels + readme                 | DESCRIBE / WALK / SELECT (no forward pass) |
 
 **3-tier (client delegates embed + FFN; ADR-0008)**
 
-| Preset | Parts | Pairs with |
-|---|---|---|
-| `attn` (alias: `attention`) | norms + attn + manifest + labels | `larql run --embed URL --ffn URL` (3-tier client) |
-| `embed` (alias: `embed-server`) | embed + tokenizer + labels | `larql serve --embed-only` (ADR-0008 embed-server) |
-| `server` | — | same as 2-tier row |
+| Preset                          | Parts                            | Pairs with                                         |
+|---------------------------------|----------------------------------|----------------------------------------------------|
+| `attn` (alias: `attention`)     | norms + attn + manifest + labels | `larql run --embed URL --ffn URL` (3-tier client)  |
+| `embed` (alias: `embed-server`) | embed + tokenizer + labels       | `larql serve --embed-only` (ADR-0008 embed-server) |
+| `server`                        | —                                | same as 2-tier row                                 |
 
 The `attn` preset drops the embedding table entirely — ~2.7 GB saved on
 Gemma 3 4B (310 MB `attn` slice vs 3 GB `client` slice), ~2.6 GB on 31B
@@ -123,10 +123,10 @@ Q4_K. Use when laptop RAM matters and you can run an embed server
 
 **Other**
 
-| Preset | Parts | Pairs with |
-|---|---|---|
-| `router` | router + tokenizer + manifest + labels + readme | MoE router (ADR-0003) |
-| `all` | every part | full clone under a different name |
+| Preset   | Parts                                           | Pairs with                        |
+|----------|-------------------------------------------------|-----------------------------------|
+| `router` | router + tokenizer + manifest + labels + readme | MoE router (ADR-0003)             |
+| `all`    | every part                                      | full clone under a different name |
 
 ### `index.json` rewrite
 
@@ -167,14 +167,14 @@ behaviour.
 
 All on Gemma 4 31B Q4_K, macOS:
 
-| Slice | On-disk | Pair command | Notes |
-|---|---|---|---|
-| full | 32 GB | `larql run` | baseline |
-| `client` | 7.4 GB | `larql run --ffn URL` | 2-tier; 4.3× smaller than full |
-| `attn` | 4.8 GB | `larql run --embed URL --ffn URL` | 3-tier (ADR-0008); attn + norms only |
-| `embed` | 2.6 GB | `larql serve --embed-only` | embed + tokenizer for ADR-0008 server |
-| `server` | 27 GB | `larql serve --ffn-only` | no attention, still has embed+norms so the Q4K loader opens |
-| `browse` | 16 GB | `larql lql 'DESCRIBE …'` | no FFN, no attention |
+| Slice    | On-disk | Pair command                      | Notes                                                       |
+|----------|---------|-----------------------------------|-------------------------------------------------------------|
+| full     | 32 GB   | `larql run`                       | baseline                                                    |
+| `client` | 7.4 GB  | `larql run --ffn URL`             | 2-tier; 4.3× smaller than full                              |
+| `attn`   | 4.8 GB  | `larql run --embed URL --ffn URL` | 3-tier (ADR-0008); attn + norms only                        |
+| `embed`  | 2.6 GB  | `larql serve --embed-only`        | embed + tokenizer for ADR-0008 server                       |
+| `server` | 27 GB   | `larql serve --ffn-only`          | no attention, still has embed+norms so the Q4K loader opens |
+| `browse` | 16 GB   | `larql lql 'DESCRIBE …'`          | no FFN, no attention                                        |
 
 ---
 
@@ -207,11 +207,11 @@ The templating supports any layout HF accepts.
 
 Three nested levels, all auto-derived from the vindex's `model` field:
 
-| Level | Title | Holds |
-|---|---|---|
-| `model` | `Gemma 4 31B It — LARQL Vindex` | all six sibling repos for this model |
-| `family` | `Gemma Family — LARQL Vindexes` | every model of this architecture you've published |
-| `library` | `LARQL Vindex Library` | every vindex you've ever published |
+| Level     | Title                           | Holds                                             |
+|-----------|---------------------------------|---------------------------------------------------|
+| `model`   | `Gemma 4 31B It — LARQL Vindex` | all six sibling repos for this model              |
+| `family`  | `Gemma Family — LARQL Vindexes` | every model of this architecture you've published |
+| `library` | `LARQL Vindex Library`          | every vindex you've ever published                |
 
 The hierarchy isn't enforced by HF — the same repo appears in all three
 collections. That's the point: someone landing on the family page sees
@@ -309,12 +309,12 @@ failure.
 The download half of the story mirrors `publish`. Four resolution paths,
 symmetric with the four publish options:
 
-| Pull flag | Publish counterpart | Resolves to |
-|---|---|---|
-| plain `pull <repo>` | plain `publish --repo <repo>` | one repo |
-| `pull <repo> --preset client` | `publish --slices client` | `{repo}-client` via same template |
-| `pull <repo> --all-slices` | `publish` with default slice set | full + every default sibling |
-| `pull --collection <slug>` | `publish --collections …` | every dataset in the collection |
+| Pull flag                     | Publish counterpart              | Resolves to                       |
+|-------------------------------|----------------------------------|-----------------------------------|
+| plain `pull <repo>`           | plain `publish --repo <repo>`    | one repo                          |
+| `pull <repo> --preset client` | `publish --slices client`        | `{repo}-client` via same template |
+| `pull <repo> --all-slices`    | `publish` with default slice set | full + every default sibling      |
+| `pull --collection <slug>`    | `publish --collections …`        | every dataset in the collection   |
 
 ### Sibling hints
 
@@ -375,32 +375,32 @@ failures.
 
 ## Flag surface summary
 
-| Flag | Default | Effect |
-|---|---|---|
-| `--full` / `--no-full` | `--full` | Upload the full vindex to `--repo` |
-| `--slices a,b,c` | `client,attn,embed,server,browse` | Which presets to upload as siblings; `none` to skip. Covers both 2-tier and 3-tier (ADR-0008) topologies out of the box. |
-| `--slice-repo-template T` | `{repo}-{preset}` | Sibling naming; `{repo}` and `{preset}` substitute |
-| `--collections a,b,c` | `model,family,library` | Which collections to create/update; `none` to skip |
-| `--model-title T` | derived | Override the per-model collection title |
-| `--family F` | derived | Override the family collection's grouping |
-| `--library-title T` | `LARQL Vindex Library` | Override the top-level collection title |
-| `--force-upload` | off | Bypass SHA256 skip; re-upload every file |
-| `--tmp-dir D` | system temp | Where to stage intermediate slices |
-| `--dry-run` | off | Print the plan; no repos created, no files uploaded |
+| Flag                      | Default                           | Effect                                                                                                                   |
+|---------------------------|-----------------------------------|--------------------------------------------------------------------------------------------------------------------------|
+| `--full` / `--no-full`    | `--full`                          | Upload the full vindex to `--repo`                                                                                       |
+| `--slices a,b,c`          | `client,attn,embed,server,browse` | Which presets to upload as siblings; `none` to skip. Covers both 2-tier and 3-tier (ADR-0008) topologies out of the box. |
+| `--slice-repo-template T` | `{repo}-{preset}`                 | Sibling naming; `{repo}` and `{preset}` substitute                                                                       |
+| `--collections a,b,c`     | `model,family,library`            | Which collections to create/update; `none` to skip                                                                       |
+| `--model-title T`         | derived                           | Override the per-model collection title                                                                                  |
+| `--family F`              | derived                           | Override the family collection's grouping                                                                                |
+| `--library-title T`       | `LARQL Vindex Library`            | Override the top-level collection title                                                                                  |
+| `--force-upload`          | off                               | Bypass SHA256 skip; re-upload every file                                                                                 |
+| `--tmp-dir D`             | system temp                       | Where to stage intermediate slices                                                                                       |
+| `--dry-run`               | off                               | Print the plan; no repos created, no files uploaded                                                                      |
 
 ---
 
 ## Implementation files
 
-| File | Role |
-|---|---|
-| `crates/larql-cli/src/commands/primary/slice_cmd.rs` | `slice_vindex`, `Part`, `preset_parts`, CLI wrapper |
-| `crates/larql-cli/src/commands/primary/publish_cmd.rs` | `larql publish`: slice orchestration, collection composition, skip plumbing |
-| `crates/larql-cli/src/commands/primary/pull_cmd.rs` | `larql pull`: `--preset`, `--all-slices`, `--collection`, sibling hints, indicatif progress bars (`BarProgress`) |
-| `crates/larql-cli/src/commands/extraction/hf_cmd.rs` | `larql hf publish` (simpler one-repo publish); shares `PublishCallbacks` |
-| `crates/larql-vindex/src/format/huggingface.rs` | `publish_vindex`, `publish_vindex_with_opts`, `PublishOptions`, `fetch_remote_lfs_oids`, `ensure_collection`, `CollectionItem`, `dataset_repo_exists`, `fetch_collection_items`, `resolve_hf_vindex_with_progress`, `DownloadProgress`, streaming `CountingReader` + poll-thread upload, `PublishCallbacks::on_file_skipped` + `on_file_progress` |
-| `crates/larql-vindex/src/format/load.rs` | Empty-gate synthesis when both gate source files are absent |
-| `crates/larql-vindex/src/format/checksums.rs` | `sha256_file` (reused from pre-existing checksum infra) |
+| File                                                   | Role                                                                                                                                                                                                                                                                                                                                              |
+|--------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `crates/larql-cli/src/commands/primary/slice_cmd.rs`   | `slice_vindex`, `Part`, `preset_parts`, CLI wrapper                                                                                                                                                                                                                                                                                               |
+| `crates/larql-cli/src/commands/primary/publish_cmd.rs` | `larql publish`: slice orchestration, collection composition, skip plumbing                                                                                                                                                                                                                                                                       |
+| `crates/larql-cli/src/commands/primary/pull_cmd.rs`    | `larql pull`: `--preset`, `--all-slices`, `--collection`, sibling hints, indicatif progress bars (`BarProgress`)                                                                                                                                                                                                                                  |
+| `crates/larql-cli/src/commands/extraction/hf_cmd.rs`   | `larql hf publish` (simpler one-repo publish); shares `PublishCallbacks`                                                                                                                                                                                                                                                                          |
+| `crates/larql-vindex/src/format/huggingface.rs`        | `publish_vindex`, `publish_vindex_with_opts`, `PublishOptions`, `fetch_remote_lfs_oids`, `ensure_collection`, `CollectionItem`, `dataset_repo_exists`, `fetch_collection_items`, `resolve_hf_vindex_with_progress`, `DownloadProgress`, streaming `CountingReader` + poll-thread upload, `PublishCallbacks::on_file_skipped` + `on_file_progress` |
+| `crates/larql-vindex/src/format/load.rs`               | Empty-gate synthesis when both gate source files are absent                                                                                                                                                                                                                                                                                       |
+| `crates/larql-vindex/src/format/checksums.rs`          | `sha256_file` (reused from pre-existing checksum infra)                                                                                                                                                                                                                                                                                           |
 
 ---
 

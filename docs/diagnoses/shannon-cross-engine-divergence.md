@@ -14,11 +14,11 @@ Empirical bisection identified **three independent bugs** in LARQL's
 config-loading path. All three are now fixed in `larql-models` directly;
 the env vars used to diagnose them stay in tree as instruments.
 
-| # | Bug | Pre-fix gap | Permanent fix | Post-fix gap |
-|--:|---|---:|---|---:|
-| 1 | `rope_scaling` per-layer-type (Gemma 3 applies linear factor only on full-attention layers) was not honoured | Gemma 3 4B: +5.4% | `parser.rs` parses the structured `{full_attention, sliding_attention}` shape into `RopeScaling { gemma3_global_only: true }`; `Gemma3Arch::rope_position_divisor_for_layer` returns the factor on global layers, 1.0 on sliding | +0.000% |
-| 2 | `rms_norm_eps` from config.json was ignored — `ModelArchitecture::norm_eps()` hardcoded to 1e-6 | Mistral 7B: +8.2%; Llama 3.2 1B: +0.59% (partial) | `parser.rs` parses `rms_norm_eps` / `layer_norm_eps` into `ModelConfig.norm_eps`; default `norm_eps()` reads the parsed value, falls back to 1e-6 only when absent. CPU forward callers in `forward/{layer,ops}.rs` use new `rms_norm_for_arch` helper | +0.001% Mistral; +0.003% Llama (combined w/ bug 3) |
-| 3 | `rope_scaling = llama3` (wavelength-dependent per-channel factors) was not implemented | Llama 3.2 1B residual after bug 2 | New `Llama3RopeScaling` type in `larql-models/config.rs`; `LlamaArch::llama3_rope_scaling` returns it when `rope_type=llama3`. `attention/rope.rs` has `Llama3Scaling::apply` (mirrors HF's `_compute_llama3_parameters`). Forward path goes through `apply_rope_partial_at_full` | +0.003% (with bug 2 fix) |
+| # | Bug                                                                                                          |                                       Pre-fix gap | Permanent fix                                                                                                                                                                                                                                                                     |                                       Post-fix gap |
+|--:|--------------------------------------------------------------------------------------------------------------|--------------------------------------------------:|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------:|
+| 1 | `rope_scaling` per-layer-type (Gemma 3 applies linear factor only on full-attention layers) was not honoured |                                 Gemma 3 4B: +5.4% | `parser.rs` parses the structured `{full_attention, sliding_attention}` shape into `RopeScaling { gemma3_global_only: true }`; `Gemma3Arch::rope_position_divisor_for_layer` returns the factor on global layers, 1.0 on sliding                                                  |                                            +0.000% |
+| 2 | `rms_norm_eps` from config.json was ignored — `ModelArchitecture::norm_eps()` hardcoded to 1e-6              | Mistral 7B: +8.2%; Llama 3.2 1B: +0.59% (partial) | `parser.rs` parses `rms_norm_eps` / `layer_norm_eps` into `ModelConfig.norm_eps`; default `norm_eps()` reads the parsed value, falls back to 1e-6 only when absent. CPU forward callers in `forward/{layer,ops}.rs` use new `rms_norm_for_arch` helper                            | +0.001% Mistral; +0.003% Llama (combined w/ bug 3) |
+| 3 | `rope_scaling = llama3` (wavelength-dependent per-channel factors) was not implemented                       |                 Llama 3.2 1B residual after bug 2 | New `Llama3RopeScaling` type in `larql-models/config.rs`; `LlamaArch::llama3_rope_scaling` returns it when `rope_type=llama3`. `attention/rope.rs` has `Llama3Scaling::apply` (mirrors HF's `_compute_llama3_parameters`). Forward path goes through `apply_rope_partial_at_full` |                           +0.003% (with bug 2 fix) |
 
 All three are independent: each closes its specific gap in isolation,
 and they compose without interaction.
@@ -40,13 +40,13 @@ The five env vars used to localise the bugs remain available for future
 bisection on new architectures or for verifying changes to the forward
 path. All are gated via `OnceLock` and are no-ops when unset.
 
-| Var | Purpose |
-|---|---|
-| `LARQL_FORCE_GLOBAL_LAYERS=all\|<csv>` | Force listed layers onto the global rope_base. Useful for ruling out sliding-vs-global routing as a cause. |
-| `LARQL_ROPE_POS_DIVISOR=<f64>` | Apply linear rope-scaling factor to *every* layer's positions. |
-| `LARQL_ROPE_POS_DIVISOR_GLOBAL=<f64>` | Same but only on `!is_sliding_window_layer(layer)` layers. |
-| `LARQL_LLAMA3_ROPE_SCALING=factor,low,high,old_ctx` | Force HF llama3 scaling params (overrides the arch's parsed value). |
-| `LARQL_NORM_EPS_OVERRIDE=<f64>` | Override `arch.norm_eps()` (overrides config-parsed value). |
+| Var                                                 | Purpose                                                                                                    |
+|-----------------------------------------------------|------------------------------------------------------------------------------------------------------------|
+| `LARQL_FORCE_GLOBAL_LAYERS=all\|<csv>`              | Force listed layers onto the global rope_base. Useful for ruling out sliding-vs-global routing as a cause. |
+| `LARQL_ROPE_POS_DIVISOR=<f64>`                      | Apply linear rope-scaling factor to *every* layer's positions.                                             |
+| `LARQL_ROPE_POS_DIVISOR_GLOBAL=<f64>`               | Same but only on `!is_sliding_window_layer(layer)` layers.                                                 |
+| `LARQL_LLAMA3_ROPE_SCALING=factor,low,high,old_ctx` | Force HF llama3 scaling params (overrides the arch's parsed value).                                        |
+| `LARQL_NORM_EPS_OVERRIDE=<f64>`                     | Override `arch.norm_eps()` (overrides config-parsed value).                                                |
 
 ## TL;DR
 
@@ -84,44 +84,44 @@ engines at F32. Same context=512 / stride=256 windowing.
 
 ### Gemma 3 4B (247 scored tokens)
 
-| Engine | total bits | bits/char | Δ vs HF |
-|---|---:|---:|---:|
-| HF F32 (torch CPU) | **1068.0** | 1.0712 | — |
-| MLX F32 | 1068.6 | 1.0718 | +0.06% |
-| LARQL Rust F32 | 1126.3 | 1.130 | **+5.4%** |
+| Engine             | total bits | bits/char |   Δ vs HF |
+|--------------------|-----------:|----------:|----------:|
+| HF F32 (torch CPU) | **1068.0** |    1.0712 |         — |
+| MLX F32            |     1068.6 |    1.0718 |    +0.06% |
+| LARQL Rust F32     |     1126.3 |     1.130 | **+5.4%** |
 
 ### Mistral 7B v0.1 (289 scored tokens)
 
-| Engine | total bits | bits/char | Δ vs HF |
-|---|---:|---:|---:|
-| HF F32 (torch CPU) | **508.86** | 0.5104 | — |
-| MLX F32 | 508.86 | 0.5104 | <0.01% |
-| LARQL Rust F32 | 550.4 | 0.552 | **+8.2%** |
+| Engine             | total bits | bits/char |   Δ vs HF |
+|--------------------|-----------:|----------:|----------:|
+| HF F32 (torch CPU) | **508.86** |    0.5104 |         — |
+| MLX F32            |     508.86 |    0.5104 |    <0.01% |
+| LARQL Rust F32     |      550.4 |     0.552 | **+8.2%** |
 
 ### Llama-3.2-1B (234 scored tokens)
 
-| Engine | total bits | bits/char | Δ vs HF |
-|---|---:|---:|---:|
-| HF F32 (torch CPU) | **579.39** | 0.5811 | — |
-| MLX F32 | 579.40 | 0.5811 | <0.01% |
-| LARQL Rust F32 | 582.8 | 0.585 | **+0.59%** |
+| Engine             | total bits | bits/char |    Δ vs HF |
+|--------------------|-----------:|----------:|-----------:|
+| HF F32 (torch CPU) | **579.39** |    0.5811 |          — |
+| MLX F32            |     579.40 |    0.5811 |     <0.01% |
+| LARQL Rust F32     |      582.8 |     0.585 | **+0.59%** |
 
 ### SmolLM2-135M (262 scored tokens)
 
-| Engine | total bits | bits/char | Δ vs HF |
-|---|---:|---:|---:|
-| HF F32 | 812.830 | 0.8153 | — |
-| MLX F32 | 812.840 | 0.8153 | +0.001% |
-| LARQL Rust F32 | 812.767 | 0.8152 | -0.008% |
+| Engine         | total bits | bits/char | Δ vs HF |
+|----------------|-----------:|----------:|--------:|
+| HF F32         |    812.830 |    0.8153 |       — |
+| MLX F32        |    812.840 |    0.8153 | +0.001% |
+| LARQL Rust F32 |    812.767 |    0.8152 | -0.008% |
 
 ### Cross-architecture summary
 
-| Model | Layer pattern | Hidden | LARQL Rust vs HF |
-|---|---|---:|---:|
-| SmolLM2-135M | 30 std, no SWA | 576 | <0.01% |
-| Llama-3.2-1B | 16 std, no SWA | 2048 | +0.59% |
-| Gemma 3 4B | 28 sliding + 6 global | 2560 | +5.4% |
-| Mistral 7B v0.1 | 32 all-sliding | 4096 | +8.2% |
+| Model           | Layer pattern         | Hidden | LARQL Rust vs HF |
+|-----------------|-----------------------|-------:|-----------------:|
+| SmolLM2-135M    | 30 std, no SWA        |    576 |           <0.01% |
+| Llama-3.2-1B    | 16 std, no SWA        |   2048 |           +0.59% |
+| Gemma 3 4B      | 28 sliding + 6 global |   2560 |            +5.4% |
+| Mistral 7B v0.1 | 32 all-sliding        |   4096 |            +8.2% |
 
 The two reference engines mutually validate to <0.1%. LARQL Rust is the
 unique outlier; the divergence is always in the same direction (lower
@@ -151,12 +151,12 @@ Both are gated via `OnceLock`. No behaviour change when unset.
 
 ## Bisection results — Gemma 3 4B
 
-| Configuration | Total bits | Δ vs HF (1068) |
-|---|---:|---:|
-| Baseline (no override) | 1126.3 | +5.4% |
-| `LARQL_FORCE_GLOBAL_LAYERS=all` | 1387.4 | +29.9% (much worse) |
-| `LARQL_ROPE_POS_DIVISOR=8` (uniform) | 1649.9 | +54.5% (much worse) |
-| `LARQL_ROPE_POS_DIVISOR_GLOBAL=8` (global layers only) | 1068.0 | **+0.000% (fixed)** |
+| Configuration                                          | Total bits |      Δ vs HF (1068) |
+|--------------------------------------------------------|-----------:|--------------------:|
+| Baseline (no override)                                 |     1126.3 |               +5.4% |
+| `LARQL_FORCE_GLOBAL_LAYERS=all`                        |     1387.4 | +29.9% (much worse) |
+| `LARQL_ROPE_POS_DIVISOR=8` (uniform)                   |     1649.9 | +54.5% (much worse) |
+| `LARQL_ROPE_POS_DIVISOR_GLOBAL=8` (global layers only) |     1068.0 | **+0.000% (fixed)** |
 
 ### Reading
 
@@ -187,10 +187,10 @@ After fixing bug 1, the remaining gap on Mistral (+8.2%) and Llama
 
 **Mistral 7B v0.1:**
 
-| Configuration | Total bits | Δ vs HF (508.86) |
-|---|---:|---:|
-| Baseline (no override) | 550.4 | +8.2% |
-| `LARQL_NORM_EPS_OVERRIDE=1e-5` | 508.9 | **+0.001% (fixed)** |
+| Configuration                  | Total bits |    Δ vs HF (508.86) |
+|--------------------------------|-----------:|--------------------:|
+| Baseline (no override)         |      550.4 |               +8.2% |
+| `LARQL_NORM_EPS_OVERRIDE=1e-5` |      508.9 | **+0.001% (fixed)** |
 
 The HF effective config for Mistral has `rms_norm_eps: 1e-05`. LARQL's
 `norm_eps()` returns the hardcoded default `1e-6` from `config.rs:786`
@@ -201,11 +201,11 @@ magnitudes are small relative to eps — which happens enough during a
 
 **Llama-3.2-1B (after applying bug 2 fix):**
 
-| Configuration | Total bits | Δ vs HF (579.39) |
-|---|---:|---:|
-| Baseline | 582.8 | +0.59% |
-| `LARQL_NORM_EPS_OVERRIDE=1e-5` | 582.09 | +0.47% (partial) |
-| `LARQL_NORM_EPS_OVERRIDE=1e-5` + `LARQL_LLAMA3_ROPE_SCALING=32,1,4,8192` | 579.40 | **+0.003% (fixed)** |
+| Configuration                                                            | Total bits |    Δ vs HF (579.39) |
+|--------------------------------------------------------------------------|-----------:|--------------------:|
+| Baseline                                                                 |      582.8 |              +0.59% |
+| `LARQL_NORM_EPS_OVERRIDE=1e-5`                                           |     582.09 |    +0.47% (partial) |
+| `LARQL_NORM_EPS_OVERRIDE=1e-5` + `LARQL_LLAMA3_ROPE_SCALING=32,1,4,8192` |     579.40 | **+0.003% (fixed)** |
 
 Llama-3.2-1B has `rope_scaling = {rope_type: llama3, factor: 32, low_freq_factor: 1, high_freq_factor: 4, original_max_position_embeddings: 8192}`. The `llama3` type is wavelength-dependent: per-channel
 `inv_freq[i]` is divided by `factor` for slow-rotating channels

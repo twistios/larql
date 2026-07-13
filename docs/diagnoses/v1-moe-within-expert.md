@@ -53,19 +53,19 @@ gate-oracle. The cheap selector keeps `~k` features on a fixed stride
 
 ### Step 0 — parity anchor (GREEN)
 
-| check | result |
-|---|---|
-| all-dense schedule (instrument off-by-frac) | **KL = 0.00000 bits** (faithful) |
-| L15 @ frac=0.125 (88/704 feats) | KL = 0.107 bits, top-1 agree 100 % (knob bites) |
+| check                                       | result                                          |
+|---------------------------------------------|-------------------------------------------------|
+| all-dense schedule (instrument off-by-frac) | **KL = 0.00000 bits** (faithful)                |
+| L15 @ frac=0.125 (88/704 feats)             | KL = 0.107 bits, top-1 agree 100 % (knob bites) |
 
 ### Phase A — per-expert-layer oracle threshold (min keep-frac for KL ≤ 0.05)
 
 A sharp **depth split** (not a uniform fraction):
 
-| layer band | threshold | reading |
-|---|---|---|
-| **L0–L13** (14 layers) | **frac = 1.0** (all 704; even 1/2 exceeds KL 0.05) | early experts are **fully dense** in their own feature space |
-| **L14–L29** (16 layers) | frac 0.016–0.25 (11–176 feats) | late experts tolerate aggressive single-layer pruning |
+| layer band              | threshold                                          | reading                                                      |
+|-------------------------|----------------------------------------------------|--------------------------------------------------------------|
+| **L0–L13** (14 layers)  | **frac = 1.0** (all 704; even 1/2 exceeds KL 0.05) | early experts are **fully dense** in their own feature space |
+| **L14–L29** (16 layers) | frac 0.016–0.25 (11–176 feats)                     | late experts tolerate aggressive single-layer pruning        |
 
 Mean threshold fraction **0.52**. This mirrors the dense WalkFfn "scissors"
 (`project_walkffn_speed_accuracy_scissors`): sparsity survives only in a thin
@@ -79,10 +79,10 @@ Bandwidth at these per-layer thresholds (per active expert, gate+up not free):
 
 ### Phase B — compounding (the claim gate; held passage 43 tok)
 
-| | mean NLL (bits/tok) | p90 | max | perplexity |
-|---|---|---|---|---|
-| dense | 12.443 | 24.094 | 32.725 | 5569.4 |
-| comp (all layers @ threshold) | 12.293 | 23.088 | 32.944 | 5019.2 |
+|                               | mean NLL (bits/tok) | p90    | max    | perplexity |
+|-------------------------------|---------------------|--------|--------|------------|
+| dense                         | 12.443              | 24.094 | 32.725 | 5569.4     |
+| comp (all layers @ threshold) | 12.293              | 23.088 | 32.944 | 5019.2     |
 
 **Δmean NLL = −0.15 bits (comp lower); ppl −9.88 %. argmax drift = 50.0 %;
 first-divergence pos 2.**

@@ -29,12 +29,12 @@ decode rides (decode just continues the causal sequence).
 
 ## Result — working set ≈ the entire expert population
 
-| metric | measured | uniform-random null | reading |
-|---|---:|---:|---|
-| adjacent-position reuse | 21.3% of top-8 | 6.2% | mild (3.4× random) but weak — ~1.7/8 experts persist |
-| **working set / layer** | **124.4 / 128** | **126.6 / 128** | **≈ random-complete: ~all experts fire over a sequence** |
-| cumulative cache-hit (72 tok) | 79.5% | — | only because the set fills toward 128 within the window |
-| top-10 expert mass | 17% | ~8% | mildly concentrated; no dominant hot subset |
+| metric                        |        measured | uniform-random null | reading                                                  |
+|-------------------------------|----------------:|--------------------:|----------------------------------------------------------|
+| adjacent-position reuse       |  21.3% of top-8 |                6.2% | mild (3.4× random) but weak — ~1.7/8 experts persist     |
+| **working set / layer**       | **124.4 / 128** |     **126.6 / 128** | **≈ random-complete: ~all experts fire over a sequence** |
+| cumulative cache-hit (72 tok) |           79.5% |                   — | only because the set fills toward 128 within the window  |
+| top-10 expert mass            |             17% |                 ~8% | mildly concentrated; no dominant hot subset              |
 
 The decisive number: over a sequence the **union** of experts used saturates to ~97%
 of all 128 — essentially the uniform-random expectation. Gemma's router is load-balanced

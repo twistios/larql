@@ -34,13 +34,13 @@ Attention runs as BLAS-fused dense at all layers for all boundaries. Only the FF
 
 ### Ground truth (all-dense f32)
 
-| Prompt | Top-1 | Probability |
-|--------|-------|-------------|
-| The capital of France is | Paris | 80.47% |
-| The capital of Germany is | Berlin | 86.46% |
-| The capital of Japan is | Tokyo | 83.76% |
-| The capital of Italy is | Rome | 63.70% |
-| The largest planet in our solar system is | Jupiter | 98.78% |
+| Prompt                                    | Top-1   | Probability |
+|-------------------------------------------|---------|-------------|
+| The capital of France is                  | Paris   | 80.47%      |
+| The capital of Germany is                 | Berlin  | 86.46%      |
+| The capital of Japan is                   | Tokyo   | 83.76%      |
+| The capital of Italy is                   | Rome    | 63.70%      |
+| The largest planet in our solar system is | Jupiter | 98.78%      |
 
 ### Key observations
 
@@ -71,13 +71,13 @@ The entire FFN computation across all 34 layers is served by vindex lookups. No 
 
 The only matrix multiplications in the forward pass are:
 
-| Operation | Shape | Per layer | Notes |
-|-----------|-------|-----------|-------|
-| Q projection | `[seq, 2560] × [2560, 2560]` | ~1 ms | Accelerate AMX |
-| K projection | `[seq, 2560] × [2560, 2560]` | ~1 ms | Accelerate AMX |
-| V projection | `[seq, 2560] × [2560, 2560]` | ~1 ms | Accelerate AMX |
-| O projection | `[seq, 2560] × [2560, 2560]` | ~1 ms | Accelerate AMX |
-| Final logits | `[1, 2560] × [262144, 2560]` | ~27 ms | Once, not per-layer |
+| Operation    | Shape                        | Per layer | Notes               |
+|--------------|------------------------------|-----------|---------------------|
+| Q projection | `[seq, 2560] × [2560, 2560]` | ~1 ms     | Accelerate AMX      |
+| K projection | `[seq, 2560] × [2560, 2560]` | ~1 ms     | Accelerate AMX      |
+| V projection | `[seq, 2560] × [2560, 2560]` | ~1 ms     | Accelerate AMX      |
+| O projection | `[seq, 2560] × [2560, 2560]` | ~1 ms     | Accelerate AMX      |
+| Final logits | `[1, 2560] × [262144, 2560]` | ~27 ms    | Once, not per-layer |
 
 Everything else — embedding, RoPE, norms, FFN — is lookup, scalar math, or eliminated.
 

@@ -275,12 +275,12 @@ consumer appears.
 
 ## Implementation pointers
 
-| File | Role |
-|---|---|
-| `crates/larql-router/src/grid/mod.rs` | `GridState`, `ServerEntry`, `AvailableEntry`, module-level docs explaining the folder shape |
-| `crates/larql-router/src/grid/testing.rs` | The shared `entry()` helper |
-| `crates/larql-router/src/tasks/mod.rs` | The two-line declaration of background tasks |
-| `crates/larql-router/README.md` § Source layout | Reader-facing tree diagram |
+| File                                            | Role                                                                                        |
+|-------------------------------------------------|---------------------------------------------------------------------------------------------|
+| `crates/larql-router/src/grid/mod.rs`           | `GridState`, `ServerEntry`, `AvailableEntry`, module-level docs explaining the folder shape |
+| `crates/larql-router/src/grid/testing.rs`       | The shared `entry()` helper                                                                 |
+| `crates/larql-router/src/tasks/mod.rs`          | The two-line declaration of background tasks                                                |
+| `crates/larql-router/README.md` § Source layout | Reader-facing tree diagram                                                                  |
 
 ### Verification
 

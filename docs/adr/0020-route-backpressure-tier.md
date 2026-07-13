@@ -205,14 +205,14 @@ Operators can tune the single ceiling against the slowest layer.
 
 ## Implementation pointers
 
-| File | Role |
-|---|---|
-| `crates/larql-router/src/grid/mod.rs::GridState` | `saturation_ceiling: Option<u32>` field + setter/getter |
-| `crates/larql-router/src/grid/routing.rs::route` | Drop replicas above the ceiling before the `min_by` comparator |
-| `crates/larql-router/src/grid/routing.rs::route_expert` | Same filter on the MoE path |
-| `crates/larql-router/src/metrics.rs::RouterMetrics::route_saturation_total` | The new counter |
-| `crates/larql-router/src/http.rs::handle_walk_ffn_inner` | 503 with `Retry-After: 0.5` when `route_all` returns `None` because of saturation |
-| `crates/larql-router/src/main.rs` | `--saturation-ceiling N` flag |
+| File                                                                        | Role                                                                              |
+|-----------------------------------------------------------------------------|-----------------------------------------------------------------------------------|
+| `crates/larql-router/src/grid/mod.rs::GridState`                            | `saturation_ceiling: Option<u32>` field + setter/getter                           |
+| `crates/larql-router/src/grid/routing.rs::route`                            | Drop replicas above the ceiling before the `min_by` comparator                    |
+| `crates/larql-router/src/grid/routing.rs::route_expert`                     | Same filter on the MoE path                                                       |
+| `crates/larql-router/src/metrics.rs::RouterMetrics::route_saturation_total` | The new counter                                                                   |
+| `crates/larql-router/src/http.rs::handle_walk_ffn_inner`                    | 503 with `Retry-After: 0.5` when `route_all` returns `None` because of saturation |
+| `crates/larql-router/src/main.rs`                                           | `--saturation-ceiling N` flag                                                     |
 
 ### Test coverage
 

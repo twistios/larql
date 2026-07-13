@@ -58,26 +58,26 @@ larql-server (process lifetime)
 
 ### L1 — In-Process Cache (`larql-inference`)
 
-| Property | Value |
-|---|---|
-| Location | `WalkFfn` heap, `RefCell<HashMap<u64, Vec<f32>>>` per layer |
-| Scope | Single `WalkFfn` instance (one inference session or one HTTP request) |
-| Default capacity | 4096 entries per layer |
-| Eviction | None (bounded by `max_entries`; new entries dropped when full) |
-| Activation | `WalkFfn::new(...).with_l1_cache(num_layers)` |
-| Stats | `walk_ffn.l1_cache_stats()` → `(hits, misses)` |
-| Path | Only fires on `walk_ffn_sparse` (bounded top-k < intermediate/2) |
+| Property         | Value                                                                 |
+|------------------|-----------------------------------------------------------------------|
+| Location         | `WalkFfn` heap, `RefCell<HashMap<u64, Vec<f32>>>` per layer           |
+| Scope            | Single `WalkFfn` instance (one inference session or one HTTP request) |
+| Default capacity | 4096 entries per layer                                                |
+| Eviction         | None (bounded by `max_entries`; new entries dropped when full)        |
+| Activation       | `WalkFfn::new(...).with_l1_cache(num_layers)`                         |
+| Stats            | `walk_ffn.l1_cache_stats()` → `(hits, misses)`                        |
+| Path             | Only fires on `walk_ffn_sparse` (bounded top-k < intermediate/2)      |
 
 ### L2 — Server Process Cache (`larql-server`)
 
-| Property | Value |
-|---|---|
-| Location | `LoadedModel.ffn_l2_cache`, `RwLock<HashMap<u64, Arc<Vec<f32>>>>` per layer |
-| Scope | Server process lifetime, shared across all clients |
-| Default capacity | 4096 entries per layer |
-| Eviction | None (bounded by `max_entries`) |
-| Stats | `model.ffn_l2_cache.hits()`, `.misses()`, `.stats()` |
-| Path | `run_full_output`, single-position requests only (`seq_len == 1`) |
+| Property         | Value                                                                       |
+|------------------|-----------------------------------------------------------------------------|
+| Location         | `LoadedModel.ffn_l2_cache`, `RwLock<HashMap<u64, Arc<Vec<f32>>>>` per layer |
+| Scope            | Server process lifetime, shared across all clients                          |
+| Default capacity | 4096 entries per layer                                                      |
+| Eviction         | None (bounded by `max_entries`)                                             |
+| Stats            | `model.ffn_l2_cache.hits()`, `.misses()`, `.stats()`                        |
+| Path             | `run_full_output`, single-position requests only (`seq_len == 1`)           |
 
 ### L3 — CDN / Distributed KV (not yet implemented)
 
@@ -112,26 +112,26 @@ The L2 gate-KNN call in `run_full_output` uses the request's `top_k` to derive t
 
 ## Expected Hit Rates
 
-| Query type | L1 (within session) | L2 (cross-client, warmed) |
-|---|---|---|
-| Repeated token in generation | 30–40% | — |
-| Common factual (capitals, numbers) | 10–20% | 60–80% |
-| Novel entity / unusual prompt | 5–10% | 20–30% |
+| Query type                         | L1 (within session) | L2 (cross-client, warmed) |
+|------------------------------------|---------------------|---------------------------|
+| Repeated token in generation       | 30–40%              | —                         |
+| Common factual (capitals, numbers) | 10–20%              | 60–80%                    |
+| Novel entity / unusual prompt      | 5–10%               | 20–30%                    |
 
 ---
 
 ## Implementation Files
 
-| File | Role |
-|---|---|
-| `crates/larql-inference/src/vindex/l1_cache.rs` | `FfnL1Cache` struct + unit tests |
-| `crates/larql-inference/src/vindex/walk_ffn.rs` | L1 wired into `walk_ffn_sparse` |
-| `crates/larql-server/src/ffn_l2_cache.rs` | `FfnL2Cache` struct + unit tests |
-| `crates/larql-server/src/state.rs` | `LoadedModel.ffn_l2_cache` field |
-| `crates/larql-server/src/routes/walk_ffn.rs` | L2 wired into `run_full_output` |
-| `crates/larql-inference/examples/ffn_cache_demo.rs` | Demo: hit rates + patch safety |
-| `crates/larql-inference/examples/bench_ffn_cache.rs` | Benchmark: latency delta |
-| `docs/ffn-cache.md` | User-facing guide |
+| File                                                 | Role                             |
+|------------------------------------------------------|----------------------------------|
+| `crates/larql-inference/src/vindex/l1_cache.rs`      | `FfnL1Cache` struct + unit tests |
+| `crates/larql-inference/src/vindex/walk_ffn.rs`      | L1 wired into `walk_ffn_sparse`  |
+| `crates/larql-server/src/ffn_l2_cache.rs`            | `FfnL2Cache` struct + unit tests |
+| `crates/larql-server/src/state.rs`                   | `LoadedModel.ffn_l2_cache` field |
+| `crates/larql-server/src/routes/walk_ffn.rs`         | L2 wired into `run_full_output`  |
+| `crates/larql-inference/examples/ffn_cache_demo.rs`  | Demo: hit rates + patch safety   |
+| `crates/larql-inference/examples/bench_ffn_cache.rs` | Benchmark: latency delta         |
+| `docs/ffn-cache.md`                                  | User-facing guide                |
 
 ---
 

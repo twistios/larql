@@ -37,11 +37,11 @@ so the static scan uses the three vindexes with complete *original* f16 FFN weig
 
 Per-feature R<16 compliance, by component:
 
-| model | gate | up | **down (tail)** | worst `down` layer |
-|---|---:|---:|---:|---|
-| Gemma 3 4B | 99.91% | 99.93% | **99.83%** | L22 @ 99.53% (p99 R=12.1) |
-| Granite 3B | 99.89% | 99.92% | **99.82%** | L23 @ 99.44% (p99 R=12.3) |
-| Granite 8B | 99.93% | 99.94% | **99.85%** | L31 @ 99.53% (p99 R=12.3) |
+| model      |   gate |     up | **down (tail)** | worst `down` layer        |
+|------------|-------:|-------:|----------------:|---------------------------|
+| Gemma 3 4B | 99.91% | 99.93% |      **99.83%** | L22 @ 99.53% (p99 R=12.1) |
+| Granite 3B | 99.89% | 99.92% |      **99.82%** | L23 @ 99.44% (p99 R=12.3) |
+| Granite 8B | 99.93% | 99.94% |      **99.85%** | L31 @ 99.53% (p99 R=12.3) |
 
 Gemma 3 4B `down` = **99.83%**, an exact match to exp 26's headline. `down` is the tail
 on every model (gate/up cleaner), and even the worst layer clears ~99.4% with p99 R≈12
@@ -51,11 +51,11 @@ on every model (gate/up cleaner), and even the worst layer clears ~99.4% with p9
 
 Gemma 3 4B, held narrative, 74 teacher-forced positions:
 
-| arm | mean NLL (bits) | Δ vs f32 | argmax flip |
-|---|---:|---:|---:|
-| f32 | 4.239 | — | — |
-| Q4-int (shipped 4-bit baseline) | 4.492 | +0.253 | 13.5% |
-| **FP4-e2m1** | 4.355 | **+0.116** | **10.8%** |
+| arm                             | mean NLL (bits) |   Δ vs f32 | argmax flip |
+|---------------------------------|----------------:|-----------:|------------:|
+| f32                             |           4.239 |          — |           — |
+| Q4-int (shipped 4-bit baseline) |           4.492 |     +0.253 |       13.5% |
+| **FP4-e2m1**                    |           4.355 | **+0.116** |   **10.8%** |
 
 FP4 is within **+0.116 bits/token** of f32 — near-lossless — and **better than the
 shipped Q4-int baseline** (E2M1 float captures within-block dynamic range better than

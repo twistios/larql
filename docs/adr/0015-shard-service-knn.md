@@ -216,14 +216,14 @@ choice is consistent across the wire surface.
 
 ## Implementation pointers
 
-| File | Role |
-|---|---|
-| `crates/larql-router-protocol/proto/shard.proto` | The wire contract |
-| `crates/larql-router-protocol/src/lib.rs` (re-exports) | `ShardService`, `ShardQuery`, `ShardResult`, `ShardServiceServer`, `ShardServiceClient` |
-| `crates/larql-server/src/shard_query.rs` | `ShardCache`, `ShardSource`, `knn_lookup`, `l2_normalize`, `cosine_similarities`, `weighted_topk_average`, `decode_f32_le`, `encode_f32_le`, `ShardServiceImpl` |
-| `crates/larql-server/src/bootstrap.rs` | `--shard-query-tau` CLI plumbing + tonic registration |
-| `crates/larql-server/src/state.rs` | `LoadedModel.patched: Arc<RwLock<PatchedVindex>>` (the shared Arc) |
-| `crates/larql-server/tests/test_shard_query.rs` | 4 round-trip integration tests over real TCP (hit / below-tau miss / unknown-layer / live-patch propagation) |
+| File                                                   | Role                                                                                                                                                            |
+|--------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `crates/larql-router-protocol/proto/shard.proto`       | The wire contract                                                                                                                                               |
+| `crates/larql-router-protocol/src/lib.rs` (re-exports) | `ShardService`, `ShardQuery`, `ShardResult`, `ShardServiceServer`, `ShardServiceClient`                                                                         |
+| `crates/larql-server/src/shard_query.rs`               | `ShardCache`, `ShardSource`, `knn_lookup`, `l2_normalize`, `cosine_similarities`, `weighted_topk_average`, `decode_f32_le`, `encode_f32_le`, `ShardServiceImpl` |
+| `crates/larql-server/src/bootstrap.rs`                 | `--shard-query-tau` CLI plumbing + tonic registration                                                                                                           |
+| `crates/larql-server/src/state.rs`                     | `LoadedModel.patched: Arc<RwLock<PatchedVindex>>` (the shared Arc)                                                                                              |
+| `crates/larql-server/tests/test_shard_query.rs`        | 4 round-trip integration tests over real TCP (hit / below-tau miss / unknown-layer / live-patch propagation)                                                    |
 
 ### Test coverage
 

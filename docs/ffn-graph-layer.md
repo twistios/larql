@@ -46,15 +46,15 @@ Zero divergence. Same top-1 token, same probability, at every boundary. The gate
 
 ### Optimization progression
 
-| Version | Walk | Dense | Gap |
-|---------|------|-------|-----|
-| Unoptimized | 21,197ms | 708ms | 30x slower |
-| + batch gate KNN (one gemm per layer) | 4,178ms | 685ms | 6.1x |
-| + sparse down projection + f16 cache | 4,178ms | 685ms | (included above) |
-| + trace recording off by default | 841ms | 685ms | 23% |
-| + f32 gate vectors (mmap, zero-copy) | 685ms | 560ms | 22% |
-| + zero-copy mmap down matrix | 668ms | 544ms | 23% |
-| + remove redundant gate KNN | **517ms** | **535ms** | **Walk is faster** |
+| Version                               | Walk      | Dense     | Gap                |
+|---------------------------------------|-----------|-----------|--------------------|
+| Unoptimized                           | 21,197ms  | 708ms     | 30x slower         |
+| + batch gate KNN (one gemm per layer) | 4,178ms   | 685ms     | 6.1x               |
+| + sparse down projection + f16 cache  | 4,178ms   | 685ms     | (included above)   |
+| + trace recording off by default      | 841ms     | 685ms     | 23%                |
+| + f32 gate vectors (mmap, zero-copy)  | 685ms     | 560ms     | 22%                |
+| + zero-copy mmap down matrix          | 668ms     | 544ms     | 23%                |
+| + remove redundant gate KNN           | **517ms** | **535ms** | **Walk is faster** |
 
 ### Per-layer breakdown
 
@@ -69,13 +69,13 @@ The gate KNN (4ms) is only used for the sparse fallback path (when down_features
 
 ### What eliminated the 30x gap
 
-| Optimization | Speedup | What it fixed |
-|-------------|---------|---------------|
-| Batch gate KNN | 5x | One BLAS gemm per layer instead of 6 separate gemv calls |
-| Trace off by default | 5x | Deferred trace to take_trace() — was 8092 feature_meta lookups + allocations per layer |
-| f32 mmap | 1.2x | Zero decode, zero allocation, zero warmup. Pointer reinterpretation to BLAS. |
-| Sparse down projection | 1.2x | gather K columns of W_down, not full [hidden, intermediate] matmul |
-| f16 decode cache | — | Amortized cost (eliminated by f32 conversion) |
+| Optimization           | Speedup | What it fixed                                                                          |
+|------------------------|---------|----------------------------------------------------------------------------------------|
+| Batch gate KNN         | 5x      | One BLAS gemm per layer instead of 6 separate gemv calls                               |
+| Trace off by default   | 5x      | Deferred trace to take_trace() — was 8092 feature_meta lookups + allocations per layer |
+| f32 mmap               | 1.2x    | Zero decode, zero allocation, zero warmup. Pointer reinterpretation to BLAS.           |
+| Sparse down projection | 1.2x    | gather K columns of W_down, not full [hidden, intermediate] matmul                     |
+| f16 decode cache       | —       | Amortized cost (eliminated by f32 conversion)                                          |
 
 ## Data Path
 
@@ -169,16 +169,16 @@ The walk eliminates FFN as a bottleneck. Logits (221ms) is now the single larges
 
 ### Remaining matmuls
 
-| Operation | Per layer | Source | Notes |
-|-----------|-----------|--------|-------|
-| Q projection | ~1ms | safetensors | Accelerate AMX |
-| K projection | ~1ms | safetensors | Accelerate AMX |
-| V projection | ~1ms | safetensors | Accelerate AMX |
-| O projection | ~1ms | safetensors | Accelerate AMX |
-| FFN gate | ~2ms | safetensors | Exact gate projection |
-| FFN up | ~2ms | safetensors | Exact up projection |
-| FFN down | ~2ms | **mmap vindex** | Zero-copy, feature-major |
-| Final logits | ~221ms (once) | safetensors | #1 bottleneck |
+| Operation    | Per layer     | Source          | Notes                    |
+|--------------|---------------|-----------------|--------------------------|
+| Q projection | ~1ms          | safetensors     | Accelerate AMX           |
+| K projection | ~1ms          | safetensors     | Accelerate AMX           |
+| V projection | ~1ms          | safetensors     | Accelerate AMX           |
+| O projection | ~1ms          | safetensors     | Accelerate AMX           |
+| FFN gate     | ~2ms          | safetensors     | Exact gate projection    |
+| FFN up       | ~2ms          | safetensors     | Exact up projection      |
+| FFN down     | ~2ms          | **mmap vindex** | Zero-copy, feature-major |
+| Final logits | ~221ms (once) | safetensors     | #1 bottleneck            |
 
 ### Memory profile
 
@@ -209,12 +209,12 @@ Current:     517ms walk (faster than 535ms dense)
 
 ## Walk Path Selection
 
-| Path | When | Down source | Speed |
-|------|------|------------|-------|
-| **Exact walk** (primary) | `down_features.bin` available | gate+up from safetensors, down from mmap | 5.7ms/layer |
-| **Full mmap walk** | `up_features.bin` also available | All from mmap (available, slower due to 3-file TLB) | 6.8ms/layer |
-| **Sparse fallback** | No mmap, has model weights | Gate KNN + sparse gather | 6.3-10ms/layer |
-| **Dense fallback** | No vindex data for layer | Full dense FFN | 6.7ms/layer |
+| Path                     | When                             | Down source                                         | Speed          |
+|--------------------------|----------------------------------|-----------------------------------------------------|----------------|
+| **Exact walk** (primary) | `down_features.bin` available    | gate+up from safetensors, down from mmap            | 5.7ms/layer    |
+| **Full mmap walk**       | `up_features.bin` also available | All from mmap (available, slower due to 3-file TLB) | 6.8ms/layer    |
+| **Sparse fallback**      | No mmap, has model weights       | Gate KNN + sparse gather                            | 6.3-10ms/layer |
+| **Dense fallback**       | No vindex data for layer         | Full dense FFN                                      | 6.7ms/layer    |
 
 The exact walk is the default — gate+up from safetensors (sequential in one file) + down from feature-major mmap (zero-copy BLAS).
 
@@ -235,25 +235,25 @@ cargo run --release -p larql-vindex --example build_down_features -- path/to/vin
 
 ### Vindex index modules
 
-| Module | Lines | Responsibility |
-|--------|-------|---------------|
-| `index/types.rs` | 130 | FeatureMeta, GateIndex trait, WalkHit, callbacks |
-| `index/core.rs` | 449 | VectorIndex struct, constructors, loading, accessors |
-| `index/gate.rs` | 690 | Gate KNN: search, batch, scores, HNSW integration, warmup |
-| `index/walk.rs` | 111 | Walk FFN data: mmap'd down/up feature-major vectors |
-| `index/hnsw.rs` | 337 | HNSW graph index (standalone data structure) |
-| `index/mutate.rs` | 283 | Gate vector mutation (INSERT/DELETE) |
-| `index/router.rs` | 125 | MoE expert routing |
+| Module            | Lines | Responsibility                                            |
+|-------------------|-------|-----------------------------------------------------------|
+| `index/types.rs`  | 130   | FeatureMeta, GateIndex trait, WalkHit, callbacks          |
+| `index/core.rs`   | 449   | VectorIndex struct, constructors, loading, accessors      |
+| `index/gate.rs`   | 690   | Gate KNN: search, batch, scores, HNSW integration, warmup |
+| `index/walk.rs`   | 111   | Walk FFN data: mmap'd down/up feature-major vectors       |
+| `index/hnsw.rs`   | 337   | HNSW graph index (standalone data structure)              |
+| `index/mutate.rs` | 283   | Gate vector mutation (INSERT/DELETE)                      |
+| `index/router.rs` | 125   | MoE expert routing                                        |
 
 ### Inference modules
 
-| File | Purpose |
-|------|---------|
-| `vindex/walk_ffn.rs` | WalkFfn: mmap walk FFN (faster than dense) |
-| `ffn/weight.rs` | WeightFfn: dense FFN (ground truth) |
-| `ffn/sparse_compute.rs` | Sparse FFN compute (shared by walk fallback) |
-| `attention.rs` | BLAS-fused attention + shared attention block |
-| `forward.rs` | Forward pass: embed → layers → logits |
+| File                    | Purpose                                       |
+|-------------------------|-----------------------------------------------|
+| `vindex/walk_ffn.rs`    | WalkFfn: mmap walk FFN (faster than dense)    |
+| `ffn/weight.rs`         | WeightFfn: dense FFN (ground truth)           |
+| `ffn/sparse_compute.rs` | Sparse FFN compute (shared by walk fallback)  |
+| `attention.rs`          | BLAS-fused attention + shared attention block |
+| `forward.rs`            | Forward pass: embed → layers → logits         |
 
 ### Server
 
@@ -288,13 +288,13 @@ let model = InferenceModel::load_walk_only("google/gemma-3-4b-it")?;
 
 ### Tools and benchmarks
 
-| File | Purpose |
-|------|---------|
-| `larql-server` | HTTP server with walk/dense/compare inference modes |
-| `larql-vindex/examples/convert_gates_f32.rs` | f16 → f32 gate vector converter |
-| `larql-vindex/examples/build_down_features.rs` | Feature-major down vector builder |
-| `larql-vindex/examples/build_up_features.rs` | Feature-major up vector builder |
-| `larql-inference/examples/bench_walk_inference.rs` | Walk benchmark (dense vs walk vs HNSW) |
-| `larql-inference/examples/walk_boundary_sweep.rs` | Correctness sweep (all 34 layers) |
-| `larql-inference/examples/profile_overhead.rs` | Forward pass bottleneck profiler |
-| `larql-inference/examples/memory_analysis.rs` | Memory profiling (RSS, mmap, walk-only) |
+| File                                               | Purpose                                             |
+|----------------------------------------------------|-----------------------------------------------------|
+| `larql-server`                                     | HTTP server with walk/dense/compare inference modes |
+| `larql-vindex/examples/convert_gates_f32.rs`       | f16 → f32 gate vector converter                     |
+| `larql-vindex/examples/build_down_features.rs`     | Feature-major down vector builder                   |
+| `larql-vindex/examples/build_up_features.rs`       | Feature-major up vector builder                     |
+| `larql-inference/examples/bench_walk_inference.rs` | Walk benchmark (dense vs walk vs HNSW)              |
+| `larql-inference/examples/walk_boundary_sweep.rs`  | Correctness sweep (all 34 layers)                   |
+| `larql-inference/examples/profile_overhead.rs`     | Forward pass bottleneck profiler                    |
+| `larql-inference/examples/memory_analysis.rs`      | Memory profiling (RSS, mmap, walk-only)             |

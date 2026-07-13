@@ -248,16 +248,16 @@ larql-router
 
 ## Implementation Files
 
-| File | Change |
-|---|---|
-| `crates/larql-router-protocol/proto/grid.proto` | ADD `LayerLatency`, extend `HeartbeatMsg` |
-| `crates/larql-router/src/grid/` | `mod.rs` holds `available_servers`; `replication.rs` holds `try_assign_gap` / `try_replicate_from_available` / `send_assign_to_named_available`; `hot_shard.rs` holds `hot_layer_ranges` + `mark_elevated`. (Final shipped layout post-2026-05-16 split.) |
-| `crates/larql-router/src/tasks/rebalancer/` | Background rebalancer task split into `mod.rs` (loop), `config.rs`, `hot_shard.rs`, `replication.rs`, `eviction.rs`, `imbalance.rs`. |
-| `crates/larql-router/src/main.rs` | Spawn rebalancer task; add CLI flags |
-| `crates/larql-server/src/announce.rs` | Handle `AssignMsg` → trigger `shard_loader`; handle `UnassignMsg` → drain + `DroppingMsg` |
-| `crates/larql-server/src/shard_loader.rs` | NEW — HTTP range download, hash verify, atomic rename |
-| `crates/larql-server/src/routes/walk_ffn.rs` | Collect per-layer latency via `LayerLatencyTracker` |
-| `crates/larql-server/src/bootstrap.rs` | Accept `--available-ram`, `--vindex-store`; CLI for Mode B |
+| File                                            | Change                                                                                                                                                                                                                                                    |
+|-------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `crates/larql-router-protocol/proto/grid.proto` | ADD `LayerLatency`, extend `HeartbeatMsg`                                                                                                                                                                                                                 |
+| `crates/larql-router/src/grid/`                 | `mod.rs` holds `available_servers`; `replication.rs` holds `try_assign_gap` / `try_replicate_from_available` / `send_assign_to_named_available`; `hot_shard.rs` holds `hot_layer_ranges` + `mark_elevated`. (Final shipped layout post-2026-05-16 split.) |
+| `crates/larql-router/src/tasks/rebalancer/`     | Background rebalancer task split into `mod.rs` (loop), `config.rs`, `hot_shard.rs`, `replication.rs`, `eviction.rs`, `imbalance.rs`.                                                                                                                      |
+| `crates/larql-router/src/main.rs`               | Spawn rebalancer task; add CLI flags                                                                                                                                                                                                                      |
+| `crates/larql-server/src/announce.rs`           | Handle `AssignMsg` → trigger `shard_loader`; handle `UnassignMsg` → drain + `DroppingMsg`                                                                                                                                                                 |
+| `crates/larql-server/src/shard_loader.rs`       | NEW — HTTP range download, hash verify, atomic rename                                                                                                                                                                                                     |
+| `crates/larql-server/src/routes/walk_ffn.rs`    | Collect per-layer latency via `LayerLatencyTracker`                                                                                                                                                                                                       |
+| `crates/larql-server/src/bootstrap.rs`          | Accept `--available-ram`, `--vindex-store`; CLI for Mode B                                                                                                                                                                                                |
 
 ---
 

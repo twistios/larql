@@ -10,41 +10,41 @@ Ollama-style day-to-day verbs. Models can be referenced by cache
 shorthand (`gemma-3-4b-it-vindex`), `owner/name`, `hf://owner/name`, or
 a local directory path — see [Model resolution](#model-resolution) below.
 
-| Command | Description |
-|---|---|
-| `run <model> [prompt]` | Run inference. One-shot if prompt given; chat loop if not. |
-| `chat <model>` | Alias for `run <model>` with no prompt. |
-| `pull <model>` | Download a vindex from HuggingFace and cache locally. |
-| `model <subcmd>` | Manage HuggingFace **model** repos (companion to `pull`, which is vindex-only). |
-| `link <path>` | Register a local vindex directory with the cache so `run` / `list` / `show` find it by shorthand. |
-| `list` | Show cached vindexes (model, size, layers, hidden). |
-| `show <model>` | Vindex metadata and file inventory. |
-| `slice <source>` | Carve a subset of a vindex (`client` / `attn` / `embed` / `server` / `browse` / `router` / `expert-server`). |
-| `publish <source>` | Publish a vindex to HuggingFace — full + slice siblings + collections. |
-| `rm <model>` | Evict a cached vindex. |
-| `bench <model>` | Benchmark decode throughput on a real vindex (Metal / CPU / Ollama). |
-| `shannon <subcmd>` | Next-token bit scoring, slot probes, repetition probes, layer lens, demo arithmetic coding. |
-| `serve <model>` | Serve a vindex over HTTP + gRPC. |
+| Command                | Description                                                                                                  |
+|------------------------|--------------------------------------------------------------------------------------------------------------|
+| `run <model> [prompt]` | Run inference. One-shot if prompt given; chat loop if not.                                                   |
+| `chat <model>`         | Alias for `run <model>` with no prompt.                                                                      |
+| `pull <model>`         | Download a vindex from HuggingFace and cache locally.                                                        |
+| `model <subcmd>`       | Manage HuggingFace **model** repos (companion to `pull`, which is vindex-only).                              |
+| `link <path>`          | Register a local vindex directory with the cache so `run` / `list` / `show` find it by shorthand.            |
+| `list`                 | Show cached vindexes (model, size, layers, hidden).                                                          |
+| `show <model>`         | Vindex metadata and file inventory.                                                                          |
+| `slice <source>`       | Carve a subset of a vindex (`client` / `attn` / `embed` / `server` / `browse` / `router` / `expert-server`). |
+| `publish <source>`     | Publish a vindex to HuggingFace — full + slice siblings + collections.                                       |
+| `rm <model>`           | Evict a cached vindex.                                                                                       |
+| `bench <model>`        | Benchmark decode throughput on a real vindex (Metal / CPU / Ollama).                                         |
+| `shannon <subcmd>`     | Next-token bit scoring, slot probes, repetition probes, layer lens, demo arithmetic coding.                  |
+| `serve <model>`        | Serve a vindex over HTTP + gRPC.                                                                             |
 
 ## Build / extract
 
-| Command | Description |
-|---|---|
-| `extract <model-id>` | Build a .vindex from a HuggingFace model (safetensors/GGUF/MLX → queryable). |
-| `extract-index` | Backwards-compat alias of `extract`. |
-| `build` | Build a custom vindex from a Vindexfile (FROM + PATCH + INSERT). |
-| `compile` | Compile vindex patches into model weights (AOT). |
-| `convert` | Convert between formats (GGUF ↔ vindex, safetensors → vindex; `quantize` for FP4/Q4_K_M). |
-| `hf` | HuggingFace Hub: download / publish a vindex. |
-| `verify` | Verify vindex file integrity (SHA256 checksums). |
-| `diag` | Engine diagnostic — print which kernel paths fire for a vindex, validate Q4_K/Q6_K strides, optional `--probe` runs a real forward pass. |
-| `parity` | Cross-backend numerical diff (`reference` / `cpu` / `metal`) at well-known checkpoints. |
+| Command              | Description                                                                                                                              |
+|----------------------|------------------------------------------------------------------------------------------------------------------------------------------|
+| `extract <model-id>` | Build a .vindex from a HuggingFace model (safetensors/GGUF/MLX → queryable).                                                             |
+| `extract-index`      | Backwards-compat alias of `extract`.                                                                                                     |
+| `build`              | Build a custom vindex from a Vindexfile (FROM + PATCH + INSERT).                                                                         |
+| `compile`            | Compile vindex patches into model weights (AOT).                                                                                         |
+| `convert`            | Convert between formats (GGUF ↔ vindex, safetensors → vindex; `quantize` for FP4/Q4_K_M).                                                |
+| `hf`                 | HuggingFace Hub: download / publish a vindex.                                                                                            |
+| `verify`             | Verify vindex file integrity (SHA256 checksums).                                                                                         |
+| `diag`               | Engine diagnostic — print which kernel paths fire for a vindex, validate Q4_K/Q6_K strides, optional `--probe` runs a real forward pass. |
+| `parity`             | Cross-backend numerical diff (`reference` / `cpu` / `metal`) at well-known checkpoints.                                                  |
 
 ## LQL
 
-| Command | Description |
-|---|---|
-| `repl` | Launch the LQL interactive REPL. |
+| Command        | Description                       |
+|----------------|-----------------------------------|
+| `repl`         | Launch the LQL interactive REPL.  |
 | `lql '<stmt>'` | Execute a one-shot LQL statement. |
 
 ## Research / interpretability tools — `larql dev <subcmd>`
@@ -86,28 +86,28 @@ One-shot inference or interactive chat.
 larql run <MODEL> [PROMPT] [OPTIONS]
 ```
 
-| Flag | Description | Default |
-|---|---|---|
-| `<MODEL>` | Vindex dir, `hf://owner/name`, `owner/name`, or cache shorthand | — |
-| `[PROMPT]` | Prompt text; omit to enter chat mode | — |
-| `-n, --max-tokens <N>` | Max tokens to generate autoregressively | 64 |
-| `--top <N>` | Show the top-K prediction table per step instead of just the argmax (implied by `--verbose`) | 1 |
-| `--kv-cache <KIND>` | KV cache strategy: `standard` (full FP32, unbounded), `markov-bounded` (sliding window), `none` (no cache, O(N²)) | standard |
-| `--context-window <N>` | Sliding-window size when `--kv-cache markov-bounded`; `0` = unbounded | 0 |
-| `--metal` | Force the Metal GPU path (macOS only). Default is CPU on non-macOS, Metal on macOS when available | auto |
-| `--ffn <URL>` | Route dense FFN to a remote larql-server. Attention runs locally; each layer's FFN is a round trip | — |
-| `--ffn-timeout-secs <N>` | HTTP timeout for `--ffn` | 60 |
+| Flag                                | Description                                                                                                                                                                  | Default   |
+|-------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------|
+| `<MODEL>`                           | Vindex dir, `hf://owner/name`, `owner/name`, or cache shorthand                                                                                                              | —         |
+| `[PROMPT]`                          | Prompt text; omit to enter chat mode                                                                                                                                         | —         |
+| `-n, --max-tokens <N>`              | Max tokens to generate autoregressively                                                                                                                                      | 64        |
+| `--top <N>`                         | Show the top-K prediction table per step instead of just the argmax (implied by `--verbose`)                                                                                 | 1         |
+| `--kv-cache <KIND>`                 | KV cache strategy: `standard` (full FP32, unbounded), `markov-bounded` (sliding window), `none` (no cache, O(N²))                                                            | standard  |
+| `--context-window <N>`              | Sliding-window size when `--kv-cache markov-bounded`; `0` = unbounded                                                                                                        | 0         |
+| `--metal`                           | Force the Metal GPU path (macOS only). Default is CPU on non-macOS, Metal on macOS when available                                                                            | auto      |
+| `--ffn <URL>`                       | Route dense FFN to a remote larql-server. Attention runs locally; each layer's FFN is a round trip                                                                           | —         |
+| `--ffn-timeout-secs <N>`            | HTTP timeout for `--ffn`                                                                                                                                                     | 60        |
 | `--ffn-dispatch <streaming\|batch>` | Dense FFN dispatch when `--ffn` is set. `streaming` runs N sequential round-trips per token; `batch` predispatches all layers in parallel and refines in a second Metal pass | streaming |
-| `--ffn-predispatch-iters <N>` | Refinement iterations for `--ffn-dispatch batch`. Higher = more accurate, slower | 1 |
-| `--moe-shards <SPEC>` | MoE expert dispatch: `"0-63=URL1,64-127=URL2"`. Client runs the router locally; expert calls fan out | — |
-| `--moe-units-manifest <PATH>` | Fine-grained per-(layer,expert) shard map from JSON. Mutually exclusive with `--moe-shards` | — |
-| `--moe-dispatch <streaming\|batch>` | Same shape as `--ffn-dispatch`, applied to MoE expert calls | streaming |
-| `--moe-predispatch-iters <N>` | Refinement iterations for `--moe-dispatch batch` | 1 |
-| `--experts` | Enable WASM-expert dispatch (gcd, base64, …) at FFN slots | false |
-| `--experts-dir <PATH>` | Directory of `.wasm` experts (overrides default lookup) | — |
-| `--ops <NAME[,…]>` | Restrict `--experts` to a comma-separated subset of op names | all |
-| `--constrained` | Run constrained-decoding mode (require all generated tokens to satisfy declared ops) | false |
-| `-v, --verbose` | Verbose load / timing output | false |
+| `--ffn-predispatch-iters <N>`       | Refinement iterations for `--ffn-dispatch batch`. Higher = more accurate, slower                                                                                             | 1         |
+| `--moe-shards <SPEC>`               | MoE expert dispatch: `"0-63=URL1,64-127=URL2"`. Client runs the router locally; expert calls fan out                                                                         | —         |
+| `--moe-units-manifest <PATH>`       | Fine-grained per-(layer,expert) shard map from JSON. Mutually exclusive with `--moe-shards`                                                                                  | —         |
+| `--moe-dispatch <streaming\|batch>` | Same shape as `--ffn-dispatch`, applied to MoE expert calls                                                                                                                  | streaming |
+| `--moe-predispatch-iters <N>`       | Refinement iterations for `--moe-dispatch batch`                                                                                                                             | 1         |
+| `--experts`                         | Enable WASM-expert dispatch (gcd, base64, …) at FFN slots                                                                                                                    | false     |
+| `--experts-dir <PATH>`              | Directory of `.wasm` experts (overrides default lookup)                                                                                                                      | —         |
+| `--ops <NAME[,…]>`                  | Restrict `--experts` to a comma-separated subset of op names                                                                                                                 | all       |
+| `--constrained`                     | Run constrained-decoding mode (require all generated tokens to satisfy declared ops)                                                                                         | false     |
+| `-v, --verbose`                     | Verbose load / timing output                                                                                                                                                 | false     |
 
 Examples:
 
@@ -126,13 +126,13 @@ Interactive chat. Alias for `run <model>` with no prompt.
 larql chat <MODEL> [OPTIONS]
 ```
 
-| Flag | Description | Default |
-|---|---|---|
-| `<MODEL>` | Vindex dir, `hf://owner/name`, or cache shorthand | — |
-| `-n, --max-tokens <N>` | Max tokens per chat response | 64 |
-| `--ffn <URL>` | Route FFN to a remote larql-server | — |
-| `--ffn-timeout-secs <N>` | HTTP timeout for `--ffn` | 60 |
-| `-v, --verbose` | Verbose load / timing output | false |
+| Flag                     | Description                                       | Default |
+|--------------------------|---------------------------------------------------|---------|
+| `<MODEL>`                | Vindex dir, `hf://owner/name`, or cache shorthand | —       |
+| `-n, --max-tokens <N>`   | Max tokens per chat response                      | 64      |
+| `--ffn <URL>`            | Route FFN to a remote larql-server                | —       |
+| `--ffn-timeout-secs <N>` | HTTP timeout for `--ffn`                          | 60      |
+| `-v, --verbose`          | Verbose load / timing output                      | false   |
 
 `larql chat` is a thin shim — under the hood it constructs the same `RunArgs`
 as `larql run` (with `prompt: None`) and the chat-loop UX is implemented in
@@ -149,26 +149,26 @@ or a remote larql-server FFN grid.
 larql bench <MODEL> [OPTIONS]
 ```
 
-| Flag | Description | Default |
-|---|---|---|
-| `<MODEL>` | Vindex dir, `hf://owner/name`, or cache shorthand | — |
-| `--prompt <TEXT>` | Prompt to time (kept short to keep prefill consistent across runs) | "The capital of France is" |
-| `-n, --tokens <N>` | Number of decode steps to measure | 50 |
-| `--warmup <N>` | Discarded warmup steps before measurement (smooths first-call allocation effects) | 3 |
-| `--backends <LIST>` | Comma-separated backend list. Supported: `metal`, `cpu` | metal |
-| `--ollama <MODEL>` | Also query a local Ollama server with this model name (e.g. `gemma3:4b`). Requires `ollama serve` running | — |
-| `--engine <LIST>` | Comma-separated KV engines to bench alongside the GPU path. Supported: `markov-rs`, `unlimited-context` | — |
-| `--ffn <URL>` | Bench the grid path: route FFN to a remote larql-server | — |
-| `--ffn-dispatch <streaming\|batch>` | Same shape as `larql run --ffn-dispatch` | streaming |
-| `--moe-shards <SPEC>` | Bench the remote MoE expert path | — |
-| `--moe-dispatch <streaming\|batch>` | Same shape as `larql run --moe-dispatch` | streaming |
-| `--moe-predispatch-iters <N>` | Refinement iterations for batch dispatch | 2 |
-| `--profile` | Print per-stage timing breakdown for each engine (markov-rs only for now) | false |
-| `--wire <f32,f16,i8>` | Comma-separated wire formats to compare end-to-end. Requires `--ffn` | — |
-| `--bench-grid` | Shard-count scaling sweep: with `--moe-shards`, reruns with 1..N shards from the provided map | false |
-| `--concurrent <N>` | Simulate N concurrent clients; reports aggregate tok/s and per-client p99 | 1 |
-| `--output <json>` | Emit machine-readable JSON alongside the table output | — |
-| `--output-file <PATH>` | Write JSON output to this file instead of stdout | — |
+| Flag                                | Description                                                                                               | Default                    |
+|-------------------------------------|-----------------------------------------------------------------------------------------------------------|----------------------------|
+| `<MODEL>`                           | Vindex dir, `hf://owner/name`, or cache shorthand                                                         | —                          |
+| `--prompt <TEXT>`                   | Prompt to time (kept short to keep prefill consistent across runs)                                        | "The capital of France is" |
+| `-n, --tokens <N>`                  | Number of decode steps to measure                                                                         | 50                         |
+| `--warmup <N>`                      | Discarded warmup steps before measurement (smooths first-call allocation effects)                         | 3                          |
+| `--backends <LIST>`                 | Comma-separated backend list. Supported: `metal`, `cpu`                                                   | metal                      |
+| `--ollama <MODEL>`                  | Also query a local Ollama server with this model name (e.g. `gemma3:4b`). Requires `ollama serve` running | —                          |
+| `--engine <LIST>`                   | Comma-separated KV engines to bench alongside the GPU path. Supported: `markov-rs`, `unlimited-context`   | —                          |
+| `--ffn <URL>`                       | Bench the grid path: route FFN to a remote larql-server                                                   | —                          |
+| `--ffn-dispatch <streaming\|batch>` | Same shape as `larql run --ffn-dispatch`                                                                  | streaming                  |
+| `--moe-shards <SPEC>`               | Bench the remote MoE expert path                                                                          | —                          |
+| `--moe-dispatch <streaming\|batch>` | Same shape as `larql run --moe-dispatch`                                                                  | streaming                  |
+| `--moe-predispatch-iters <N>`       | Refinement iterations for batch dispatch                                                                  | 2                          |
+| `--profile`                         | Print per-stage timing breakdown for each engine (markov-rs only for now)                                 | false                      |
+| `--wire <f32,f16,i8>`               | Comma-separated wire formats to compare end-to-end. Requires `--ffn`                                      | —                          |
+| `--bench-grid`                      | Shard-count scaling sweep: with `--moe-shards`, reruns with 1..N shards from the provided map             | false                      |
+| `--concurrent <N>`                  | Simulate N concurrent clients; reports aggregate tok/s and per-client p99                                 | 1                          |
+| `--output <json>`                   | Emit machine-readable JSON alongside the table output                                                     | —                          |
+| `--output-file <PATH>`              | Write JSON output to this file instead of stdout                                                          | —                          |
 
 Examples:
 
@@ -187,8 +187,8 @@ Companion to `pull`, which is vindex-only.
 larql model pull <model-id> [OPTIONS]
 ```
 
-| Subcommand | Description |
-|---|---|
+| Subcommand        | Description                                                                                                                                                       |
+|-------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `pull <model-id>` | Download a HuggingFace model repo. Stages a raw HF model on disk for `convert safetensors-to-vindex` (or for any non-LARQL tool that wants the original weights). |
 
 Use `larql pull` for vindex artifacts; use `larql model pull` to get the
@@ -203,11 +203,11 @@ can find it by shorthand.
 larql link <PATH> [OPTIONS]
 ```
 
-| Flag | Description | Default |
-|---|---|---|
-| `<PATH>` | Path to a vindex directory (must contain `index.json`) | — |
+| Flag          | Description                                                                                          | Default  |
+|---------------|------------------------------------------------------------------------------------------------------|----------|
+| `<PATH>`      | Path to a vindex directory (must contain `index.json`)                                               | —        |
 | `--as <NAME>` | Override the registered name (defaults to the directory basename with any `.vindex` suffix stripped) | basename |
-| `-f, --force` | Replace an existing link of the same name | false |
+| `-f, --force` | Replace an existing link of the same name                                                            | false    |
 
 ### `larql shannon`
 
@@ -226,15 +226,15 @@ larql shannon encode google/gemma-3-4b-it --vindex ./gemma-q4k.vindex --metal --
 larql shannon decode google/gemma-3-4b-it --vindex ./gemma-q4k.vindex --metal --in compressed.lsc --out recovered.txt
 ```
 
-| Subcommand | Description |
-|---|---|
-| `score` | Score a corpus and print bits/token, bits/char, bits/byte, and total bits. |
-| `slot` | Score an answer span after a prefix and show top predictions before the slot. |
-| `repeat` | Score each occurrence of a string in its real preceding context. |
-| `layers` | Per-layer Shannon bits via the final-norm logit lens. At every layer L (embed plus each post-block residual), project through `final_norm + lm_head` and report bits/token, KL-to-final, and adjacent `bits_saved[L]` deltas. |
-| `encode` | Write a real arithmetic-coded bitstream driven by model probabilities. Intended for short excerpts. |
-| `decode` | Reconstruct text from `encode` output using the same model. |
-| `verify` | Three-engine cross-engine correctness check (LARQL Rust ↔ HF/PyTorch ↔ MLX) on the same corpus. Pretty delta table, exits non-zero if any pair-wise delta exceeds `--threshold`. See [Cross-engine verify](#cross-engine-verify) below. |
+| Subcommand | Description                                                                                                                                                                                                                             |
+|------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `score`    | Score a corpus and print bits/token, bits/char, bits/byte, and total bits.                                                                                                                                                              |
+| `slot`     | Score an answer span after a prefix and show top predictions before the slot.                                                                                                                                                           |
+| `repeat`   | Score each occurrence of a string in its real preceding context.                                                                                                                                                                        |
+| `layers`   | Per-layer Shannon bits via the final-norm logit lens. At every layer L (embed plus each post-block residual), project through `final_norm + lm_head` and report bits/token, KL-to-final, and adjacent `bits_saved[L]` deltas.           |
+| `encode`   | Write a real arithmetic-coded bitstream driven by model probabilities. Intended for short excerpts.                                                                                                                                     |
+| `decode`   | Reconstruct text from `encode` output using the same model.                                                                                                                                                                             |
+| `verify`   | Three-engine cross-engine correctness check (LARQL Rust ↔ HF/PyTorch ↔ MLX) on the same corpus. Pretty delta table, exits non-zero if any pair-wise delta exceeds `--threshold`. See [Cross-engine verify](#cross-engine-verify) below. |
 
 Without `--vindex`, `encode` / `decode` rerun the dense model for each
 recovered token and are intended only for short excerpts. With `--vindex
@@ -276,14 +276,14 @@ PASS
 
 Flags:
 
-| Flag | Default | Meaning |
-|---|---|---|
-| `--engines mlx,hf` | both | Comma list. `rust` always runs. |
-| `--threshold 0.5` | 0.5% | PASS/FAIL boundary on max pair-wise delta. |
-| `--python` | `.venv/bin/python` | Interpreter for the MLX and HF scripts. |
-| `--mlx-script` | `scripts/shannon_score_mlx.py` | Path to the MLX scorer. |
-| `--hf-script` | `scripts/shannon_score_hf.py` | Path to the HF scorer. |
-| `--hf-device` | `cpu` | `cpu` is deterministic; `mps` is faster on Apple Silicon. |
+| Flag               | Default                        | Meaning                                                   |
+|--------------------|--------------------------------|-----------------------------------------------------------|
+| `--engines mlx,hf` | both                           | Comma list. `rust` always runs.                           |
+| `--threshold 0.5`  | 0.5%                           | PASS/FAIL boundary on max pair-wise delta.                |
+| `--python`         | `.venv/bin/python`             | Interpreter for the MLX and HF scripts.                   |
+| `--mlx-script`     | `scripts/shannon_score_mlx.py` | Path to the MLX scorer.                                   |
+| `--hf-script`      | `scripts/shannon_score_hf.py`  | Path to the HF scorer.                                    |
+| `--hf-device`      | `cpu`                          | `cpu` is deterministic; `mps` is faster on Apple Silicon. |
 
 Apparent quirks worth knowing about (also in
 [`scripts/README_shannon_score.md`](../scripts/README_shannon_score.md)):
@@ -368,56 +368,56 @@ larql serve <VINDEX_PATH> [OPTIONS]
 larql serve --dir <DIR> [OPTIONS]
 ```
 
-| Flag | Description | Default |
-|---|---|---|
-| `<VINDEX_PATH>` | Path to .vindex directory or `hf://` URL | — |
-| `--dir <DIR>` | Serve all .vindex directories in folder | — |
-| `--port <PORT>` | Listen port | 8080 |
-| `--host <HOST>` | Bind address | 0.0.0.0 |
-| `--no-infer` | Disable inference endpoint (browse-only, saves memory) | false |
-| `--ffn-only` | Run as an FFN-service endpoint for `larql run --ffn URL` clients. Implies `--no-infer`; advertises `mode: ffn-service` in `/v1/stats`. | false |
-| `--cors` | Enable CORS headers for browser access | false |
-| `--api-key <KEY>` | Require Bearer token auth (health exempt) | — |
-| `--rate-limit <SPEC>` | Per-IP rate limit (e.g., "100/min", "10/sec") | — |
-| `--trust-forwarded-for` | Use the first `X-Forwarded-For` IP for rate limiting. Enable only behind a trusted proxy. | false |
-| `--max-concurrent <N>` | Max concurrent requests | 100 |
-| `--cache-ttl <SECS>` | Cache TTL for DESCRIBE results (0 = disabled) | 0 |
-| `--layers <START-END>` | Only load and serve layers in this range (e.g. `0-14`). Pages outside the range are never faulted in; RSS scales with shard size. | — |
-| `--experts <START-END>` | Only serve expert IDs in this range (e.g. `0-63`). MoE shard filter. Mutually exclusive with `--units`. | — |
-| `--units <PATH>` | Fine-grained per-(layer,expert) ownership manifest (JSON). Mutually exclusive with `--experts`. | — |
-| `--moe-shards <SPEC>` | Server-side MoE expert dispatch: `"0-63=URL1,64-127=URL2"`. When set, the `walk-ffn` handler fans out MoE expert calls to remote shard servers. Combine with `--layers` for 2D layer × expert sharding. | — |
-| `--moe-units-manifest <PATH>` | Fine-grained per-(layer,expert) server-side shard map. Mutually exclusive with `--moe-shards`. | — |
-| `--join <ADDRS>` | Join one or more router grids (comma-separated gRPC addresses, e.g. `grpc://router:50052`). Self-assembling grid. Requires `--public-url`. | — |
-| `--public-url <URL>` | Public HTTP URL for this server (used with `--join`). | — |
-| `--grid-key <SECRET>` | Shared secret for grid auth (also `LARQL_GRID_KEY` env var). | — |
-| `--max-gate-cache-layers <N>` | LRU cap on decoded f16 gate layers (0 = unlimited). | 0 |
-| `--release-mmap-after-request` | `madvise(DONTNEED)` on all mmaps post-request. Linux: strict. Darwin: advisory. | false |
-| `--embed-only` | Load only embeddings + lm_head (embed-server mode, ADR-0008). | false |
-| `--grpc-port <PORT>` | Enable gRPC server on this port | — |
-| `--uds-path <PATH>` | Bind a Unix domain socket alongside TCP for same-host MoE shard clients. | — |
-| `--warmup-hnsw` | Eager-build HNSW index for every owned layer at startup. Requires `--hnsw`. | false |
-| `--warmup-walk-ffn` | Pre-load inference weights and prefetch all owned layer mmap pages at boot. | false |
-| `--tls-cert <PATH>` | TLS certificate for HTTPS | — |
-| `--tls-key <PATH>` | TLS private key for HTTPS | — |
-| `--log-level <LEVEL>` | Logging level | info |
+| Flag                           | Description                                                                                                                                                                                             | Default |
+|--------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| `<VINDEX_PATH>`                | Path to .vindex directory or `hf://` URL                                                                                                                                                                | —       |
+| `--dir <DIR>`                  | Serve all .vindex directories in folder                                                                                                                                                                 | —       |
+| `--port <PORT>`                | Listen port                                                                                                                                                                                             | 8080    |
+| `--host <HOST>`                | Bind address                                                                                                                                                                                            | 0.0.0.0 |
+| `--no-infer`                   | Disable inference endpoint (browse-only, saves memory)                                                                                                                                                  | false   |
+| `--ffn-only`                   | Run as an FFN-service endpoint for `larql run --ffn URL` clients. Implies `--no-infer`; advertises `mode: ffn-service` in `/v1/stats`.                                                                  | false   |
+| `--cors`                       | Enable CORS headers for browser access                                                                                                                                                                  | false   |
+| `--api-key <KEY>`              | Require Bearer token auth (health exempt)                                                                                                                                                               | —       |
+| `--rate-limit <SPEC>`          | Per-IP rate limit (e.g., "100/min", "10/sec")                                                                                                                                                           | —       |
+| `--trust-forwarded-for`        | Use the first `X-Forwarded-For` IP for rate limiting. Enable only behind a trusted proxy.                                                                                                               | false   |
+| `--max-concurrent <N>`         | Max concurrent requests                                                                                                                                                                                 | 100     |
+| `--cache-ttl <SECS>`           | Cache TTL for DESCRIBE results (0 = disabled)                                                                                                                                                           | 0       |
+| `--layers <START-END>`         | Only load and serve layers in this range (e.g. `0-14`). Pages outside the range are never faulted in; RSS scales with shard size.                                                                       | —       |
+| `--experts <START-END>`        | Only serve expert IDs in this range (e.g. `0-63`). MoE shard filter. Mutually exclusive with `--units`.                                                                                                 | —       |
+| `--units <PATH>`               | Fine-grained per-(layer,expert) ownership manifest (JSON). Mutually exclusive with `--experts`.                                                                                                         | —       |
+| `--moe-shards <SPEC>`          | Server-side MoE expert dispatch: `"0-63=URL1,64-127=URL2"`. When set, the `walk-ffn` handler fans out MoE expert calls to remote shard servers. Combine with `--layers` for 2D layer × expert sharding. | —       |
+| `--moe-units-manifest <PATH>`  | Fine-grained per-(layer,expert) server-side shard map. Mutually exclusive with `--moe-shards`.                                                                                                          | —       |
+| `--join <ADDRS>`               | Join one or more router grids (comma-separated gRPC addresses, e.g. `grpc://router:50052`). Self-assembling grid. Requires `--public-url`.                                                              | —       |
+| `--public-url <URL>`           | Public HTTP URL for this server (used with `--join`).                                                                                                                                                   | —       |
+| `--grid-key <SECRET>`          | Shared secret for grid auth (also `LARQL_GRID_KEY` env var).                                                                                                                                            | —       |
+| `--max-gate-cache-layers <N>`  | LRU cap on decoded f16 gate layers (0 = unlimited).                                                                                                                                                     | 0       |
+| `--release-mmap-after-request` | `madvise(DONTNEED)` on all mmaps post-request. Linux: strict. Darwin: advisory.                                                                                                                         | false   |
+| `--embed-only`                 | Load only embeddings + lm_head (embed-server mode, ADR-0008).                                                                                                                                           | false   |
+| `--grpc-port <PORT>`           | Enable gRPC server on this port                                                                                                                                                                         | —       |
+| `--uds-path <PATH>`            | Bind a Unix domain socket alongside TCP for same-host MoE shard clients.                                                                                                                                | —       |
+| `--warmup-hnsw`                | Eager-build HNSW index for every owned layer at startup. Requires `--hnsw`.                                                                                                                             | false   |
+| `--warmup-walk-ffn`            | Pre-load inference weights and prefetch all owned layer mmap pages at boot.                                                                                                                             | false   |
+| `--tls-cert <PATH>`            | TLS certificate for HTTPS                                                                                                                                                                               | —       |
+| `--tls-key <PATH>`             | TLS private key for HTTPS                                                                                                                                                                               | —       |
+| `--log-level <LEVEL>`          | Logging level                                                                                                                                                                                           | info    |
 
 **Endpoints:**
 
-| Method | Path | Description |
-|---|---|---|
-| GET | `/v1/describe?entity=France` | Knowledge edges (with probe relation labels) |
-| GET | `/v1/walk?prompt=...&top=5` | Feature scan for a prompt |
-| POST | `/v1/select` | SQL-style edge query |
-| POST | `/v1/infer` | Full forward pass (walk/dense/compare) |
-| GET | `/v1/relations` | List known relation types |
-| GET | `/v1/stats` | Model and index statistics |
-| POST | `/v1/patches/apply` | Apply a patch in-memory |
-| GET | `/v1/patches` | List active patches |
-| DELETE | `/v1/patches/{name}` | Remove a patch |
-| POST | `/v1/walk-ffn` | Decoupled inference. Two modes — see below. |
-| WS | `/v1/stream` | WebSocket streaming (layer-by-layer DESCRIBE) |
-| GET | `/v1/health` | Health check (auth exempt) |
-| GET | `/v1/models` | List loaded models |
+| Method | Path                         | Description                                   |
+|--------|------------------------------|-----------------------------------------------|
+| GET    | `/v1/describe?entity=France` | Knowledge edges (with probe relation labels)  |
+| GET    | `/v1/walk?prompt=...&top=5`  | Feature scan for a prompt                     |
+| POST   | `/v1/select`                 | SQL-style edge query                          |
+| POST   | `/v1/infer`                  | Full forward pass (walk/dense/compare)        |
+| GET    | `/v1/relations`              | List known relation types                     |
+| GET    | `/v1/stats`                  | Model and index statistics                    |
+| POST   | `/v1/patches/apply`          | Apply a patch in-memory                       |
+| GET    | `/v1/patches`                | List active patches                           |
+| DELETE | `/v1/patches/{name}`         | Remove a patch                                |
+| POST   | `/v1/walk-ffn`               | Decoupled inference. Two modes — see below.   |
+| WS     | `/v1/stream`                 | WebSocket streaming (layer-by-layer DESCRIBE) |
+| GET    | `/v1/health`                 | Health check (auth exempt)                    |
+| GET    | `/v1/models`                 | List loaded models                            |
 
 **`POST /v1/walk-ffn`** has two modes:
 
@@ -545,15 +545,15 @@ Extract edges from FFN weight matrices. Zero forward passes. Pure matrix multipl
 larql dev weight-extract <MODEL> --output <OUTPUT> [OPTIONS]
 ```
 
-| Argument/Flag | Description |
-|---|---|
-| `<MODEL>` | Model path or HuggingFace model ID (e.g. `google/gemma-3-4b-it`) |
-| `-o, --output <OUTPUT>` | Output file (`.larql.json` or `.larql.bin`) |
-| `-l, --layer <LAYER>` | Single layer to walk. Default: all layers |
-| `--top-k <TOP_K>` | Top-k tokens per feature [default: 5] |
-| `--min-score <MIN_SCORE>` | Minimum raw activation score for top-k selection [default: 0.02] |
+| Argument/Flag                       | Description                                                        |
+|-------------------------------------|--------------------------------------------------------------------|
+| `<MODEL>`                           | Model path or HuggingFace model ID (e.g. `google/gemma-3-4b-it`)   |
+| `-o, --output <OUTPUT>`             | Output file (`.larql.json` or `.larql.bin`)                        |
+| `-l, --layer <LAYER>`               | Single layer to walk. Default: all layers                          |
+| `--top-k <TOP_K>`                   | Top-k tokens per feature [default: 5]                              |
+| `--min-score <MIN_SCORE>`           | Minimum raw activation score for top-k selection [default: 0.02]   |
 | `--min-confidence <MIN_CONFIDENCE>` | Minimum normalized confidence [0-1] to keep an edge [default: 0.0] |
-| `--stats <STATS>` | Write layer statistics to a separate JSON file |
+| `--stats <STATS>`                   | Write layer statistics to a separate JSON file                     |
 
 **Model resolution:** Accepts a local directory path or a HuggingFace model ID. Model IDs are resolved from the HuggingFace cache at `~/.cache/huggingface/hub/` (or `$HF_HOME/hub/`).
 
@@ -588,13 +588,13 @@ Extract routing edges from attention OV circuits. Zero forward passes.
 larql dev attention-extract <MODEL> --output <OUTPUT> [OPTIONS]
 ```
 
-| Argument/Flag | Description |
-|---|---|
-| `<MODEL>` | Model path or HuggingFace model ID |
-| `-o, --output <OUTPUT>` | Output file (`.larql.json` or `.larql.bin`) |
-| `-l, --layer <LAYER>` | Single layer to walk. Default: all layers |
-| `--top-k <TOP_K>` | Top-k tokens per head [default: 3] |
-| `--min-score <MIN_SCORE>` | Minimum score [default: 0.0] |
+| Argument/Flag             | Description                                 |
+|---------------------------|---------------------------------------------|
+| `<MODEL>`                 | Model path or HuggingFace model ID          |
+| `-o, --output <OUTPUT>`   | Output file (`.larql.json` or `.larql.bin`) |
+| `-l, --layer <LAYER>`     | Single layer to walk. Default: all layers   |
+| `--top-k <TOP_K>`         | Top-k tokens per head [default: 3]          |
+| `--min-score <MIN_SCORE>` | Minimum score [default: 0.0]                |
 
 **How it works:** For each attention head, computes the OV circuit (`O_h @ V_h`), projects all vocab tokens through it, finds the most amplified inputs, and decodes what output tokens each produces.
 
@@ -615,11 +615,11 @@ Run a full transformer forward pass from extracted safetensors weights and retur
 larql dev predict <MODEL> --prompt <PROMPT> [OPTIONS]
 ```
 
-| Argument/Flag | Description |
-|---|---|
-| `<MODEL>` | Model path or HuggingFace model ID |
-| `-p, --prompt <PROMPT>` | Prompt text to predict the next token for |
-| `-k, --top-k <TOP_K>` | Number of top predictions to show [default: 10] |
+| Argument/Flag           | Description                                     |
+|-------------------------|-------------------------------------------------|
+| `<MODEL>`               | Model path or HuggingFace model ID              |
+| `-p, --prompt <PROMPT>` | Prompt text to predict the next token for       |
+| `-k, --top-k <TOP_K>`   | Number of top predictions to show [default: 10] |
 
 **How it works:** Loads all safetensors weights, tokenizes the prompt (with BOS token), runs the full forward pass through all layers (embedding, attention with RoPE, GQA, QK norm, FFN with SiLU gating, all layer norms), projects the final residual against the embedding matrix, and returns softmax probabilities.
 
@@ -654,13 +654,13 @@ Build a precomputed gate index for graph-based FFN. Offline step — run once pe
 larql dev index-gates <MODEL> --output <OUTPUT> [OPTIONS]
 ```
 
-| Flag | Description |
-|---|---|
-| `<MODEL>` | Model path or HuggingFace model ID |
-| `-o, --output <OUTPUT>` | Output index file (`.gate-index.jsonl`) |
-| `--features-per-token <N>` | Features to index per token per layer [default: 100] |
-| `--top-tokens <N>` | Top tokens to match at runtime [default: 10] |
-| `--layers <LAYERS>` | Layers to index (e.g. `0-33` or `26,27,28`). Default: all |
+| Flag                       | Description                                               |
+|----------------------------|-----------------------------------------------------------|
+| `<MODEL>`                  | Model path or HuggingFace model ID                        |
+| `-o, --output <OUTPUT>`    | Output index file (`.gate-index.jsonl`)                   |
+| `--features-per-token <N>` | Features to index per token per layer [default: 100]      |
+| `--top-tokens <N>`         | Top tokens to match at runtime [default: 10]              |
+| `--layers <LAYERS>`        | Layers to index (e.g. `0-33` or `26,27,28`). Default: all |
 
 **Examples:**
 
@@ -677,22 +677,22 @@ Walk the model as a local vector index — gate KNN followed by down token looku
 larql dev walk --prompt <PROMPT> [OPTIONS]
 ```
 
-| Flag | Description |
-|---|---|
-| `-p, --prompt <PROMPT>` | Prompt text to walk through the model |
-| `--index <PATH>` | Path to a `.vindex` directory (self-contained, no model needed) |
-| `-m, --model <MODEL>` | Model path or HuggingFace model ID |
-| `--gate-vectors <PATH>` | Path to extracted ffn_gate vectors (alternative to `--index`) |
-| `--down-vectors <PATH>` | Path to extracted ffn_down vectors (alternative to `--index`) |
-| `-k, --top-k <N>` | Top-K features per layer for gate KNN [default: 10] |
-| `-l, --layers <LAYERS>` | Layers to walk. Comma-separated or range. Default: all |
-| `--predict-top-k <N>` | Number of top predictions to show [default: 10] |
-| `--predict` | Run full forward pass with walk FFN and show predictions (requires `--model`) |
-| `--compare` | Compare walk FFN predictions against dense ground truth (requires `--model`). Incompatible with `--ffn-remote`. |
-| `--down-top-k <N>` | Number of down tokens to show per feature [default: 5] |
-| `-v, --verbose` | Show verbose loading and timing info |
-| `--ffn-remote <URL>` | Route FFN to a remote `larql-server` via `POST /v1/walk-ffn` (`full_output: true`). Attention still runs locally; all layers are sent in a single binary batch round trip (`application/x-larql-ffn`, little-endian f32). Falls back to JSON if the server does not support binary. Same wire protocol that [`larql run --ffn`](#larql-run) uses. |
-| `--ffn-remote-timeout-secs <N>` | Per-request HTTP timeout for `--ffn-remote` [default: 60] |
+| Flag                            | Description                                                                                                                                                                                                                                                                                                                                       |
+|---------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `-p, --prompt <PROMPT>`         | Prompt text to walk through the model                                                                                                                                                                                                                                                                                                             |
+| `--index <PATH>`                | Path to a `.vindex` directory (self-contained, no model needed)                                                                                                                                                                                                                                                                                   |
+| `-m, --model <MODEL>`           | Model path or HuggingFace model ID                                                                                                                                                                                                                                                                                                                |
+| `--gate-vectors <PATH>`         | Path to extracted ffn_gate vectors (alternative to `--index`)                                                                                                                                                                                                                                                                                     |
+| `--down-vectors <PATH>`         | Path to extracted ffn_down vectors (alternative to `--index`)                                                                                                                                                                                                                                                                                     |
+| `-k, --top-k <N>`               | Top-K features per layer for gate KNN [default: 10]                                                                                                                                                                                                                                                                                               |
+| `-l, --layers <LAYERS>`         | Layers to walk. Comma-separated or range. Default: all                                                                                                                                                                                                                                                                                            |
+| `--predict-top-k <N>`           | Number of top predictions to show [default: 10]                                                                                                                                                                                                                                                                                                   |
+| `--predict`                     | Run full forward pass with walk FFN and show predictions (requires `--model`)                                                                                                                                                                                                                                                                     |
+| `--compare`                     | Compare walk FFN predictions against dense ground truth (requires `--model`). Incompatible with `--ffn-remote`.                                                                                                                                                                                                                                   |
+| `--down-top-k <N>`              | Number of down tokens to show per feature [default: 5]                                                                                                                                                                                                                                                                                            |
+| `-v, --verbose`                 | Show verbose loading and timing info                                                                                                                                                                                                                                                                                                              |
+| `--ffn-remote <URL>`            | Route FFN to a remote `larql-server` via `POST /v1/walk-ffn` (`full_output: true`). Attention still runs locally; all layers are sent in a single binary batch round trip (`application/x-larql-ffn`, little-endian f32). Falls back to JSON if the server does not support binary. Same wire protocol that [`larql run --ffn`](#larql-run) uses. |
+| `--ffn-remote-timeout-secs <N>` | Per-request HTTP timeout for `--ffn-remote` [default: 60]                                                                                                                                                                                                                                                                                         |
 
 **Examples:**
 
@@ -722,13 +722,13 @@ Capture and compare attention patterns across multiple prompts. Shows which head
 larql dev attention-capture <MODEL> --prompts <PROMPTS> [OPTIONS]
 ```
 
-| Flag | Description |
-|---|---|
-| `<MODEL>` | Model path or HuggingFace model ID |
-| `-p, --prompts <PROMPTS>` | Prompts to compare (comma-separated) |
-| `-l, --layers <LAYERS>` | Layers to capture. Comma-separated or range. Default: all |
-| `--threshold <F>` | Attention threshold — only show heads with max attention above this [default: 0.1] |
-| `-v, --verbose` | Show verbose per-head details |
+| Flag                      | Description                                                                        |
+|---------------------------|------------------------------------------------------------------------------------|
+| `<MODEL>`                 | Model path or HuggingFace model ID                                                 |
+| `-p, --prompts <PROMPTS>` | Prompts to compare (comma-separated)                                               |
+| `-l, --layers <LAYERS>`   | Layers to capture. Comma-separated or range. Default: all                          |
+| `--threshold <F>`         | Attention threshold — only show heads with max attention above this [default: 0.1] |
+| `-v, --verbose`           | Show verbose per-head details                                                      |
 
 **Examples:**
 
@@ -749,13 +749,13 @@ Extract attention template circuits from QK weight decomposition. Identifies whi
 larql dev qk-templates <MODEL> [OPTIONS]
 ```
 
-| Flag | Description |
-|---|---|
-| `<MODEL>` | Model path or HuggingFace model ID |
+| Flag                          | Description                                                                                       |
+|-------------------------------|---------------------------------------------------------------------------------------------------|
+| `<MODEL>`                     | Model path or HuggingFace model ID                                                                |
 | `-t, --templates <TEMPLATES>` | Template prompts (format: `relation:prompt`, comma-separated). Uses built-in templates if omitted |
-| `-l, --layers <LAYERS>` | Layers to analyze. Default: all |
-| `--threshold <F>` | Correlation threshold below which a head is "variable" [default: 0.95] |
-| `--top-components <N>` | Number of top SVD components to show per head [default: 5] |
+| `-l, --layers <LAYERS>`       | Layers to analyze. Default: all                                                                   |
+| `--threshold <F>`             | Correlation threshold below which a head is "variable" [default: 0.95]                            |
+| `--top-components <N>`        | Number of top SVD components to show per head [default: 5]                                        |
 
 **Examples:**
 
@@ -772,13 +772,13 @@ Map attention OV circuits to FFN gate features. Shows what each attention head a
 larql dev ov-gate <MODEL> [OPTIONS]
 ```
 
-| Flag | Description |
-|---|---|
-| `<MODEL>` | Model path or HuggingFace model ID |
-| `-l, --layers <LAYERS>` | Layers to analyze. Default: all |
-| `-k, --top-k <N>` | Top-K gate features to show per head [default: 10] |
-| `--heads <HEADS>` | Only show specific heads (for focused analysis) |
-| `-v, --verbose` | Show verbose per-feature details |
+| Flag                    | Description                                        |
+|-------------------------|----------------------------------------------------|
+| `<MODEL>`               | Model path or HuggingFace model ID                 |
+| `-l, --layers <LAYERS>` | Layers to analyze. Default: all                    |
+| `-k, --top-k <N>`       | Top-K gate features to show per head [default: 10] |
+| `--heads <HEADS>`       | Only show specific heads (for focused analysis)    |
+| `-v, --verbose`         | Show verbose per-feature details                   |
 
 **Examples:**
 
@@ -795,14 +795,14 @@ Extract full weight vectors to intermediate NDJSON files.
 larql dev vector-extract <MODEL> --output <OUTPUT> [OPTIONS]
 ```
 
-| Flag | Description |
-|---|---|
-| `<MODEL>` | Model path or HuggingFace model ID |
-| `-o, --output <OUTPUT>` | Output directory for `.vectors.jsonl` files |
+| Flag                        | Description                                                                                                   |
+|-----------------------------|---------------------------------------------------------------------------------------------------------------|
+| `<MODEL>`                   | Model path or HuggingFace model ID                                                                            |
+| `-o, --output <OUTPUT>`     | Output directory for `.vectors.jsonl` files                                                                   |
 | `--components <COMPONENTS>` | Components to extract (comma-separated): `ffn_down`, `ffn_gate`, `ffn_up`, `attn_ov`, `attn_qk`, `embeddings` |
-| `--layers <LAYERS>` | Layers to extract (comma-separated). Default: all |
-| `--top-k <TOP_K>` | Top-k tokens for metadata per vector [default: 10] |
-| `--resume` | Resume from existing output files |
+| `--layers <LAYERS>`         | Layers to extract (comma-separated). Default: all                                                             |
+| `--top-k <TOP_K>`           | Top-k tokens for metadata per vector [default: 10]                                                            |
+| `--resume`                  | Resume from existing output files                                                                             |
 
 **Examples:**
 
@@ -823,16 +823,16 @@ Capture residual stream vectors for entities via forward passes. The residuals a
 larql dev residuals capture <MODEL> --entities <ENTITIES> --output <OUTPUT> [OPTIONS]
 ```
 
-| Flag | Description |
-|---|---|
-| `<MODEL>` | Model path or HuggingFace model ID |
-| `-e, --entities <ENTITIES>` | Comma-separated entities, or path to a text file (one per line) |
-| `-l, --layer <LAYER>` | Layer(s) to capture at. Can specify multiple times. [default: 25] |
-| `--all-layers` | Capture at every layer |
-| `-o, --output <OUTPUT>` | Output directory for NDJSON files |
-| `--template <TEMPLATE>` | Prompt template. `{entity}` is replaced. Default: bare entity name |
-| `--activations` | Also capture sparse FFN activations (top-K features per layer) |
-| `--activation-top-k <N>` | Number of top features to record per layer [default: 50] |
+| Flag                        | Description                                                        |
+|-----------------------------|--------------------------------------------------------------------|
+| `<MODEL>`                   | Model path or HuggingFace model ID                                 |
+| `-e, --entities <ENTITIES>` | Comma-separated entities, or path to a text file (one per line)    |
+| `-l, --layer <LAYER>`       | Layer(s) to capture at. Can specify multiple times. [default: 25]  |
+| `--all-layers`              | Capture at every layer                                             |
+| `-o, --output <OUTPUT>`     | Output directory for NDJSON files                                  |
+| `--template <TEMPLATE>`     | Prompt template. `{entity}` is replaced. Default: bare entity name |
+| `--activations`             | Also capture sparse FFN activations (top-K features per layer)     |
+| `--activation-top-k <N>`    | Number of top features to record per layer [default: 50]           |
 
 **How it works:** Tokenizes each entity, runs a full forward pass through the transformer up to the target layer(s), and saves the last-token hidden state as a vector in NDJSON format.
 
@@ -880,19 +880,19 @@ BFS extraction from a running model endpoint.
 larql dev bfs --seeds <SEEDS> --templates <TEMPLATES> --output <OUTPUT> [OPTIONS]
 ```
 
-| Flag | Description |
-|---|---|
-| `-s, --seeds <SEEDS>` | Comma-separated seed entities |
-| `-t, --templates <TEMPLATES>` | Path to templates JSON file |
-| `-o, --output <OUTPUT>` | Output file (`.larql.json` or `.larql.bin`) |
-| `-e, --endpoint <ENDPOINT>` | Model endpoint URL [default: `http://localhost:11434/v1`] |
-| `-m, --model <MODEL>` | Model name for the endpoint |
-| `--mock` | Use mock provider instead of HTTP |
-| `--mock-knowledge <PATH>` | Path to mock knowledge JSON (with `--mock`) |
-| `--max-depth <N>` | Maximum BFS depth [default: 3] |
-| `--max-entities <N>` | Maximum entities to probe [default: 1000] |
-| `--min-confidence <F>` | Minimum edge confidence [default: 0.3] |
-| `--resume <PATH>` | Resume from a checkpoint file |
+| Flag                          | Description                                               |
+|-------------------------------|-----------------------------------------------------------|
+| `-s, --seeds <SEEDS>`         | Comma-separated seed entities                             |
+| `-t, --templates <TEMPLATES>` | Path to templates JSON file                               |
+| `-o, --output <OUTPUT>`       | Output file (`.larql.json` or `.larql.bin`)               |
+| `-e, --endpoint <ENDPOINT>`   | Model endpoint URL [default: `http://localhost:11434/v1`] |
+| `-m, --model <MODEL>`         | Model name for the endpoint                               |
+| `--mock`                      | Use mock provider instead of HTTP                         |
+| `--mock-knowledge <PATH>`     | Path to mock knowledge JSON (with `--mock`)               |
+| `--max-depth <N>`             | Maximum BFS depth [default: 3]                            |
+| `--max-entities <N>`          | Maximum entities to probe [default: 1000]                 |
+| `--min-confidence <F>`        | Minimum edge confidence [default: 0.3]                    |
+| `--resume <PATH>`             | Resume from a checkpoint file                             |
 
 **Requires:** Templates JSON file defining prompt templates for each relation. See [format.md](format.md) for template format.
 
@@ -922,22 +922,22 @@ not documented in detail above. They are stable enough to use but are
 mostly driven by the comments in their args structs and the experiment
 write-ups in `experiments/`.
 
-| Subcommand | One-line summary |
-|---|---|
-| `qk-rank` | SVD rank analysis of attention QK products. |
-| `qk-modes` | Extract interpretable modes from low-rank QK heads via SVD → gate projection. |
-| `ov-rd` | OV rate-distortion + residual-table attention compilation experiments. |
-| `circuit-discover` | Discover attention → FFN circuits from weight decomposition. |
-| `attn-bottleneck` | Bottleneck analysis of attention components. |
-| `ffn-bottleneck` | Bottleneck analysis of FFN components. |
-| `ffn-overlap` | Measure overlap between entity-routed and ground-truth gate features. |
-| `kg-bench` | Knowledge graph retrieval benchmark. |
-| `trajectory-trace` | Trace residual stream trajectories on the sphere across layers. |
-| `projection-test` | Test rank-k projection through the residual stream. |
-| `fingerprint-extract` | Extract OV fingerprint basis from attention weights. |
-| `bottleneck-test` | Test rule-based bottleneck — if-else rules replace early layers. |
-| `embedding-jump` | Embedding jump — raw token embeddings → projected L13 → decoder. |
-| `ffn-latency` | Measure round-trip latency breakdown against a remote FFN server. |
+| Subcommand            | One-line summary                                                              |
+|-----------------------|-------------------------------------------------------------------------------|
+| `qk-rank`             | SVD rank analysis of attention QK products.                                   |
+| `qk-modes`            | Extract interpretable modes from low-rank QK heads via SVD → gate projection. |
+| `ov-rd`               | OV rate-distortion + residual-table attention compilation experiments.        |
+| `circuit-discover`    | Discover attention → FFN circuits from weight decomposition.                  |
+| `attn-bottleneck`     | Bottleneck analysis of attention components.                                  |
+| `ffn-bottleneck`      | Bottleneck analysis of FFN components.                                        |
+| `ffn-overlap`         | Measure overlap between entity-routed and ground-truth gate features.         |
+| `kg-bench`            | Knowledge graph retrieval benchmark.                                          |
+| `trajectory-trace`    | Trace residual stream trajectories on the sphere across layers.               |
+| `projection-test`     | Test rank-k projection through the residual stream.                           |
+| `fingerprint-extract` | Extract OV fingerprint basis from attention weights.                          |
+| `bottleneck-test`     | Test rule-based bottleneck — if-else rules replace early layers.              |
+| `embedding-jump`      | Embedding jump — raw token embeddings → projected L13 → decoder.              |
+| `ffn-latency`         | Measure round-trip latency breakdown against a remote FFN server.             |
 
 Run `larql dev <subcmd> --help` for the full flag surface of any of
 these.
@@ -959,30 +959,30 @@ a backwards-compatible alias.
 larql extract-index [MODEL] --output <OUTPUT> [OPTIONS]
 ```
 
-| Flag | Description | Default |
-|---|---|---|
-| `<MODEL>` | Model path or HuggingFace model ID (not needed with `--from-vectors`) | — |
-| `-o, --output <OUTPUT>` | Output path for the `.vindex` directory | — |
-| `--level <LEVEL>` | `browse` / `attention` / `inference` / `all` — strict increasing tiers. See below. | `inference` |
-| `--f32` | Opt out of f16 on side-channel tensors. Rarely wanted — doubles file sizes. | off (f16) |
-| `--quant <FORMAT>` | Inline-quantise forward-pass weights: `none`, `q4k`, or `kquant` (alias). The k-quant family emits Q4_K/Q6_K Ollama-compatible blocks; implies `--level all` + f16 side-channels. | `none` |
-| `--compact` | Skip `up_weights.bin` + `down_weights.bin`; FFN weights live only in feature-major files. `WalkFfn`-only. | off |
-| `--drop-gate-vectors` | Skip `gate_vectors.bin` entirely; loader rebuilds gate from `interleaved_kquant.bin` (or legacy `interleaved_q4k.bin`) at load. Only with `--quant q4k` / `kquant`. | off |
-| `--down-q4k` | Quantise FFN down-proj as Q4_K instead of Q6_K. Saves ~1.8 GB on 31B, cuts down-matmul cost ~1.5–1.7× at decode. Introduces ~2.5× more probability-redistribution noise (top-1 + top-5 preserved). Validated by `walk_correctness`, which auto-relaxes its prob-delta gate from 0.02 to 0.035 when it detects Q4_K down. Only with `--quant q4k` / `kquant`. | off |
-| `--from-vectors <PATH>` | Build from already-extracted NDJSON vector files instead of model weights | — |
-| `--down-top-k <N>` | Top-K tokens per feature in down metadata | 10 |
-| `--include-weights` | Alias for `--level all` (deprecated — use `--level` directly) | — |
-| `--resume` | Skip stages that already have output files | off |
+| Flag                    | Description                                                                                                                                                                                                                                                                                                                                                  | Default     |
+|-------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------|
+| `<MODEL>`               | Model path or HuggingFace model ID (not needed with `--from-vectors`)                                                                                                                                                                                                                                                                                        | —           |
+| `-o, --output <OUTPUT>` | Output path for the `.vindex` directory                                                                                                                                                                                                                                                                                                                      | —           |
+| `--level <LEVEL>`       | `browse` / `attention` / `inference` / `all` — strict increasing tiers. See below.                                                                                                                                                                                                                                                                           | `inference` |
+| `--f32`                 | Opt out of f16 on side-channel tensors. Rarely wanted — doubles file sizes.                                                                                                                                                                                                                                                                                  | off (f16)   |
+| `--quant <FORMAT>`      | Inline-quantise forward-pass weights: `none`, `q4k`, or `kquant` (alias). The k-quant family emits Q4_K/Q6_K Ollama-compatible blocks; implies `--level all` + f16 side-channels.                                                                                                                                                                            | `none`      |
+| `--compact`             | Skip `up_weights.bin` + `down_weights.bin`; FFN weights live only in feature-major files. `WalkFfn`-only.                                                                                                                                                                                                                                                    | off         |
+| `--drop-gate-vectors`   | Skip `gate_vectors.bin` entirely; loader rebuilds gate from `interleaved_kquant.bin` (or legacy `interleaved_q4k.bin`) at load. Only with `--quant q4k` / `kquant`.                                                                                                                                                                                          | off         |
+| `--down-q4k`            | Quantise FFN down-proj as Q4_K instead of Q6_K. Saves ~1.8 GB on 31B, cuts down-matmul cost ~1.5–1.7× at decode. Introduces ~2.5× more probability-redistribution noise (top-1 + top-5 preserved). Validated by `walk_correctness`, which auto-relaxes its prob-delta gate from 0.02 to 0.035 when it detects Q4_K down. Only with `--quant q4k` / `kquant`. | off         |
+| `--from-vectors <PATH>` | Build from already-extracted NDJSON vector files instead of model weights                                                                                                                                                                                                                                                                                    | —           |
+| `--down-top-k <N>`      | Top-K tokens per feature in down metadata                                                                                                                                                                                                                                                                                                                    | 10          |
+| `--include-weights`     | Alias for `--level all` (deprecated — use `--level` directly)                                                                                                                                                                                                                                                                                                | —           |
+| `--resume`              | Skip stages that already have output files                                                                                                                                                                                                                                                                                                                   | off         |
 
 **Extract tiers (`--level`).** Each tier is a strict superset of the
 previous:
 
-| Tier | Adds | Enables |
-|---|---|---|
-| `browse` | gate + embed + down_meta + tokenizer | WALK / DESCRIBE / SELECT (no forward pass) |
-| `attention` | + attention + norms | client-side of `run --ffn URL` (Act 2 demo) |
-| **`inference` (default)** | + FFN up/down | full local forward pass (INFER) |
-| `all` | + lm_head + COMPILE extras | COMPILE |
+| Tier                      | Adds                                 | Enables                                     |
+|---------------------------|--------------------------------------|---------------------------------------------|
+| `browse`                  | gate + embed + down_meta + tokenizer | WALK / DESCRIBE / SELECT (no forward pass)  |
+| `attention`               | + attention + norms                  | client-side of `run --ffn URL` (Act 2 demo) |
+| **`inference` (default)** | + FFN up/down                        | full local forward pass (INFER)             |
+| `all`                     | + lm_head + COMPILE extras           | COMPILE                                     |
 
 **Examples:**
 
@@ -1056,12 +1056,12 @@ Build a custom model from a Vindexfile (declarative: FROM + PATCH + INSERT).
 larql build [DIR] [OPTIONS]
 ```
 
-| Flag | Description |
-|---|---|
-| `[DIR]` | Directory containing the Vindexfile [default: `.`] |
-| `--stage <NAME>` | Build stage (e.g. `dev`, `prod`, `edge`) |
+| Flag                  | Description                                                        |
+|-----------------------|--------------------------------------------------------------------|
+| `[DIR]`               | Directory containing the Vindexfile [default: `.`]                 |
+| `--stage <NAME>`      | Build stage (e.g. `dev`, `prod`, `edge`)                           |
 | `-o, --output <PATH>` | Output directory for the built vindex [default: `./build/vindex/`] |
-| `--compile <FORMAT>` | Compile output to a model format after building |
+| `--compile <FORMAT>`  | Compile output to a model format after building                    |
 
 **Examples:**
 
@@ -1084,13 +1084,13 @@ Convert between model formats.
 larql convert <SUBCOMMAND>
 ```
 
-| Subcommand | Description |
-|---|---|
-| `gguf-to-vindex` | Convert a GGUF model to a vindex (dequantized to f32) |
-| `safetensors-to-vindex` | Convert safetensors model to a vindex |
-| `gguf-info` | Show GGUF file metadata and detected architecture |
-| `quantize fp4` | Quantise an existing f32/f16 vindex to the LARQL FP4/FP8 format |
-| `quantize q4k` | Quantise an existing f32/f16 vindex to GGML Q4_K_M (Ollama-compatible) |
+| Subcommand              | Description                                                            |
+|-------------------------|------------------------------------------------------------------------|
+| `gguf-to-vindex`        | Convert a GGUF model to a vindex (dequantized to f32)                  |
+| `safetensors-to-vindex` | Convert safetensors model to a vindex                                  |
+| `gguf-info`             | Show GGUF file metadata and detected architecture                      |
+| `quantize fp4`          | Quantise an existing f32/f16 vindex to the LARQL FP4/FP8 format        |
+| `quantize q4k`          | Quantise an existing f32/f16 vindex to GGML Q4_K_M (Ollama-compatible) |
 
 **Examples:**
 
@@ -1133,10 +1133,10 @@ HuggingFace Hub: download or publish vindexes.
 larql hf <SUBCOMMAND>
 ```
 
-| Subcommand | Description |
-|---|---|
+| Subcommand | Description                                       |
+|------------|---------------------------------------------------|
 | `download` | Download a vindex from HuggingFace to local cache |
-| `publish` | Upload a local vindex to HuggingFace |
+| `publish`  | Upload a local vindex to HuggingFace              |
 
 **Examples:**
 
@@ -1191,21 +1191,21 @@ materialise compiled fact / passage edges into a deployable model.
 larql compile --base <BASE> --output <OUTPUT> [OPTIONS]
 ```
 
-| Flag | Description | Default |
-|---|---|---|
-| `--base <PATH>` | Path to the base model (directory with safetensors, or HF model ID) | — |
-| `--vindex <PATH>` | Path to the vindex with patches to compile (not needed for fact mode) | — |
-| `-o, --output <PATH>` | Output directory for the compiled model safetensors | — |
-| `--gate-scale <F>` | Gate scale for compiled edges (1.0 keeps natural usage clean on Gemma 3 4B; previous default 30.0 saturated silu and leaked the edge into unrelated queries) | 1.0 |
-| `--alpha <F>` | Initial write-magnitude multiplier; the balancer refines this after install | 0.3 |
-| `--floor <F>` | Minimum target-token probability before the balancer stops scaling up | 0.40 |
-| `--ceiling <F>` | Maximum target-token probability before the balancer scales down | 0.85 |
-| `--max-iters <N>` | Balancer iterations (`0` = opt-out, install at `--alpha` / `--gate-scale` and trust the caller's defaults) | 0 |
-| `--no-chat-template` | Skip applying the base model's chat template before tokenising. Default behaviour wraps the prompt so the captured trigger residual matches a chat-wrapped deployment | off |
-| `--prompt <TEXT>` | Prompt whose residual becomes the trigger direction | — |
-| `--answer <TEXT>` | Correct answer token to compile into the weights | — |
-| `--layer <N>` | Layer to install the compiled edge at | 30 |
-| `--slot <N>` | FFN slot to install the compiled edge at | 9000 |
+| Flag                  | Description                                                                                                                                                           | Default |
+|-----------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| `--base <PATH>`       | Path to the base model (directory with safetensors, or HF model ID)                                                                                                   | —       |
+| `--vindex <PATH>`     | Path to the vindex with patches to compile (not needed for fact mode)                                                                                                 | —       |
+| `-o, --output <PATH>` | Output directory for the compiled model safetensors                                                                                                                   | —       |
+| `--gate-scale <F>`    | Gate scale for compiled edges (1.0 keeps natural usage clean on Gemma 3 4B; previous default 30.0 saturated silu and leaked the edge into unrelated queries)          | 1.0     |
+| `--alpha <F>`         | Initial write-magnitude multiplier; the balancer refines this after install                                                                                           | 0.3     |
+| `--floor <F>`         | Minimum target-token probability before the balancer stops scaling up                                                                                                 | 0.40    |
+| `--ceiling <F>`       | Maximum target-token probability before the balancer scales down                                                                                                      | 0.85    |
+| `--max-iters <N>`     | Balancer iterations (`0` = opt-out, install at `--alpha` / `--gate-scale` and trust the caller's defaults)                                                            | 0       |
+| `--no-chat-template`  | Skip applying the base model's chat template before tokenising. Default behaviour wraps the prompt so the captured trigger residual matches a chat-wrapped deployment | off     |
+| `--prompt <TEXT>`     | Prompt whose residual becomes the trigger direction                                                                                                                   | —       |
+| `--answer <TEXT>`     | Correct answer token to compile into the weights                                                                                                                      | —       |
+| `--layer <N>`         | Layer to install the compiled edge at                                                                                                                                 | 30      |
+| `--slot <N>`          | FFN slot to install the compiled edge at                                                                                                                              | 9000    |
 
 The balancer is opt-in (`--max-iters 0` by default) because
 `larql_inference::forward::predict` is systematically peakier than HF's
@@ -1224,11 +1224,11 @@ layout, and surfaces silent-slowdown classes (stale 148-byte stride,
 larql diag <MODEL> [OPTIONS]
 ```
 
-| Flag | Description | Default |
-|---|---|---|
-| `<MODEL>` | Vindex dir, `hf://owner/name`, `owner/name`, or cache shorthand | — |
-| `--probe` | Run a real forward pass and print per-stage timings | off |
-| `--probe-tokens <N>` | Token count for `--probe` (caps at 100 to keep the diagnostic snappy) | 5 |
+| Flag                 | Description                                                           | Default |
+|----------------------|-----------------------------------------------------------------------|---------|
+| `<MODEL>`            | Vindex dir, `hf://owner/name`, `owner/name`, or cache shorthand       | —       |
+| `--probe`            | Run a real forward pass and print per-stage timings                   | off     |
+| `--probe-tokens <N>` | Token count for `--probe` (caps at 100 to keep the diagnostic snappy) | 5       |
 
 **Examples:**
 
@@ -1258,26 +1258,26 @@ benches and synthetic-weight unit tests miss.
 larql parity <MODEL> --component <C> [OPTIONS]
 ```
 
-| Flag | Description | Default |
-|---|---|---|
-| `<MODEL>` | Vindex dir, `hf://` URL, or cache shorthand | — |
-| `--component <C>` | Inference checkpoint to diff: `moe-expert`, `moe-block`, `lm-head`, `layer` | moe-block |
-| `--layer <N>` | Layer index | 0 |
-| `--expert <N>` | Expert index (used when `--component moe-expert`) | 0 |
-| `--backends <LIST>` | Comma-separated backends. First is the reference; others are diffed against it | reference,cpu |
-| `--prompt <TEXT>` | Prompt for `--component layer` (drives the actual forward pass). For `moe-*`, seeds a synthetic residual; otherwise a deterministic sin pattern is used | — |
-| `--seed <N>` | Random-ish seed for the synthetic residual. Ignored when `--prompt` is set | 0 |
-| `--tolerance <F>` | Max element-wise abs diff before declaring divergence (per-expert ≈ 1e-3; full forward needs more headroom for accumulated f32 noise) | 1e-3 |
-| `-v, --verbose` | Print intermediate values at each checkpoint, not just diffs | off |
+| Flag                | Description                                                                                                                                             | Default       |
+|---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|---------------|
+| `<MODEL>`           | Vindex dir, `hf://` URL, or cache shorthand                                                                                                             | —             |
+| `--component <C>`   | Inference checkpoint to diff: `moe-expert`, `moe-block`, `lm-head`, `layer`                                                                             | moe-block     |
+| `--layer <N>`       | Layer index                                                                                                                                             | 0             |
+| `--expert <N>`      | Expert index (used when `--component moe-expert`)                                                                                                       | 0             |
+| `--backends <LIST>` | Comma-separated backends. First is the reference; others are diffed against it                                                                          | reference,cpu |
+| `--prompt <TEXT>`   | Prompt for `--component layer` (drives the actual forward pass). For `moe-*`, seeds a synthetic residual; otherwise a deterministic sin pattern is used | —             |
+| `--seed <N>`        | Random-ish seed for the synthetic residual. Ignored when `--prompt` is set                                                                              | 0             |
+| `--tolerance <F>`   | Max element-wise abs diff before declaring divergence (per-expert ≈ 1e-3; full forward needs more headroom for accumulated f32 noise)                   | 1e-3          |
+| `-v, --verbose`     | Print intermediate values at each checkpoint, not just diffs                                                                                            | off           |
 
 **Components:**
 
-| Component | What it diffs |
-|---|---|
-| `moe-expert` | Single expert forward (gate matmul, up matmul, gelu_tanh, down matmul) |
-| `moe-block` | Full MoE block, one layer (router → top-K → K experts → weighted sum → post-norm) |
-| `lm-head` | Final projection parity (Q4_K vs f32 reference). Backend-agnostic; works on any vindex with an lm_head |
-| `layer` | Full transformer layer end-to-end. Reads per-layer `metal_layer_NN_h_out.f32` / `metal_layer_NN_h_post_attn.f32` dumps; works on dense models too |
+| Component    | What it diffs                                                                                                                                     |
+|--------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
+| `moe-expert` | Single expert forward (gate matmul, up matmul, gelu_tanh, down matmul)                                                                            |
+| `moe-block`  | Full MoE block, one layer (router → top-K → K experts → weighted sum → post-norm)                                                                 |
+| `lm-head`    | Final projection parity (Q4_K vs f32 reference). Backend-agnostic; works on any vindex with an lm_head                                            |
+| `layer`      | Full transformer layer end-to-end. Reads per-layer `metal_layer_NN_h_out.f32` / `metal_layer_NN_h_post_attn.f32` dumps; works on dense models too |
 
 Requires the `metal` feature on macOS — Metal is the reference backend the
 CPU output is compared against.
@@ -1357,10 +1357,10 @@ Merge multiple graph files into one.
 larql merge <INPUT>... --output <OUTPUT> [OPTIONS]
 ```
 
-| Flag | Description |
-|---|---|
-| `<INPUT>...` | Input graph files to merge (at least 2) |
-| `-o, --output <OUTPUT>` | Output merged graph file |
+| Flag                    | Description                                                                     |
+|-------------------------|---------------------------------------------------------------------------------|
+| `<INPUT>...`            | Input graph files to merge (at least 2)                                         |
+| `-o, --output <OUTPUT>` | Output merged graph file                                                        |
 | `--strategy <STRATEGY>` | Merge strategy: `union`, `max_confidence`, `source_priority` [default: `union`] |
 
 **Examples:**
@@ -1385,13 +1385,13 @@ Used by `larql bfs`. A JSON array of prompt templates:
 ]
 ```
 
-| Field | Type | Description |
-|---|---|---|
-| `relation` | string | Relation name for edges produced by this template |
-| `template` | string | Prompt text. `{subject}` is replaced with the entity name |
-| `multi_token` | bool | Chain multiple forward passes for multi-token answers |
-| `reverse_template` | string? | Optional reverse probe (`{object}` placeholder) |
-| `stop_tokens` | char[] | Characters that terminate multi-token chaining |
+| Field              | Type    | Description                                               |
+|--------------------|---------|-----------------------------------------------------------|
+| `relation`         | string  | Relation name for edges produced by this template         |
+| `template`         | string  | Prompt text. `{subject}` is replaced with the entity name |
+| `multi_token`      | bool    | Chain multiple forward passes for multi-token answers     |
+| `reverse_template` | string? | Optional reverse probe (`{object}` placeholder)           |
+| `stop_tokens`      | char[]  | Characters that terminate multi-token chaining            |
 
 ## Mock knowledge format
 
@@ -1421,26 +1421,26 @@ Command reference below.
 Carve a built vindex into deployment variants. Pure file I/O + `index.json`
 rewrite — no re-extract.
 
-| Flag | Description | Default |
-|---|---|---|
-| `<SRC>` | Source vindex: directory, `hf://owner/name`, cache shorthand | — |
-| `-o, --output <DST>` | Destination directory. Must not exist unless `--force`. | — |
-| `--preset <NAME>` | `client`, `attn`, `embed`, `server`, `browse`, `router`, `expert-server`, `all` | — |
-| `--parts <list>` | Explicit parts (embed, norms, attn, gate, down_meta, ffn, expert_layers, lm_head, router, tokenizer, manifest, labels, readme). `index.json` is always copied. | — |
-| `--force` | Overwrite `<DST>` if it exists | false |
-| `--dry-run` | Preview what would be copied | false |
+| Flag                 | Description                                                                                                                                                    | Default |
+|----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| `<SRC>`              | Source vindex: directory, `hf://owner/name`, cache shorthand                                                                                                   | —       |
+| `-o, --output <DST>` | Destination directory. Must not exist unless `--force`.                                                                                                        | —       |
+| `--preset <NAME>`    | `client`, `attn`, `embed`, `server`, `browse`, `router`, `expert-server`, `all`                                                                                | —       |
+| `--parts <list>`     | Explicit parts (embed, norms, attn, gate, down_meta, ffn, expert_layers, lm_head, router, tokenizer, manifest, labels, readme). `index.json` is always copied. | —       |
+| `--force`            | Overwrite `<DST>` if it exists                                                                                                                                 | false   |
+| `--dry-run`          | Preview what would be copied                                                                                                                                   | false   |
 
 **Preset sizes (Gemma 3 4B Q4_K measured; 31B figures scaled):**
 
-| Preset | Topology | 4B | 31B Q4K | 26B MoE | Pairs with |
-|---|---|---|---|---|---|
-| `client` | 2-tier | 3.0 GB | 7.4 GB | 2.1 GB | `larql run --ffn URL` |
-| `attn` | 3-tier | 310 MB | 4.8 GB | — | `larql run --embed URL --ffn URL` (ADR-0008) |
-| `embed` | 3-tier | 1.28 GB | 2.6 GB | — | `larql serve --embed-only` (ADR-0008) |
-| `server` | either | 1.8 GB | 27 GB | — | `larql serve --ffn-only` |
-| `browse` | — | 1.3 GB | 16 GB | — | DESCRIBE/WALK only |
-| `expert-server` | MoE | — | — | 14.1 GB | `larql serve --experts START-END` |
-| `full` | — | 1.3 GB | 32 GB | 16 GB | everything |
+| Preset          | Topology | 4B      | 31B Q4K | 26B MoE | Pairs with                                   |
+|-----------------|----------|---------|---------|---------|----------------------------------------------|
+| `client`        | 2-tier   | 3.0 GB  | 7.4 GB  | 2.1 GB  | `larql run --ffn URL`                        |
+| `attn`          | 3-tier   | 310 MB  | 4.8 GB  | —       | `larql run --embed URL --ffn URL` (ADR-0008) |
+| `embed`         | 3-tier   | 1.28 GB | 2.6 GB  | —       | `larql serve --embed-only` (ADR-0008)        |
+| `server`        | either   | 1.8 GB  | 27 GB   | —       | `larql serve --ffn-only`                     |
+| `browse`        | —        | 1.3 GB  | 16 GB   | —       | DESCRIBE/WALK only                           |
+| `expert-server` | MoE      | —       | —       | 14.1 GB | `larql serve --experts START-END`            |
+| `full`          | —        | 1.3 GB  | 32 GB   | 16 GB   | everything                                   |
 
 `expert-server` includes embed, norms, dense FFN (`interleaved_q4k.bin`),
 and the per-layer expert weights (`layers/`). Everything `larql serve` needs
@@ -1456,20 +1456,20 @@ piece of a client vindex.
 Upload the full vindex plus sibling slices to HuggingFace and file them
 into three nested collections.
 
-| Flag | Description | Default |
-|---|---|---|
-| `<SRC>` | Source vindex | — |
-| `--repo <OWNER/NAME>` | HF repo ID for the full vindex. Siblings derive from `--slice-repo-template`. | required |
-| `--full` / `--no-full` | Upload the full vindex | `--full` |
-| `--slices <list>` | Presets to upload alongside the full vindex. `none` to skip. Covers both 2-tier (`client`) and 3-tier (`attn` + `embed`) topologies by default. | `client,attn,embed,server,browse` |
-| `--slice-repo-template <T>` | `{repo}` → `--repo`, `{preset}` → preset. | `{repo}-{preset}` |
-| `--collections <list>` | `model`, `family`, `library`. `none` to skip. | `model,family,library` |
-| `--model-title <T>` | Override per-model collection title | derived |
-| `--family <NAME>` | Override family collection group | derived |
-| `--library-title <T>` | Override library collection title | `LARQL Vindex Library` |
-| `--force-upload` | Re-upload every file; ignore SHA256 skip | false |
-| `--tmp-dir <DIR>` | Staging directory for slice carving | system temp |
-| `--dry-run` | Preview, no HF writes | false |
+| Flag                        | Description                                                                                                                                     | Default                           |
+|-----------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------|
+| `<SRC>`                     | Source vindex                                                                                                                                   | —                                 |
+| `--repo <OWNER/NAME>`       | HF repo ID for the full vindex. Siblings derive from `--slice-repo-template`.                                                                   | required                          |
+| `--full` / `--no-full`      | Upload the full vindex                                                                                                                          | `--full`                          |
+| `--slices <list>`           | Presets to upload alongside the full vindex. `none` to skip. Covers both 2-tier (`client`) and 3-tier (`attn` + `embed`) topologies by default. | `client,attn,embed,server,browse` |
+| `--slice-repo-template <T>` | `{repo}` → `--repo`, `{preset}` → preset.                                                                                                       | `{repo}-{preset}`                 |
+| `--collections <list>`      | `model`, `family`, `library`. `none` to skip.                                                                                                   | `model,family,library`            |
+| `--model-title <T>`         | Override per-model collection title                                                                                                             | derived                           |
+| `--family <NAME>`           | Override family collection group                                                                                                                | derived                           |
+| `--library-title <T>`       | Override library collection title                                                                                                               | `LARQL Vindex Library`            |
+| `--force-upload`            | Re-upload every file; ignore SHA256 skip                                                                                                        | false                             |
+| `--tmp-dir <DIR>`           | Staging directory for slice carving                                                                                                             | system temp                       |
+| `--dry-run`                 | Preview, no HF writes                                                                                                                           | false                             |
 
 **Skip-if-unchanged** (default on): before each upload the client fetches
 the repo's LFS file index and compares `lfs.oid` against the local
@@ -1487,14 +1487,14 @@ Download a vindex (or a slice, or a whole collection) with per-file
 progress bars. hf-hub handles `.incomplete` partial-file resume
 internally.
 
-| Flag | Description | Default |
-|---|---|---|
-| `<MODEL>` | `hf://owner/name[@rev]`, `owner/name`, or local path. Omit with `--collection`. | — |
-| `--preset <NAME>` | Pull `{repo}-{preset}` instead of the named repo. | — |
-| `--all-slices` | Full + every default sibling (`-client`, `-attn`, `-embed`, `-server`, `-browse`). Missing siblings warn, don't fail. | false |
-| `--collection <SLUG\|URL>` | Pull every dataset in an HF collection. | — |
-| `--sibling-template <T>` | Must match `publish --slice-repo-template`. | `{repo}-{preset}` |
-| `--output <PATH>` | Download to this path instead of the default local cache. Idempotent: skips if `index.json` already present. Use in container startup scripts. | cache |
+| Flag                       | Description                                                                                                                                    | Default           |
+|----------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|-------------------|
+| `<MODEL>`                  | `hf://owner/name[@rev]`, `owner/name`, or local path. Omit with `--collection`.                                                                | —                 |
+| `--preset <NAME>`          | Pull `{repo}-{preset}` instead of the named repo.                                                                                              | —                 |
+| `--all-slices`             | Full + every default sibling (`-client`, `-attn`, `-embed`, `-server`, `-browse`). Missing siblings warn, don't fail.                          | false             |
+| `--collection <SLUG\|URL>` | Pull every dataset in an HF collection.                                                                                                        | —                 |
+| `--sibling-template <T>`   | Must match `publish --slice-repo-template`.                                                                                                    | `{repo}-{preset}` |
+| `--output <PATH>`          | Download to this path instead of the default local cache. Idempotent: skips if `index.json` already present. Use in container startup scripts. | cache             |
 
 After a plain `pull <repo>`, `larql` HEAD-probes for standard siblings
 and prints an "also available" hint if any exist — so the sliced layout

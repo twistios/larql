@@ -8,11 +8,11 @@
 
 ## Results
 
-| tier | metric | result |
-|---|---|---|
-| **Symbolic** (`entries_for_entity`, exact string) | aliases resolved | **0/10** (the gap) |
-| **Activation fallback** (cosine-NN top-k, L24) | alias top-1 / top-5 | **10/10 / 10/10** |
-| **Activation fallback** (cosine-NN top-k, L26) | alias top-1 / top-5 | **10/10 / 10/10** |
+| tier                                              | metric              | result             |
+|---------------------------------------------------|---------------------|--------------------|
+| **Symbolic** (`entries_for_entity`, exact string) | aliases resolved    | **0/10** (the gap) |
+| **Activation fallback** (cosine-NN top-k, L24)    | alias top-1 / top-5 | **10/10 / 10/10**  |
+| **Activation fallback** (cosine-NN top-k, L26)    | alias top-1 / top-5 | **10/10 / 10/10**  |
 
 Every alias routes to its canonical entity: Persia→Iran, Siam→Thailand, Burma→Myanmar, Ceylon→Sri Lanka, Holland→Netherlands, Britain→United Kingdom, Abyssinia→Ethiopia, Rhodesia→Zimbabwe, Zaire→Congo, Formosa→Taiwan.
 
@@ -49,9 +49,9 @@ Exact-string is the precise primary (1.0 on names); the activation key is the al
 
 **End-to-end validation** (real Gemma-3-4B, novel facts installed, `IranX` reveals the routed entity):
 
-| query | FR1 verify-only | FR2 two-tier |
-|---|---|---|
-| "The capital of Iran is" (named) | IranX ✓ | IranX ✓ (no regression) |
+| query                              | FR1 verify-only                         | FR2 two-tier                                     |
+|------------------------------------|-----------------------------------------|--------------------------------------------------|
+| "The capital of Iran is" (named)   | IranX ✓                                 | IranX ✓ (no regression)                          |
 | "The capital of Persia is" (alias) | Tehran (tier-1 abstains, model answers) | **IranX** ✓ (tier-2 fallback recovers, cos 0.97) |
 
 4 new unit tests (`two_tier_*`): verify-tier fires when named, fallback recovers alias, both abstain below floor, tier-1 preferred over tier-2. 23 total infer_patched tests green, clippy clean.

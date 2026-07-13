@@ -38,23 +38,23 @@ The aim is **achievable for MoE frontier models on consumer hardware**. That's w
 
 The arithmetic on a 671B MoE with 37B active params:
 
-| Stack | Bytes touched/token | tok/s @ 50 GB/s consumer DDR5 |
-|---|---|---|
-| Naïve dense over active experts | 18.5 GB | 2.7 |
-| ~~+ hash-routed FFN within active experts (5×, exp 27)~~ — **FALSIFIED (V1)**: doesn't compound across depth | — | — |
-| + FP4 (2×, exp 26 → **confirmed V2**) | 9.3 GB | ~5.4 |
+| Stack                                                                                                        | Bytes touched/token | tok/s @ 50 GB/s consumer DDR5 |
+|--------------------------------------------------------------------------------------------------------------|---------------------|-------------------------------|
+| Naïve dense over active experts                                                                              | 18.5 GB             | 2.7                           |
+| ~~+ hash-routed FFN within active experts (5×, exp 27)~~ — **FALSIFIED (V1)**: doesn't compound across depth | —                   | —                             |
+| + FP4 (2×, exp 26 → **confirmed V2**)                                                                        | 9.3 GB              | ~5.4                          |
 
 (The 5× row is struck: V1 showed within-FFN hash routing doesn't compound. The realistic post-active-sparsity stack is FP4 2× alone unless a different bandwidth lever lands. MoE active-param sparsity — the 18.5 GB starting point — remains the dominant win.)
 
 Tier-by-tier honest confidence:
 
-| Acceptance tier | Confidence |
-|---|---|
-| Short-term (Gemma 3 4B CPU within 10% of `llama.cpp -ngl 0`) | ~95% — pure engineering |
+| Acceptance tier                                                      | Confidence                                                                                                                                                                                                                                                                                                                       |
+|----------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Short-term (Gemma 3 4B CPU within 10% of `llama.cpp -ngl 0`)         | ~95% — pure engineering                                                                                                                                                                                                                                                                                                          |
 | Medium-term (Gemma 4 26B-A4B at ≥10 tok/s on 64 GB consumer, no GPU) | **~62%** (was ~80%→70%→62%, 2026-05-31) — V2 confirms FP4 & 26B fits RAM (+); but measured **~4.4 tok/s, ~2.3× short of 10**, easy lever gone, and Q4K-direct already washed out at representative context (GQA O(N²) is the real wall). Gated on C10 (match-vs-beat llama.cpp): rises to ~70 if "match," drops to ~55 if "beat" |
-| Long-term (100B-class MoE at ≥5 tok/s, no GPU) | **~52%** (was ~60%→55%→52%, 2026-05-31) — 100B@FP4 fits RAM so the disk bet is moot here (+); but a **two-probe hit** to the exploitable-structure prior (V1 + routing locality) trims it; 50 is defensible if you weight that over the disk-risk removal. Cross-MoE-router check would settle it |
-| Ultimate (671B-class via consumer multi-machine grid) | **~30%** (was ~40%, 2026-05-31) — 671B@FP4 (~335 GB) exceeds one machine and routing locality closes the disk-resident escape hatch → only the harder multi-machine grid (C9/P2) remains; integration risk dominates |
-| Dense frontier (if field stays dense at 1T+) | **~10%** (was ~15%, 2026-05-31) — hash-routing 5× falsified (1 TB Q4 → ~10 s/token); needs attention-sparsification breakthroughs |
+| Long-term (100B-class MoE at ≥5 tok/s, no GPU)                       | **~52%** (was ~60%→55%→52%, 2026-05-31) — 100B@FP4 fits RAM so the disk bet is moot here (+); but a **two-probe hit** to the exploitable-structure prior (V1 + routing locality) trims it; 50 is defensible if you weight that over the disk-risk removal. Cross-MoE-router check would settle it                                |
+| Ultimate (671B-class via consumer multi-machine grid)                | **~30%** (was ~40%, 2026-05-31) — 671B@FP4 (~335 GB) exceeds one machine and routing locality closes the disk-resident escape hatch → only the harder multi-machine grid (C9/P2) remains; integration risk dominates                                                                                                             |
+| Dense frontier (if field stays dense at 1T+)                         | **~10%** (was ~15%, 2026-05-31) — hash-routing 5× falsified (1 TB Q4 → ~10 s/token); needs attention-sparsification breakthroughs                                                                                                                                                                                                |
 
 The "100× combined effect" assumes techniques compound multiplicatively. ADR-015 ("isolated kernel speedup ≠ end-to-end win") said they often don't — and aim-validation (2026-05-31) bore that out: of the four load-bearing assumptions, **V1 (hash-routing compounding) is FALSIFIED**, **V2 (FP4 generality) is CONFIRMED**, and **V3 (disk-residency) is undermined** by poor MoE routing locality. V4 (full compound on a >RAM model) remains, blocked on hardware. Net: the compound is smaller than 100× and the ultimate-aim arithmetic now rests on MoE active-param sparsity + FP4, not within-FFN hash routing or disk-spill. See **"P0 — Aim-validation tests (V1–V4)"** in `ROADMAP.md` and `docs/diagnoses/`.
 
@@ -80,13 +80,13 @@ Substrate-primary model is **Gemma 4 31B dense + vindex**. MoE coverage retained
 
 Current state (2026-05-09):
 
-| Track | Configuration | LARQL | State-of-the-art | Gap | Threshold? |
-|---|---|---|---|---|---|
-| **GPU (Metal)** | Gemma 3 4B decode | 88 tok/s | ollama ~103 | 17% behind | over (defensible-with-caveat) |
-| **GPU (Metal)** | Gemma 3 4B prefill (340 tok) | per-pos matvec | gemm | 14× behind | far over |
-| **GPU (Metal)** | Gemma 4 + MTP (when adopted) | 88 tok/s no-MTP | ~225 with MTP | ~2.6× behind | far over |
-| **CPU** | Gemma 3 4B decode | not measured | llama.cpp `-ngl 0` | unknown | not measurable yet (needs C10) |
-| **CPU** | Gemma 4 26B-A4B decode | grid 18.3 tok/s | unknown | unknown | not measurable yet |
+| Track           | Configuration                | LARQL           | State-of-the-art   | Gap          | Threshold?                     |
+|-----------------|------------------------------|-----------------|--------------------|--------------|--------------------------------|
+| **GPU (Metal)** | Gemma 3 4B decode            | 88 tok/s        | ollama ~103        | 17% behind   | over (defensible-with-caveat)  |
+| **GPU (Metal)** | Gemma 3 4B prefill (340 tok) | per-pos matvec  | gemm               | 14× behind   | far over                       |
+| **GPU (Metal)** | Gemma 4 + MTP (when adopted) | 88 tok/s no-MTP | ~225 with MTP      | ~2.6× behind | far over                       |
+| **CPU**         | Gemma 3 4B decode            | not measured    | llama.cpp `-ngl 0` | unknown      | not measurable yet (needs C10) |
+| **CPU**         | Gemma 4 26B-A4B decode       | grid 18.3 tok/s | unknown            | unknown      | not measurable yet             |
 
 The kernel projects on the GPU track (D-ATTN-MTG, D-PREFILL-MM2, D-METAL-PLE, MTP1–MTP6) are load-bearing because they buy methodological standing for every claim measured on Metal. The CPU-track items (C1–C11 in `ROADMAP.md`) are load-bearing because they're the ultimate-aim path itself.
 
@@ -98,12 +98,12 @@ The market settled into a "hybrid stack" pattern: **prototype in Ollama → scal
 
 ## Four categories of "inference engine"
 
-| Category | Representative | What it optimises | LARQL position |
-|---|---|---|---|
-| **Local single-user runtime** | Ollama, llama.cpp, LM Studio, MLX, vllm-mlx | Single-stream latency on local hardware; easy install; broad model library | **not competing — but baseline must match within 10%** so deltas measured on top are credible |
-| **Batched serving framework** | vLLM, TGI | Multi-tenant throughput at concurrency; KV memory efficiency; multi-GPU tensor parallelism | **out of scope** — CB1, CB2, CB3 dropped in `ROADMAP.md` |
-| **Research / edit Python tooling** | TransformerLens, nnsight, pyvene | Hooks, capture/patch, weight surgery in research notebooks | **adjacent** — LARQL pushes these primitives into the engine itself rather than wrapping a separate inference path |
-| **Research substrate at production baseline** | (LARQL — no other player) | Plug-in surface for new mechanisms / arches / kernels / edits, on real weights, with real performance, so technique deltas are credible | **the actual category** |
+| Category                                      | Representative                              | What it optimises                                                                                                                       | LARQL position                                                                                                     |
+|-----------------------------------------------|---------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------|
+| **Local single-user runtime**                 | Ollama, llama.cpp, LM Studio, MLX, vllm-mlx | Single-stream latency on local hardware; easy install; broad model library                                                              | **not competing — but baseline must match within 10%** so deltas measured on top are credible                      |
+| **Batched serving framework**                 | vLLM, TGI                                   | Multi-tenant throughput at concurrency; KV memory efficiency; multi-GPU tensor parallelism                                              | **out of scope** — CB1, CB2, CB3 dropped in `ROADMAP.md`                                                           |
+| **Research / edit Python tooling**            | TransformerLens, nnsight, pyvene            | Hooks, capture/patch, weight surgery in research notebooks                                                                              | **adjacent** — LARQL pushes these primitives into the engine itself rather than wrapping a separate inference path |
+| **Research substrate at production baseline** | (LARQL — no other player)                   | Plug-in surface for new mechanisms / arches / kernels / edits, on real weights, with real performance, so technique deltas are credible | **the actual category**                                                                                            |
 
 The comparison literature ([decodesfuture](https://www.decodesfuture.com/articles/llama-cpp-vs-ollama-vs-vllm-local-llm-stack-guide), [aimadetools](https://www.aimadetools.com/blog/vllm-vs-ollama-vs-llamacpp-vs-tgi/), [Towards AI stress test](https://pub.towardsai.net/i-tested-ollama-vs-vllm-vs-llama-cpp-the-easiest-one-collapses-at-5-concurrent-users-d4f8e0e84886?gi=275236a76e13)) treats the first two categories as the whole field. The fourth doesn't appear because no existing player occupies it — Python research tooling cedes performance, production engines cede mechanism. LARQL refuses both trades.
 
@@ -113,47 +113,47 @@ The comparison literature ([decodesfuture](https://www.decodesfuture.com/article
 
 ✅ shipped · 🟡 partial / planned · ❌ missing · n/a not applicable
 
-| Feature | LARQL | Ollama | vLLM | llama.cpp |
-|---|---|---|---|---|
-| **Inference perf** | | | | |
-| Apple Silicon Metal | ✅ (88 tok/s Gemma 3 4B) | ✅ (~103 tok/s — wraps llama.cpp) | 🟡 (`vllm-mlx` fork) | ✅ baseline |
-| CUDA | ❌ | ✅ | ✅ | ✅ |
-| ROCm / Vulkan | ❌ | ✅ | partial | ✅ |
-| Flash attention | ❌ (D-ATTN-MTG planned) | ✅ via llama.cpp | ✅ FA4 default on Blackwell | ✅ |
-| `simdgroup_matrix` prefill matmul | ❌ (D-PREFILL-MM2 planned) | ✅ via llama.cpp | n/a (CUDA path) | ✅ |
-| **Concurrent serving** | | | | |
-| Continuous batching | ❌ | ❌ (collapses at ~5 concurrent users) | ✅ (485 tok/s aggregate at 10 concurrent) | ❌ |
-| PagedAttention | ❌ | ❌ | ✅ (~4× KV memory waste reduction) | ❌ |
-| Multi-GPU tensor parallelism | ❌ | ❌ | ✅ | partial |
-| Multi-host MoE expert sharding | ✅ (gRPC self-assembling grid) | ❌ | ❌ | ❌ |
-| Multi-Token Prediction (Gemma 4 MTP drafters, released 2026-05-05) | ❌ (MTP1–MTP6 P1) | ✅ supported | ✅ supported | ❌ (notably absent from Google's launch list) |
-| Speculative decoding (n-gram / EAGLE / draft-model) | ❌ (SD1–SD2 P1) | partial | ✅ all three | ✅ |
-| **API surface** | | | | |
-| OpenAI `/v1/chat/completions` | 🟡 SSE wired, no chat template | ✅ | ✅ | ✅ |
-| OpenAI `/v1/embeddings` | 🟡 server has embed surface | ✅ | ✅ | ✅ |
-| WebSocket token streaming | ✅ | ❌ | ✅ | ✅ |
-| Constrained decoding (JSON / GBNF) | ❌ | partial (format json) | ✅ | ✅ GBNF |
-| Multimodal (vision) | ❌ | ✅ | ✅ | ✅ |
-| **Tooling / UX** | | | | |
-| MCP client built into server | ❌ | ❌ (external tools) | ❌ | ✅ (`llama-server`, Mar 2026) |
-| Thinking-mode toggle | ❌ | ✅ | ✅ | partial |
-| Chat template + EOS | ❌ (critical-path #1) | ✅ | ✅ | ✅ |
-| Hot model swap | ✅ (vindex) | ✅ (auto-unload) | ❌ (locks one model in VRAM) | ✅ |
-| Model library / pull command | ✅ (`larql pull`, hf://) | ✅ | n/a | partial |
-| **Quantisation** | | | | |
-| Q4_K / Q6_K | ✅ | ✅ | ❌ (FP16/FP8/AWQ/GPTQ) | ✅ |
-| AWQ / GPTQ | ❌ | ❌ | ✅ | partial |
-| FP8 / FP4 | 🟡 (FP4 vindex exp 26) | ❌ | ✅ | partial |
-| **What only LARQL does** | | | | |
-| Vindex (model-as-database) | ✅ | ❌ | ❌ | ❌ |
-| LQL query language over weights | ✅ | ❌ | ❌ | ❌ |
-| Mech-interp hooks (M1–M8) | ✅ (lazarus parity) | ❌ | ❌ | ❌ |
-| MEMIT / KNN weight edits | ✅ | ❌ | ❌ | ❌ |
-| AOT compilation (residual programs) | ✅ | ❌ | ❌ | ❌ |
-| WASM-in-FFN compute primitives | ✅ | ❌ | ❌ | ❌ |
-| Boundary refs (residual codec) | ✅ Phase 1–3 | ❌ | ❌ | ❌ |
-| KV cache engines (MarkovRS, UnlimitedContext, Apollo) | ✅ | ❌ | ❌ | ❌ |
-| Cross-arch dispatch as first-class concern | ✅ (ADR-018) | n/a | n/a | n/a |
+| Feature                                                            | LARQL                          | Ollama                               | vLLM                                     | llama.cpp                                    |
+|--------------------------------------------------------------------|--------------------------------|--------------------------------------|------------------------------------------|----------------------------------------------|
+| **Inference perf**                                                 |                                |                                      |                                          |                                              |
+| Apple Silicon Metal                                                | ✅ (88 tok/s Gemma 3 4B)        | ✅ (~103 tok/s — wraps llama.cpp)     | 🟡 (`vllm-mlx` fork)                     | ✅ baseline                                   |
+| CUDA                                                               | ❌                              | ✅                                    | ✅                                        | ✅                                            |
+| ROCm / Vulkan                                                      | ❌                              | ✅                                    | partial                                  | ✅                                            |
+| Flash attention                                                    | ❌ (D-ATTN-MTG planned)         | ✅ via llama.cpp                      | ✅ FA4 default on Blackwell               | ✅                                            |
+| `simdgroup_matrix` prefill matmul                                  | ❌ (D-PREFILL-MM2 planned)      | ✅ via llama.cpp                      | n/a (CUDA path)                          | ✅                                            |
+| **Concurrent serving**                                             |                                |                                      |                                          |                                              |
+| Continuous batching                                                | ❌                              | ❌ (collapses at ~5 concurrent users) | ✅ (485 tok/s aggregate at 10 concurrent) | ❌                                            |
+| PagedAttention                                                     | ❌                              | ❌                                    | ✅ (~4× KV memory waste reduction)        | ❌                                            |
+| Multi-GPU tensor parallelism                                       | ❌                              | ❌                                    | ✅                                        | partial                                      |
+| Multi-host MoE expert sharding                                     | ✅ (gRPC self-assembling grid)  | ❌                                    | ❌                                        | ❌                                            |
+| Multi-Token Prediction (Gemma 4 MTP drafters, released 2026-05-05) | ❌ (MTP1–MTP6 P1)               | ✅ supported                          | ✅ supported                              | ❌ (notably absent from Google's launch list) |
+| Speculative decoding (n-gram / EAGLE / draft-model)                | ❌ (SD1–SD2 P1)                 | partial                              | ✅ all three                              | ✅                                            |
+| **API surface**                                                    |                                |                                      |                                          |                                              |
+| OpenAI `/v1/chat/completions`                                      | 🟡 SSE wired, no chat template | ✅                                    | ✅                                        | ✅                                            |
+| OpenAI `/v1/embeddings`                                            | 🟡 server has embed surface    | ✅                                    | ✅                                        | ✅                                            |
+| WebSocket token streaming                                          | ✅                              | ❌                                    | ✅                                        | ✅                                            |
+| Constrained decoding (JSON / GBNF)                                 | ❌                              | partial (format json)                | ✅                                        | ✅ GBNF                                       |
+| Multimodal (vision)                                                | ❌                              | ✅                                    | ✅                                        | ✅                                            |
+| **Tooling / UX**                                                   |                                |                                      |                                          |                                              |
+| MCP client built into server                                       | ❌                              | ❌ (external tools)                   | ❌                                        | ✅ (`llama-server`, Mar 2026)                 |
+| Thinking-mode toggle                                               | ❌                              | ✅                                    | ✅                                        | partial                                      |
+| Chat template + EOS                                                | ❌ (critical-path #1)           | ✅                                    | ✅                                        | ✅                                            |
+| Hot model swap                                                     | ✅ (vindex)                     | ✅ (auto-unload)                      | ❌ (locks one model in VRAM)              | ✅                                            |
+| Model library / pull command                                       | ✅ (`larql pull`, hf://)        | ✅                                    | n/a                                      | partial                                      |
+| **Quantisation**                                                   |                                |                                      |                                          |                                              |
+| Q4_K / Q6_K                                                        | ✅                              | ✅                                    | ❌ (FP16/FP8/AWQ/GPTQ)                    | ✅                                            |
+| AWQ / GPTQ                                                         | ❌                              | ❌                                    | ✅                                        | partial                                      |
+| FP8 / FP4                                                          | 🟡 (FP4 vindex exp 26)         | ❌                                    | ✅                                        | partial                                      |
+| **What only LARQL does**                                           |                                |                                      |                                          |                                              |
+| Vindex (model-as-database)                                         | ✅                              | ❌                                    | ❌                                        | ❌                                            |
+| LQL query language over weights                                    | ✅                              | ❌                                    | ❌                                        | ❌                                            |
+| Mech-interp hooks (M1–M8)                                          | ✅ (lazarus parity)             | ❌                                    | ❌                                        | ❌                                            |
+| MEMIT / KNN weight edits                                           | ✅                              | ❌                                    | ❌                                        | ❌                                            |
+| AOT compilation (residual programs)                                | ✅                              | ❌                                    | ❌                                        | ❌                                            |
+| WASM-in-FFN compute primitives                                     | ✅                              | ❌                                    | ❌                                        | ❌                                            |
+| Boundary refs (residual codec)                                     | ✅ Phase 1–3                    | ❌                                    | ❌                                        | ❌                                            |
+| KV cache engines (MarkovRS, UnlimitedContext, Apollo)              | ✅                              | ❌                                    | ❌                                        | ❌                                            |
+| Cross-arch dispatch as first-class concern                         | ✅ (ADR-018)                    | n/a                                  | n/a                                      | n/a                                          |
 
 ---
 
@@ -161,13 +161,13 @@ The comparison literature ([decodesfuture](https://www.decodesfuture.com/article
 
 Same niche. Direct measurements:
 
-| Workload | LARQL | Ollama | Gap |
-|---|---|---|---|
-| Gemma 3 4B decode (M3 Max) | 88 tok/s | ~103 tok/s | **1.17×** behind |
-| Gemma 3 4B prefill (18 tok) | per-position matvec | gemm | **3.9×** behind |
-| Gemma 3 4B prefill (340 tok) | per-position matvec | gemm | **14×** behind |
-| Gemma 4 26B A4B MoE | 19.4 tok/s | not supported | LARQL ahead by virtue of arch coverage |
-| Concurrent users | not stress-tested | collapses at ~5 | comparable weakness |
+| Workload                     | LARQL               | Ollama          | Gap                                    |
+|------------------------------|---------------------|-----------------|----------------------------------------|
+| Gemma 3 4B decode (M3 Max)   | 88 tok/s            | ~103 tok/s      | **1.17×** behind                       |
+| Gemma 3 4B prefill (18 tok)  | per-position matvec | gemm            | **3.9×** behind                        |
+| Gemma 3 4B prefill (340 tok) | per-position matvec | gemm            | **14×** behind                         |
+| Gemma 4 26B A4B MoE          | 19.4 tok/s          | not supported   | LARQL ahead by virtue of arch coverage |
+| Concurrent users             | not stress-tested   | collapses at ~5 | comparable weakness                    |
 
 **Where LARQL wins**: vindex, LQL, edit/compile primitives, MoE grid sharding, hot model swap (parity but model-as-database is a stronger story), Gemma 4 / Gemma 4 26B A4B coverage.
 
@@ -181,16 +181,16 @@ Same niche. Direct measurements:
 
 vLLM v0.17.1 (March 2026) ships Model Runner V2 (+56% throughput on GB200) and FlashAttention 4 default on Blackwell SM100/SM103. The [Towards AI stress test](https://pub.towardsai.net/i-tested-ollama-vs-vllm-vs-llama-cpp-the-easiest-one-collapses-at-5-concurrent-users-d4f8e0e84886?gi=275236a76e13) measured vLLM sustaining ~485 tok/s aggregate at 10 concurrent users on Llama 3.1 8B via continuous batching, while Ollama collapsed at ~5.
 
-| Dimension | LARQL | vLLM |
-|---|---|---|
-| Hardware | Metal + CPU (Mac/Linux/Win) | CUDA-first; `vllm-mlx` Mac fork emerging |
-| Concurrency model | Single-stream + multi-host expert sharding | PagedAttention + continuous batching (1000s concurrent) |
-| Throughput at scale | not designed for it | 10–100× LARQL at high concurrency on a single H100 |
-| Single-user latency | competitive (88 tok/s tier on M3 Max) | overkill — vLLM wins throughput, not single-stream latency |
-| Multi-GPU | ❌ tensor parallelism | ✅ tensor parallelism |
-| Multi-host MoE | ✅ self-assembling gRPC grid (different shape from TP) | ❌ (TP only) |
-| Quantisation | Q4_K / Q6_K / FP4 vindex | AWQ / GPTQ / FP8 |
-| Hot model swap | ✅ | ❌ (locks one model in VRAM) |
+| Dimension           | LARQL                                                 | vLLM                                                       |
+|---------------------|-------------------------------------------------------|------------------------------------------------------------|
+| Hardware            | Metal + CPU (Mac/Linux/Win)                           | CUDA-first; `vllm-mlx` Mac fork emerging                   |
+| Concurrency model   | Single-stream + multi-host expert sharding            | PagedAttention + continuous batching (1000s concurrent)    |
+| Throughput at scale | not designed for it                                   | 10–100× LARQL at high concurrency on a single H100         |
+| Single-user latency | competitive (88 tok/s tier on M3 Max)                 | overkill — vLLM wins throughput, not single-stream latency |
+| Multi-GPU           | ❌ tensor parallelism                                  | ✅ tensor parallelism                                       |
+| Multi-host MoE      | ✅ self-assembling gRPC grid (different shape from TP) | ❌ (TP only)                                                |
+| Quantisation        | Q4_K / Q6_K / FP4 vindex                              | AWQ / GPTQ / FP8                                           |
+| Hot model swap      | ✅                                                     | ❌ (locks one model in VRAM)                                |
 
 **Where LARQL wins**: anywhere that isn't max-throughput multi-tenant batched serving on NVIDIA datacenter GPUs. Hot model swap. Multi-host MoE grid. Mac/Linux/Windows portability without CUDA.
 
@@ -235,11 +235,11 @@ Released 4 days before this doc was written. Drops the timing of every other gap
 
 **Competitive impact**:
 
-| Scenario | LARQL | Ollama+MTP | Gap |
-|---|---|---|---|
-| Today (no MTP anywhere) | 88 tok/s Gemma 3 4B | ~103 tok/s | 1.17× behind |
-| Once Gemma 4 + MTP becomes default on Ollama | 88 tok/s (no MTP path) | ~225 tok/s on Gemma 4 | **~2.6× behind** |
-| LARQL ships MTP1–MTP6 | ~190 tok/s decode, 26B-A4B 19.4 → ~43 tok/s | same ~225 tok/s | back to ~1.2× |
+| Scenario                                     | LARQL                                       | Ollama+MTP            | Gap              |
+|----------------------------------------------|---------------------------------------------|-----------------------|------------------|
+| Today (no MTP anywhere)                      | 88 tok/s Gemma 3 4B                         | ~103 tok/s            | 1.17× behind     |
+| Once Gemma 4 + MTP becomes default on Ollama | 88 tok/s (no MTP path)                      | ~225 tok/s on Gemma 4 | **~2.6× behind** |
+| LARQL ships MTP1–MTP6                        | ~190 tok/s decode, 26B-A4B 19.4 → ~43 tok/s | same ~225 tok/s       | back to ~1.2×    |
 
 **Roadmap response**: MTP1 was promoted from P2 to **P1** in the same pass that produced this doc. New P1 section in `ROADMAP.md` ("P1 — Gemma 4 MTP drafter support") tracks MTP1–MTP6 + SD1–SD2.
 
@@ -265,29 +265,29 @@ None of the comparison articles surface anything matching:
 
 Re-tiered 2026-05-09 under the substrate framing. Each item is scored by *"does this affect baseline credibility, or accelerate experiments?"* — items that only serve "becoming a production engine" are dropped.
 
-| ID | Item | Tier | Substrate verdict |
-|---|---|---|---|
-| CB1 | Continuous batching engine | ~~P2~~ | **DROPPED** — concurrency-throughput, not single-stream baseline. Re-open only if a future experiment needs concurrent decode. |
-| CB2 | PagedAttention KV allocator | ~~P2~~ | **DROPPED** — pairs with CB1. |
-| CB3 | Concurrent stress benchmark | ~~P2~~ | **DROPPED** — measures a property the substrate framing doesn't care about. |
-| MCP1 | MCP server built into `larql serve` | ~~P2~~ | **DEFERRED** — UX, doesn't change measurement. Re-open if a research workflow needs LARQL as an MCP-callable tool. |
-| TM1 | Thinking-mode toggle | ~~P2~~ | **DEFERRED** — UX. Re-open if reasoning-trace structure becomes part of an experiment. |
-| RD1 | RMS-norm + scalar-mul pre-fusion | P2 | **KEEP** — small baseline win (~3.4 ms). |
-| MTP1–MTP6 | Gemma 4 MTP drafter support | **P1** | **KEEP — load-bearing**. Both substrate (new mechanism to study) and baseline (Ollama supports it on Gemma 4; without MTP, LARQL fails the 10% threshold on Gemma 4 by ~2.6×). |
-| SD1–SD2 | Generic spec-decode + EAGLE-3 | **P1** | **KEEP** — reusable verification machinery for any future drafter-based technique. |
-| D-ATTN-MTG | Flash attention multi-TG retry | P0 | **KEEP — load-bearing**. Without it, attention-mechanism deltas are muddied by missing baseline. |
-| D-PREFILL-MM2 | `simdgroup_matrix` matmul rewrite | P0 | **KEEP — load-bearing**. Until landed, all prefill-touching technique claims fail the 10% threshold (currently 4–14× behind). |
-| D-METAL-PLE | Gemma 4 E2B Per-Layer Embeddings on Metal | P0 | **KEEP — load-bearing**. Without it, every Gemma 4 E2B experiment runs CPU-fallback and any delta is unattributable. |
-| AI1–AI6 | Architecture independence hardening | P1 | **KEEP — load-bearing**. Cross-arch deltas need clean arch boundaries or they're arch-specific accidents. |
-| T1–T7, C1–C3 | Interpretability truthfulness + commit semantics | P0 | **KEEP — central**. Substrate that lies to you is worse than no substrate. |
-| MI4–MI8 | Rich attribution, causal operators, Q4K/MoE trace parity | P0 | **KEEP — central**. The substrate's plug-in surface lives here. |
-| R1–R5 | OV/RD → engine primitive promotion | P1 | **KEEP — exemplar pattern**. This *is* the substrate development model: experiments harden into engine APIs. |
-| R6 | Depth-fraction-law probe API as engine primitive | P1 | **KEEP — sequencing-critical**. Must land before MTP3; consumed by MTP3 (drafter activation extraction layer choice), virtual-expert dispatch (Act 3), grammar-mask routing. |
-| BR4–BR8 | Boundary refs (residual codec) server integration | P1 | **KEEP** — itself a research direction (Shannon-arc continuation). |
-| Coverage → 90% | larql-compute test coverage | P1 | **KEEP — load-bearing**. Measurement integrity needs correctness trust. |
-| Acts 1/2/3/4 demo narrative | Demo plan | n/a | **REFRAME** — not a product demo. Act 1 = "model is a database" (substrate pitch); Act 2 = "experts are addressable" (reframed per ADR-019 — single-machine, not multi-machine); Act 3 = replace an expert (single-machine via VID4-style); Act 4 = "I killed attention" (gated on KU1 + MTP6, becomes video VID7). |
-| Critical-path #1–#2 (chat template + EOS, CLI streaming) | Demo unblocker | P0 | **KEEP only as needed by experiments**. If experiments operate at residual/weight level, EOS handling is downstream. If demos are the communication channel, ship #1 to make Act 1 work. |
-| OpenAI API surface (server N0) | OpenAI compat | n/a | **REDUCE SCOPE** — keep only what experiments call. Drop `/v1/completions`, `/v1/responses`, multimodal until an experiment needs them. |
+| ID                                                       | Item                                                     | Tier   | Substrate verdict                                                                                                                                                                                                                                                                                                   |
+|----------------------------------------------------------|----------------------------------------------------------|--------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| CB1                                                      | Continuous batching engine                               | ~~P2~~ | **DROPPED** — concurrency-throughput, not single-stream baseline. Re-open only if a future experiment needs concurrent decode.                                                                                                                                                                                      |
+| CB2                                                      | PagedAttention KV allocator                              | ~~P2~~ | **DROPPED** — pairs with CB1.                                                                                                                                                                                                                                                                                       |
+| CB3                                                      | Concurrent stress benchmark                              | ~~P2~~ | **DROPPED** — measures a property the substrate framing doesn't care about.                                                                                                                                                                                                                                         |
+| MCP1                                                     | MCP server built into `larql serve`                      | ~~P2~~ | **DEFERRED** — UX, doesn't change measurement. Re-open if a research workflow needs LARQL as an MCP-callable tool.                                                                                                                                                                                                  |
+| TM1                                                      | Thinking-mode toggle                                     | ~~P2~~ | **DEFERRED** — UX. Re-open if reasoning-trace structure becomes part of an experiment.                                                                                                                                                                                                                              |
+| RD1                                                      | RMS-norm + scalar-mul pre-fusion                         | P2     | **KEEP** — small baseline win (~3.4 ms).                                                                                                                                                                                                                                                                            |
+| MTP1–MTP6                                                | Gemma 4 MTP drafter support                              | **P1** | **KEEP — load-bearing**. Both substrate (new mechanism to study) and baseline (Ollama supports it on Gemma 4; without MTP, LARQL fails the 10% threshold on Gemma 4 by ~2.6×).                                                                                                                                      |
+| SD1–SD2                                                  | Generic spec-decode + EAGLE-3                            | **P1** | **KEEP** — reusable verification machinery for any future drafter-based technique.                                                                                                                                                                                                                                  |
+| D-ATTN-MTG                                               | Flash attention multi-TG retry                           | P0     | **KEEP — load-bearing**. Without it, attention-mechanism deltas are muddied by missing baseline.                                                                                                                                                                                                                    |
+| D-PREFILL-MM2                                            | `simdgroup_matrix` matmul rewrite                        | P0     | **KEEP — load-bearing**. Until landed, all prefill-touching technique claims fail the 10% threshold (currently 4–14× behind).                                                                                                                                                                                       |
+| D-METAL-PLE                                              | Gemma 4 E2B Per-Layer Embeddings on Metal                | P0     | **KEEP — load-bearing**. Without it, every Gemma 4 E2B experiment runs CPU-fallback and any delta is unattributable.                                                                                                                                                                                                |
+| AI1–AI6                                                  | Architecture independence hardening                      | P1     | **KEEP — load-bearing**. Cross-arch deltas need clean arch boundaries or they're arch-specific accidents.                                                                                                                                                                                                           |
+| T1–T7, C1–C3                                             | Interpretability truthfulness + commit semantics         | P0     | **KEEP — central**. Substrate that lies to you is worse than no substrate.                                                                                                                                                                                                                                          |
+| MI4–MI8                                                  | Rich attribution, causal operators, Q4K/MoE trace parity | P0     | **KEEP — central**. The substrate's plug-in surface lives here.                                                                                                                                                                                                                                                     |
+| R1–R5                                                    | OV/RD → engine primitive promotion                       | P1     | **KEEP — exemplar pattern**. This *is* the substrate development model: experiments harden into engine APIs.                                                                                                                                                                                                        |
+| R6                                                       | Depth-fraction-law probe API as engine primitive         | P1     | **KEEP — sequencing-critical**. Must land before MTP3; consumed by MTP3 (drafter activation extraction layer choice), virtual-expert dispatch (Act 3), grammar-mask routing.                                                                                                                                        |
+| BR4–BR8                                                  | Boundary refs (residual codec) server integration        | P1     | **KEEP** — itself a research direction (Shannon-arc continuation).                                                                                                                                                                                                                                                  |
+| Coverage → 90%                                           | larql-compute test coverage                              | P1     | **KEEP — load-bearing**. Measurement integrity needs correctness trust.                                                                                                                                                                                                                                             |
+| Acts 1/2/3/4 demo narrative                              | Demo plan                                                | n/a    | **REFRAME** — not a product demo. Act 1 = "model is a database" (substrate pitch); Act 2 = "experts are addressable" (reframed per ADR-019 — single-machine, not multi-machine); Act 3 = replace an expert (single-machine via VID4-style); Act 4 = "I killed attention" (gated on KU1 + MTP6, becomes video VID7). |
+| Critical-path #1–#2 (chat template + EOS, CLI streaming) | Demo unblocker                                           | P0     | **KEEP only as needed by experiments**. If experiments operate at residual/weight level, EOS handling is downstream. If demos are the communication channel, ship #1 to make Act 1 work.                                                                                                                            |
+| OpenAI API surface (server N0)                           | OpenAI compat                                            | n/a    | **REDUCE SCOPE** — keep only what experiments call. Drop `/v1/completions`, `/v1/responses`, multimodal until an experiment needs them.                                                                                                                                                                             |
 
 Items already on the roadmap that the comparison validates as load-bearing:
 

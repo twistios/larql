@@ -8,11 +8,11 @@
 
 ## Results (20 installed, 20 distractors, 5 aliases)
 
-| mode | CORRECT (want fact) | DISTRACTOR-safe (want NO override) | ALIAS (want fact) | override µs/call |
-|---|---|---|---|---|
-| **legacy** (top-1 + 0.75) | 20/20 (100%) | **0/20 (0%)** | 5/5 (100%) | 22 |
-| **verified** (FR1) | 20/20 (100%) | **20/20 (100%)** | 0/5 (0%) | 13 |
-| **two_tier** (FR2) | 20/20 (100%) | 0/20 (0%) | 5/5 (100%) | 18 |
+| mode                      | CORRECT (want fact) | DISTRACTOR-safe (want NO override) | ALIAS (want fact) | override µs/call |
+|---------------------------|---------------------|------------------------------------|-------------------|------------------|
+| **legacy** (top-1 + 0.75) | 20/20 (100%)        | **0/20 (0%)**                      | 5/5 (100%)        | 22               |
+| **verified** (FR1)        | 20/20 (100%)        | **20/20 (100%)**                   | 0/5 (0%)          | 13               |
+| **two_tier** (FR2)        | 20/20 (100%)        | 0/20 (0%)                          | 5/5 (100%)        | 18               |
 
 - **CORRECT** — query about an installed entity; want the installed fact. All three: 100% (no regression).
 - **DISTRACTOR** — query about a non-installed entity the model knows; the right move is *no override*. Legacy fires on **every** one (near-rank-1 cosine collides with some stored key > 0.75) → confident-wrong. Verified rejects (the distractor isn't a named installed entity) → the model answers itself.

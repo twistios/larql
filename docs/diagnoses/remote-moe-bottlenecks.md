@@ -16,12 +16,12 @@ whether the path is network- or compute-bound.
 
 ## Breakdown (per token, 26B, localhost, standard engine)
 
-| Stage | Cost | Notes |
-|---|---:|---|
-| **Model load** | **~6.8 s** | one-time; before generation. 1.5 GB `embeddings.bin` + Q4K attn/FFN reads + up-front dequant-to-f32 |
-| **Prefill (TTFT)** | **~1.4 s** for 33-token prompt | **~42 ms / prompt-token** (attention O(N²) + dense FFN + expert dispatch for all positions) |
-| **Decode** | **~6 tok/s = ~165 ms / token** | steady-state; KV-cached (new token only) + 30 sequential expert round-trips |
-| Network (localhost) | **~12 ms / token** | 30 layers × ~0.35 ms RTT — **negligible** |
+| Stage               |                           Cost | Notes                                                                                               |
+|---------------------|-------------------------------:|-----------------------------------------------------------------------------------------------------|
+| **Model load**      |                     **~6.8 s** | one-time; before generation. 1.5 GB `embeddings.bin` + Q4K attn/FFN reads + up-front dequant-to-f32 |
+| **Prefill (TTFT)**  | **~1.4 s** for 33-token prompt | **~42 ms / prompt-token** (attention O(N²) + dense FFN + expert dispatch for all positions)         |
+| **Decode**          | **~6 tok/s = ~165 ms / token** | steady-state; KV-cached (new token only) + 30 sequential expert round-trips                         |
+| Network (localhost) |             **~12 ms / token** | 30 layers × ~0.35 ms RTT — **negligible**                                                           |
 
 ## Findings
 
@@ -65,13 +65,13 @@ whether the path is network- or compute-bound.
 Per-stage timers (`decode_stages`), accumulated over prefill + 12 decode tokens
 on the 26B (standard engine, 2 shards, localhost). Full 4-way client/server split:
 
-| Stage | Time | Share | Side |
-|---|---:|---:|---|
-| **remote experts** (`forward_moe_seq`: server dequant+matmul + wire) | **1539 ms** | **~41%** | server |
-| **attention** (`backend.attention_*`, f32 BLAS) | **1051 ms** | **~28%** | client f32 |
-| client dense FFN (`h1`, f32 `run_ffn` via `WeightFfn`) | 471 ms | ~13% | client f32 |
-| lm_head (`logits_to_predictions_pub`, f32 vocab proj) | 446 ms | ~12% | client f32 |
-| everything else (router, combine, embed, norms) — by subtraction | ~190 ms | ~5% | client |
+| Stage                                                                |        Time |    Share | Side       |
+|----------------------------------------------------------------------|------------:|---------:|------------|
+| **remote experts** (`forward_moe_seq`: server dequant+matmul + wire) | **1539 ms** | **~41%** | server     |
+| **attention** (`backend.attention_*`, f32 BLAS)                      | **1051 ms** | **~28%** | client f32 |
+| client dense FFN (`h1`, f32 `run_ffn` via `WeightFfn`)               |      471 ms |     ~13% | client f32 |
+| lm_head (`logits_to_predictions_pub`, f32 vocab proj)                |      446 ms |     ~12% | client f32 |
+| everything else (router, combine, embed, norms) — by subtraction     |     ~190 ms |      ~5% | client     |
 
 Reading it:
 - **~53% of decode is recoverable client-side f32 compute** (attention 28 + dense

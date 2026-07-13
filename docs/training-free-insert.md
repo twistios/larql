@@ -30,12 +30,12 @@ The gate determines when a feature activates. The down projection determines wha
 
 ### What didn't work
 
-| Approach | Gate | Down | Result |
-|---|---|---|---|
-| Embedding-based gate | `embed("Atlantis")` | model weights | Gate doesn't fire (cos=0.01 between embedding and L24 residual) |
-| Trace-guided gate only | actual residual | model weights | Gate fires at rank 1, score 53K. Output unchanged — down weight outputs original token |
-| Re-gate existing features | actual residual | model weights (existing) | 200 features fire. Poseidon projection too weak (0.03/feature) |
-| Down override, single layer | actual residual | Poseidon direction | Output changes! But alpha needed to affect Atlantis also breaks France |
+| Approach                    | Gate                | Down                     | Result                                                                                 |
+|-----------------------------|---------------------|--------------------------|----------------------------------------------------------------------------------------|
+| Embedding-based gate        | `embed("Atlantis")` | model weights            | Gate doesn't fire (cos=0.01 between embedding and L24 residual)                        |
+| Trace-guided gate only      | actual residual     | model weights            | Gate fires at rank 1, score 53K. Output unchanged — down weight outputs original token |
+| Re-gate existing features   | actual residual     | model weights (existing) | 200 features fire. Poseidon projection too weak (0.03/feature)                         |
+| Down override, single layer | actual residual     | Poseidon direction       | Output changes! But alpha needed to affect Atlantis also breaks France                 |
 
 ### What worked
 
@@ -123,36 +123,36 @@ For a free feature slot (c_score=0), the model's gate/up weights produce modest 
 
 ### Single layer (L26)
 
-| alpha | Atlantis | France |
-|---|---|---|
-| 0.5 | said (17.5%) | Paris (80.5%) |
-| 1.0 | said (16.9%) | Paris (58.6%) |
-| 3.5 | **Pose (17.0%)** | Pose (74.8%) |
-| 5.0 | Pose (27.0%) | Pose (78.4%) |
-| 10.0 | Pose (65.1%) | Pose (79.8%) |
+| alpha | Atlantis         | France        |
+|-------|------------------|---------------|
+| 0.5   | said (17.5%)     | Paris (80.5%) |
+| 1.0   | said (16.9%)     | Paris (58.6%) |
+| 3.5   | **Pose (17.0%)** | Pose (74.8%)  |
+| 5.0   | Pose (27.0%)     | Pose (78.4%)  |
+| 10.0  | Pose (65.1%)     | Pose (79.8%)  |
 
 No sweet spot — France breaks before Atlantis benefits.
 
 ### Multi-layer (L20-L27, 8 layers)
 
-| alpha/layer | total | Atlantis | France |
-|---|---|---|---|
-| 0.25 | 2.0 | **Pose (94.6%)** | **Paris (60.5%)** |
-| 0.50 | 4.0 | Pose (96.2%) | Paris (25.0%) |
-| 0.75 | 6.0 | Pose (91.9%) | a (26.7%) |
-| 1.00 | 8.0 | Pose (33.7%) | Pose (38.5%) |
+| alpha/layer | total | Atlantis         | France            |
+|-------------|-------|------------------|-------------------|
+| 0.25        | 2.0   | **Pose (94.6%)** | **Paris (60.5%)** |
+| 0.50        | 4.0   | Pose (96.2%)     | Paris (25.0%)     |
+| 0.75        | 6.0   | Pose (91.9%)     | a (26.7%)         |
+| 1.00        | 8.0   | Pose (33.7%)     | Pose (38.5%)      |
 
 ### Spread thinner — the Pareto frontier
 
 More layers with smaller alpha reduces degradation:
 
-| Config | Atlantis | Paris | Paris degradation |
-|---|---|---|---|
-| 8L × 0.25 | 94.6% | 60.5% | -20.0 pts |
-| 12L × 0.15 | 91.1% | 57.9% | -22.6 pts |
-| 16L × 0.10 | 63.0% | 70.4% | **-10.1 pts** |
-| **16L × 0.12** | **78.4%** | **66.8%** | **-13.7 pts** |
-| 20L × 0.10 | 39.4% | 70.6% | -9.9 pts |
+| Config         | Atlantis  | Paris     | Paris degradation |
+|----------------|-----------|-----------|-------------------|
+| 8L × 0.25      | 94.6%     | 60.5%     | -20.0 pts         |
+| 12L × 0.15     | 91.1%     | 57.9%     | -22.6 pts         |
+| 16L × 0.10     | 63.0%     | 70.4%     | **-10.1 pts**     |
+| **16L × 0.12** | **78.4%** | **66.8%** | **-13.7 pts**     |
+| 20L × 0.10     | 39.4%     | 70.6%     | -9.9 pts          |
 
 **16L × 0.12 is the recommended config.** Atlantis at 78%, Paris degradation only 14 points. For maximum new-fact confidence, use 8L × 0.25 (94.6% but 20 points degradation). For minimal degradation, use 20L × 0.08 (26% but only 7 points degradation).
 
@@ -162,16 +162,16 @@ Orthogonal down vectors (removing the Paris component) did not help — degradat
 
 All experiments in `~/chris-source/chris-experiments/foundations/04_constellation_insert/`:
 
-| File | What | Key finding |
-|---|---|---|
-| `constellation.py` | Template extraction + walk-level testing | 145 shared features between France/Germany (template), 135 entity-specific |
-| `trace_guided.py` | Inference with trace-guided gates | Gates fire at rank 1, scores 39K-53K. Output unchanged — down weights control output, not gates |
-| `regate.py` | Re-gate 200 features toward Poseidon | Features fire but per-feature Poseidon projection is 0.03 — too weak |
-| `down_override.py` | Residual delta as down vector | Output changes! But France breaks (delta too large and unfocused) |
-| `down_sweep.py` | Alpha sweep with Poseidon embed direction | alpha=5 → Pose 27%, alpha=10 → 65%. France also breaks |
-| `selective_insert.py` | Orthogonal gate (Atlantis-specific) | Model's up/gate weights fire for both — orthogonality doesn't help |
-| `fine_sweep.py` | Fine alpha between 1.0-5.0 | France breaks at alpha=2.0, Atlantis needs alpha=3.5 |
-| `multilayer.py` | **8 layers × alpha=0.25** | **Atlantis 94.6%, France 60.5%** |
+| File                  | What                                      | Key finding                                                                                     |
+|-----------------------|-------------------------------------------|-------------------------------------------------------------------------------------------------|
+| `constellation.py`    | Template extraction + walk-level testing  | 145 shared features between France/Germany (template), 135 entity-specific                      |
+| `trace_guided.py`     | Inference with trace-guided gates         | Gates fire at rank 1, scores 39K-53K. Output unchanged — down weights control output, not gates |
+| `regate.py`           | Re-gate 200 features toward Poseidon      | Features fire but per-feature Poseidon projection is 0.03 — too weak                            |
+| `down_override.py`    | Residual delta as down vector             | Output changes! But France breaks (delta too large and unfocused)                               |
+| `down_sweep.py`       | Alpha sweep with Poseidon embed direction | alpha=5 → Pose 27%, alpha=10 → 65%. France also breaks                                          |
+| `selective_insert.py` | Orthogonal gate (Atlantis-specific)       | Model's up/gate weights fire for both — orthogonality doesn't help                              |
+| `fine_sweep.py`       | Fine alpha between 1.0-5.0                | France breaks at alpha=2.0, Atlantis needs alpha=3.5                                            |
+| `multilayer.py`       | **8 layers × alpha=0.25**                 | **Atlantis 94.6%, France 60.5%**                                                                |
 
 Results saved in `~/chris-source/chris-experiments/results/04{a-h}_*.json`.
 

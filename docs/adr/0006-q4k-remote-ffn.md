@@ -88,14 +88,14 @@ mirrors the existing `predict_q4k` but delegates the FFN step to any
 
 Differences from `predict_q4k`:
 
-| Step | `predict_q4k` (local) | `predict_q4k_with_ffn` (remote) |
-|---|---|---|
-| Load | embed + norms via `load_model_weights_q4k` | same |
-| Attn Q/K/V/O | dequant per layer from q4k mmap, insert into `weights.tensors` | same |
-| FFN gate/up/down | dequant per layer, insert into `weights.tensors` | **skip** |
-| Layer forward | `run_layer_with_ffn(..., WeightFfn { weights })` | `run_layer_with_ffn(..., &remote_backend)` |
-| Cleanup | remove Q/K/V/O *and* FFN tensors after layer | remove Q/K/V/O only |
-| Peak heap | ~1.8 GB/layer (attn + FFN) | ~0.4 GB/layer (attn only) |
+| Step             | `predict_q4k` (local)                                          | `predict_q4k_with_ffn` (remote)            |
+|------------------|----------------------------------------------------------------|--------------------------------------------|
+| Load             | embed + norms via `load_model_weights_q4k`                     | same                                       |
+| Attn Q/K/V/O     | dequant per layer from q4k mmap, insert into `weights.tensors` | same                                       |
+| FFN gate/up/down | dequant per layer, insert into `weights.tensors`               | **skip**                                   |
+| Layer forward    | `run_layer_with_ffn(..., WeightFfn { weights })`               | `run_layer_with_ffn(..., &remote_backend)` |
+| Cleanup          | remove Q/K/V/O *and* FFN tensors after layer                   | remove Q/K/V/O only                        |
+| Peak heap        | ~1.8 GB/layer (attn + FFN)                                     | ~0.4 GB/layer (attn only)                  |
 
 `crates/larql-cli/src/commands/extraction/walk_cmd.rs::run_predict_q4k_remote`
 is the CLI glue. It connects to the remote URL via `RemoteWalkBackend`,
@@ -203,13 +203,13 @@ because the bottleneck is per-layer dequant, not network.
 
 ## Implementation Files
 
-| File | Role |
-|---|---|
-| `crates/larql-inference/src/vindex/q4k_forward.rs` | `predict_q4k_with_ffn`, `q4k_ffn_forward_layer` |
-| `crates/larql-inference/src/vindex/mod.rs` | Re-exports |
+| File                                                   | Role                                                                 |
+|--------------------------------------------------------|----------------------------------------------------------------------|
+| `crates/larql-inference/src/vindex/q4k_forward.rs`     | `predict_q4k_with_ffn`, `q4k_ffn_forward_layer`                      |
+| `crates/larql-inference/src/vindex/mod.rs`             | Re-exports                                                           |
 | `crates/larql-cli/src/commands/extraction/walk_cmd.rs` | `run_predict_q4k_remote`; routes `args.ffn_remote.is_some()` for q4k |
-| `crates/larql-server/src/state.rs` | Q4_K branch in `get_or_load_weights` |
-| `crates/larql-server/src/routes/walk_ffn.rs` | `is_q4k` branch in `run_full_output` |
+| `crates/larql-server/src/state.rs`                     | Q4_K branch in `get_or_load_weights`                                 |
+| `crates/larql-server/src/routes/walk_ffn.rs`           | `is_q4k` branch in `run_full_output`                                 |
 
 ---
 

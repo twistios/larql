@@ -56,11 +56,11 @@ selection, even at depth.
 **Phase B — per-layer KL ≤ 0.05 does NOT compound (the headline).** Applying all
 34 per-layer oracle thresholds at once:
 
-| metric | dense | compounded | Δ |
-|---|---:|---:|---:|
-| NLL (bits/token, mean) | 4.239 | 9.595 | **+5.356** |
-| perplexity | 18.9 | 773.3 | **+3995%** |
-| argmax drift | — | **78.4%** | first-divergence pos 1 |
+| metric                 | dense | compounded |                      Δ |
+|------------------------|------:|-----------:|-----------------------:|
+| NLL (bits/token, mean) | 4.239 |      9.595 |             **+5.356** |
+| perplexity             |  18.9 |      773.3 |             **+3995%** |
+| argmax drift           |     — |  **78.4%** | first-divergence pos 1 |
 
 Each layer individually clears KL ≤ 0.05 with *perfect* (gate-oracle) routing, yet
 compounding them destroys the model — 40× worse perplexity, 78% of tokens flip,
@@ -101,11 +101,11 @@ FFN is dense. KU4's medium-term bandwidth assumption shrinks accordingly.
 All three dense architectures falsify the claim, and the effect *sharpens* with
 how aggressive the per-layer screen is:
 
-| model | layers | Phase A mean frac | Phase B Δ-NLL | perplexity | drift | first-div | cheap BW (if realisable) | deployable BW (oracle) | Phase C realisable |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| Gemma 3 4B | 34 | 0.1222 | +5.36 | +3995% | 78.4% | pos 1 | 8.2× | 2.41× | 16% |
-| Llama 2 7B | 32 | 0.0269 | +7.69 | +20480% | 95.2% | pos 0 | 37.2× | 2.85× | 62% |
-| Mistral 7B | 32 | 0.0605 | +7.44 | +17209% | 90.4% | pos 0 | 16.5× | 2.68× | 31% |
+| model      | layers | Phase A mean frac | Phase B Δ-NLL | perplexity | drift | first-div | cheap BW (if realisable) | deployable BW (oracle) | Phase C realisable |
+|------------|-------:|------------------:|--------------:|-----------:|------:|----------:|-------------------------:|-----------------------:|-------------------:|
+| Gemma 3 4B |     34 |            0.1222 |         +5.36 |     +3995% | 78.4% |     pos 1 |                     8.2× |                  2.41× |                16% |
+| Llama 2 7B |     32 |            0.0269 |         +7.69 |    +20480% | 95.2% |     pos 0 |                    37.2× |                  2.85× |                62% |
+| Mistral 7B |     32 |            0.0605 |         +7.44 |    +17209% | 90.4% |     pos 0 |                    16.5× |                  2.68× |                31% |
 
 Two architecture-neutral conclusions:
 

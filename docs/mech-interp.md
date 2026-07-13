@@ -41,13 +41,13 @@ those points.
 
 ### Built-in hooks
 
-| Hook | Purpose |
-|------|---------|
-| `NoopHook` | Default, never fires. Zero-cost when no real hook is registered. |
-| `RecordHook::for_layers([L,…])` | Capture pre-layer / post-attention / post-layer / attention-weights / FFN-activation at the listed layers. |
-| `ZeroAblateHook::for_layers([L,…])` | Zero the post-layer residual at the listed layers (full row or specific positions). |
-| `SteerHook::new().add(L, vec, α)` | Add `α·v` to the last-token row at layer `L` post-layer. |
-| `CompositeHook::new(vec![&mut a, &mut b, …])` | Run multiple hooks in order. |
+| Hook                                          | Purpose                                                                                                    |
+|-----------------------------------------------|------------------------------------------------------------------------------------------------------------|
+| `NoopHook`                                    | Default, never fires. Zero-cost when no real hook is registered.                                           |
+| `RecordHook::for_layers([L,…])`               | Capture pre-layer / post-attention / post-layer / attention-weights / FFN-activation at the listed layers. |
+| `ZeroAblateHook::for_layers([L,…])`           | Zero the post-layer residual at the listed layers (full row or specific positions).                        |
+| `SteerHook::new().add(L, vec, α)`             | Add `α·v` to the last-token row at layer `L` post-layer.                                                   |
+| `CompositeHook::new(vec![&mut a, &mut b, …])` | Run multiple hooks in order.                                                                               |
 
 ---
 
@@ -125,20 +125,20 @@ recipient_cache.clone_layer_position_range(&donor_cache, 12, /*start=*/ 0, /*end
 Returned tensors are numpy arrays. All the methods below take a
 prompt string (tokenized internally with the model's tokenizer):
 
-| Method | What it does |
-|--------|--------------|
-| `capture_residuals(prompt, layers) -> {layer: np.ndarray}` | Last-token residual at each layer |
-| `forward_with_capture(prompt, layers) -> {layer: (seq, hidden)}` | Full per-position residual matrix |
-| `forward_ablate(prompt, ablate_layers, capture_layers) -> dict` | Zero-ablate then capture last-token residuals |
-| `forward_steer(prompt, [(layer, vec, α), …], capture_layers) -> dict` | Steer then capture |
-| `patch_activations(donor, recipient, [(layer, pos), …], capture_layers)` | Cross-prompt residual patching |
-| `logit_lens(residual, k=10) -> [(token_id, prob)]` | Top-k vocab through final norm + lm_head |
-| `track_token_at(residual, token_id) -> float` | Probability of a specific token |
-| `track_race({layer: residual}, k=5) -> {layer: [(id, prob)]}` | Top-k per layer for several layers |
-| `embedding_neighbors(query, k=10) -> [(token_id, cosine)]` | Vocab tokens nearest a vector under cosine vs W_E |
-| `project_through_unembed(vec, k=10) -> [(token_id, logit)]` | Raw `W_U @ vec` (no norm/softcap) — DLA |
-| `embedding_for(token_id, scaled=True) -> np.ndarray` | Row of W_E (with or without `embed_scale`) |
-| `unembedding_for(token_id) -> np.ndarray` | Row of W_U |
+| Method                                                                                        | What it does                                        |
+|-----------------------------------------------------------------------------------------------|-----------------------------------------------------|
+| `capture_residuals(prompt, layers) -> {layer: np.ndarray}`                                    | Last-token residual at each layer                   |
+| `forward_with_capture(prompt, layers) -> {layer: (seq, hidden)}`                              | Full per-position residual matrix                   |
+| `forward_ablate(prompt, ablate_layers, capture_layers) -> dict`                               | Zero-ablate then capture last-token residuals       |
+| `forward_steer(prompt, [(layer, vec, α), …], capture_layers) -> dict`                         | Steer then capture                                  |
+| `patch_activations(donor, recipient, [(layer, pos), …], capture_layers)`                      | Cross-prompt residual patching                      |
+| `logit_lens(residual, k=10) -> [(token_id, prob)]`                                            | Top-k vocab through final norm + lm_head            |
+| `track_token_at(residual, token_id) -> float`                                                 | Probability of a specific token                     |
+| `track_race({layer: residual}, k=5) -> {layer: [(id, prob)]}`                                 | Top-k per layer for several layers                  |
+| `embedding_neighbors(query, k=10) -> [(token_id, cosine)]`                                    | Vocab tokens nearest a vector under cosine vs W_E   |
+| `project_through_unembed(vec, k=10) -> [(token_id, logit)]`                                   | Raw `W_U @ vec` (no norm/softcap) — DLA             |
+| `embedding_for(token_id, scaled=True) -> np.ndarray`                                          | Row of W_E (with or without `embed_scale`)          |
+| `unembedding_for(token_id) -> np.ndarray`                                                     | Row of W_U                                          |
 | `generate_with_hooks(prompt, max_new_tokens, ablate_layers=None, steers=None) -> (text, ids)` | Multi-token generation with hooks active every step |
 
 ```python

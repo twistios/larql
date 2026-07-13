@@ -199,11 +199,11 @@ declined the args" (`ExpertDeclined`).
 Wired through `larql-cli/src/commands/primary/run_cmd.rs` as
 `larql run --experts`. A `Strategy` enum picks between three decode paths:
 
-| vindex quant | `--metal` | strategy                       | why                                   |
-|--------------|-----------|--------------------------------|---------------------------------------|
-| Q4_K         | yes       | `layer_graph::generate`        | Metal prefill + KV-cached decode      |
-| Q4_K         | no        | `vindex::generate_q4k_cpu`     | per-step `predict_q4k` loop, no KV cache → O(N²) |
-| f32          | any       | `forward::generate_cached`     | CPU F32, KV-cached                    |
+| vindex quant | `--metal` | strategy                   | why                                              |
+|--------------|-----------|----------------------------|--------------------------------------------------|
+| Q4_K         | yes       | `layer_graph::generate`    | Metal prefill + KV-cached decode                 |
+| Q4_K         | no        | `vindex::generate_q4k_cpu` | per-step `predict_q4k` loop, no KV cache → O(N²) |
+| f32          | any       | `forward::generate_cached` | CPU F32, KV-cached                               |
 
 Plus chat mode (REPL on stdin) when no prompt is given. Loads the model
 once, dispatches per turn.
@@ -606,12 +606,12 @@ larql run <model> --experts [--experts-dir <DIR>] [--ops <CSV>] [--constrained]
 
 ## Test inventory
 
-| Suite                                | `cargo test` default | With `-- --ignored` |
-|--------------------------------------|----------------------|---------------------|
-| `larql-inference` lib                | 873 pass             | 873 pass            |
-| `larql-cli` (lib + integration)      | 96 pass, 1 ignored   | 97 pass             |
-| `larql-inference --test test_generate_q4k_cpu` | 0 pass, 1 ignored | 1 pass     |
-| **Total**                            | **969 pass**         | **971 pass**        |
+| Suite                                          | `cargo test` default | With `-- --ignored` |
+|------------------------------------------------|----------------------|---------------------|
+| `larql-inference` lib                          | 873 pass             | 873 pass            |
+| `larql-cli` (lib + integration)                | 96 pass, 1 ignored   | 97 pass             |
+| `larql-inference --test test_generate_q4k_cpu` | 0 pass, 1 ignored    | 1 pass              |
+| **Total**                                      | **969 pass**         | **971 pass**        |
 
 `cargo test` in default config completes in ~3 seconds. The two
 `#[ignore]`d tests load a real 4B/7B model and take 30s–7min depending

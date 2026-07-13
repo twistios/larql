@@ -152,13 +152,13 @@ use case lands. No premature multiplication.
 
 ## Cost
 
-| Change | LoC estimate |
-|---|---:|
-| Two new methods on `KvEngine` trait (defaults included) | ~20 |
+| Change                                                             |                                LoC estimate |
+|--------------------------------------------------------------------|--------------------------------------------:|
+| Two new methods on `KvEngine` trait (defaults included)            |                                         ~20 |
 | `StandardEngine::supports_multimodal` + `prefill_from_hidden` impl | ~30 (mostly shared with existing `prefill`) |
-| `generate_with_engine_from_hidden` wrapper | ~50 |
-| CLI capability check + error message | ~10 |
-| **Total** | **~110** |
+| `generate_with_engine_from_hidden` wrapper                         |                                         ~50 |
+| CLI capability check + error message                               |                                         ~10 |
+| **Total**                                                          |                                    **~110** |
 
 Engine impls for the other six families: **zero** (they inherit the
 `false` / panic defaults).

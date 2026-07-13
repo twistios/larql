@@ -11,12 +11,12 @@
 ### Probe vs phrasing (ablation, `fr3_template_ablation.rs`, N=6 entities)
 Train BASE `{capital,currency,language}` over the first `k` of the resolver's templates; test SYN `{seat,money,tongue}` on a **held-out** phrasing `"The {r} for {e} would be"` (chance 0.33):
 
-| layer | k=1 | k=2 | k=4 |
-|---|---|---|---|
-| L6  | 0.39 | 0.33 | **0.83** |
+| layer                          | k=1  | k=2  | k=4      |
+|--------------------------------|------|------|----------|
+| L6                             | 0.39 | 0.33 | **0.83** |
 | **L10** (resolver probe layer) | 0.33 | 0.39 | **0.39** |
-| L14 | 0.33 | 0.33 | 0.33 |
-| L20 | 0.17 | 0.11 | 0.17 |
+| L14                            | 0.33 | 0.33 | 0.33     |
+| L20                            | 0.17 | 0.11 | 0.17     |
 
 - At the **resolver's L10**, more templates = **no-op** (0.33→0.39, chance). The multi-template change was **reverted** (4×'d build cost for nothing at the probe layer).
 - Signal for an unseen phrasing is **early (L6) and decays with depth** — the opposite of "deeper = more normalised". The model resolves surface form early then consumes the relation representation computing the answer; it does not hold a stable canonical form at depth. (N=6 is coarse — L6's 0.83 is 15/18; the *shape* is the point.)
@@ -24,10 +24,10 @@ Train BASE `{capital,currency,language}` over the first `k` of the resolver's te
 ### Explicit classification (`fr3_explicit_rewrite.rs`, one forward via `predict_kquant`)
 Few-shot `word -> relation` over `{capital,currency,language[, none]}`, read top-1:
 
-| candidate set | synonyms | unseen phrasings | distractor false-fires |
-|---|---|---|---|
-| forced-choice (no escape) | 6/6 | 6/6 | **2/3** (weather→capital, altitude→capital) |
-| **+ `none` escape** | **6/6** | **6/6** | **0/3** (banana/weather/altitude → none) |
+| candidate set             | synonyms | unseen phrasings | distractor false-fires                      |
+|---------------------------|----------|------------------|---------------------------------------------|
+| forced-choice (no escape) | 6/6      | 6/6              | **2/3** (weather→capital, altitude→capital) |
+| **+ `none` escape**       | **6/6**  | **6/6**          | **0/3** (banana/weather/altitude → none)    |
 
 `head city`/`main city`→capital, `legal tender`/`unit of money`→currency, `spoken language`/`mother tongue`→language — all the phrasings the probe sat at chance on.
 

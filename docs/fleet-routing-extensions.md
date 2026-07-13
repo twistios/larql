@@ -36,12 +36,12 @@ threshold / majority) rides the read for free; joint-bit operations (parity, and
 — conjecturally — argmin/distance/optimization) wall (E17:
 `fleet/E17_compute_ladder/`). FR1–FR4 are these four facts, made operational.
 
-| # | Discovery | LARQL exploration | Fleet anchor |
-|---|---|---|---|
-| FR1 | Entity key is top-k fuzzy, not top-1 exact | Top-k candidate router + verifier/abstain | E15, E16 |
-| FR2 | Symbolic-primary, activation-fuzzy-fallback | Two-tier router sequenced into inference | E16 |
-| FR3 | Relation is a clean semantic index | Synonym-robust relation addressing | mechanism `address.py`, E10 |
-| FR4 | Compute splits at linear-aggregate vs joint | Operation-class dispatch boundary | E17 (conjecture) |
+| #   | Discovery                                   | LARQL exploration                         | Fleet anchor                |
+|-----|---------------------------------------------|-------------------------------------------|-----------------------------|
+| FR1 | Entity key is top-k fuzzy, not top-1 exact  | Top-k candidate router + verifier/abstain | E15, E16                    |
+| FR2 | Symbolic-primary, activation-fuzzy-fallback | Two-tier router sequenced into inference  | E16                         |
+| FR3 | Relation is a clean semantic index          | Synonym-robust relation addressing        | mechanism `address.py`, E10 |
+| FR4 | Compute splits at linear-aggregate vs joint | Operation-class dispatch boundary         | E17 (conjecture)            |
 
 Coupling: **FR1 ⊂ FR2** (the top-k fuzzy tier *is* the fallback half of the
 two-tier router). FR3 is orthogonal and the cleanest standalone win. FR4 is the

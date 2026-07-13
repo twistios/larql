@@ -238,11 +238,11 @@ model, tokenizer = load("gemma3-4b.vindex")
 response = mlx_lm.generate(model, tokenizer, prompt="The capital of France is", max_tokens=20)
 ```
 
-| Mode | Load | Speed | Memory | Editable |
-|------|------|-------|--------|----------|
-| Dense (`larql.mlx`) | Slow (eval all) | Fast | Full model in GPU | No |
-| Streaming (`larql.streaming`) | Fast (lazy) | Same* | ~1 layer at a time | No |
-| Walk FFN (`larql.walk_ffn`) | Fast | Slow (CPU FFN) | Attention only | Yes |
+| Mode                          | Load            | Speed          | Memory             | Editable |
+|-------------------------------|-----------------|----------------|--------------------|----------|
+| Dense (`larql.mlx`)           | Slow (eval all) | Fast           | Full model in GPU  | No       |
+| Streaming (`larql.streaming`) | Fast (lazy)     | Same*          | ~1 layer at a time | No       |
+| Walk FFN (`larql.walk_ffn`)   | Fast            | Slow (CPU FFN) | Attention only     | Yes      |
 
 \* Streaming matches dense speed when the OS page cache keeps weights hot.
 For models that exceed physical memory, speed is SSD-bound (~1.5s/token at 3 GB/s NVMe).

@@ -90,10 +90,10 @@ protecting any derived references.
 
 **Platform behaviour:**
 
-| OS | `MADV_DONTNEED` on shared file-backed mmap | Observed after one request |
-|---|---|---|
-| Linux | Immediately drops clean pages from RSS | ~23 GB → ~6 GB |
-| Darwin | Advisory; kernel may defer until memory pressure | 23 GB → 23 GB (stable) |
+| OS     | `MADV_DONTNEED` on shared file-backed mmap       | Observed after one request |
+|--------|--------------------------------------------------|----------------------------|
+| Linux  | Immediately drops clean pages from RSS           | ~23 GB → ~6 GB             |
+| Darwin | Advisory; kernel may defer until memory pressure | 23 GB → 23 GB (stable)     |
 
 macOS's weakness is by design. Darwin reserves `MADV_FREE` for
 private-anon mappings; shared mappings have no equivalent release
@@ -105,13 +105,13 @@ established); it just doesn't shrink the existing resident set.
 
 ## Measured Ceilings (Gemma 4 31B Q4_K, macOS, CPU)
 
-| Configuration | Startup RSS | After 3 requests |
-|---|---|---|
-| Default (no `--ffn-only`) | 55 GB | 55 GB |
-| `--ffn-only` | 5.6 GB | 23 GB |
-| `--ffn-only --max-gate-cache-layers 4` | 5.6 GB | 23 GB |
-| `... --release-mmap-after-request` | 5.6 GB | 23 GB (stable) |
-| `... --layers 0-19` (sharding) | 5.6 GB | ~8 GB (shard-proportional) |
+| Configuration                          | Startup RSS | After 3 requests           |
+|----------------------------------------|-------------|----------------------------|
+| Default (no `--ffn-only`)              | 55 GB       | 55 GB                      |
+| `--ffn-only`                           | 5.6 GB      | 23 GB                      |
+| `--ffn-only --max-gate-cache-layers 4` | 5.6 GB      | 23 GB                      |
+| `... --release-mmap-after-request`     | 5.6 GB      | 23 GB (stable)             |
+| `... --layers 0-19` (sharding)         | 5.6 GB      | ~8 GB (shard-proportional) |
 
 Startup RSS improvement: **10×**. The 23 GB floor is the mmap working set
 of the whole-model Q4_K forward pass on macOS; it does not grow across
@@ -144,15 +144,15 @@ bound half. Swap the flag set in Terminal A to fill in other rows.
 
 ## Implementation Files
 
-| File | Role |
-|---|---|
-| `crates/larql-vindex/src/index/core.rs` | New fields: `gate_cache_lru`, `gate_cache_max_layers` |
-| `crates/larql-vindex/src/index/gate.rs` | `set_gate_cache_max_layers`, `touch_gate_cache_lru`, wired into `resolve_gate` + `gate_knn_mmap_fast` |
-| `crates/larql-vindex/src/index/accessors.rs` | `release_mmap_pages` (calls `unchecked_advise(DontNeed)` on every owned mmap) |
-| `crates/larql-server/src/main.rs` | CLI flags, skips `warmup()` under `--ffn-only`, wires `set_gate_cache_max_layers` on load |
-| `crates/larql-server/src/state.rs` | `LoadedModel.release_mmap_after_request` field |
-| `crates/larql-server/src/routes/walk_ffn.rs` | Calls `release_mmap_pages()` inside `spawn_blocking` after `run_walk_ffn` returns |
-| `crates/larql-cli/src/main.rs` | Passthrough of `--max-gate-cache-layers` / `--release-mmap-after-request` to `larql-server` |
+| File                                         | Role                                                                                                  |
+|----------------------------------------------|-------------------------------------------------------------------------------------------------------|
+| `crates/larql-vindex/src/index/core.rs`      | New fields: `gate_cache_lru`, `gate_cache_max_layers`                                                 |
+| `crates/larql-vindex/src/index/gate.rs`      | `set_gate_cache_max_layers`, `touch_gate_cache_lru`, wired into `resolve_gate` + `gate_knn_mmap_fast` |
+| `crates/larql-vindex/src/index/accessors.rs` | `release_mmap_pages` (calls `unchecked_advise(DontNeed)` on every owned mmap)                         |
+| `crates/larql-server/src/main.rs`            | CLI flags, skips `warmup()` under `--ffn-only`, wires `set_gate_cache_max_layers` on load             |
+| `crates/larql-server/src/state.rs`           | `LoadedModel.release_mmap_after_request` field                                                        |
+| `crates/larql-server/src/routes/walk_ffn.rs` | Calls `release_mmap_pages()` inside `spawn_blocking` after `run_walk_ffn` returns                     |
+| `crates/larql-cli/src/main.rs`               | Passthrough of `--max-gate-cache-layers` / `--release-mmap-after-request` to `larql-server`           |
 
 ---
 

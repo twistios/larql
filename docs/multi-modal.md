@@ -25,14 +25,14 @@ non-text modality into a decoder.
 
 ## TL;DR
 
-| Family               | Vision encoder | Connector            | Integration pattern        | Position scheme        |
-| -------------------- | -------------- | -------------------- | -------------------------- | ---------------------- |
-| Gemma 3 (4B/12B/27B) | SigLIP         | Linear projection    | **Embed-splice** (256/img) | Sequential, 1D RoPE    |
-| Gemma 4 (audio)      | USM-like       | Linear projection    | Embed-splice               | Sequential, 1D RoPE    |
-| Granite Vision 3.2   | SigLIP2        | 2-layer MLP (GELU)   | **Embed-splice** (per-tile)| Sequential, 1D RoPE    |
-| Qwen2-VL / 2.5-VL    | ViT (custom)   | MLP                  | **Embed-splice** (dynamic) | **M-RoPE** (t, h, w)   |
-| Qwen2-Audio          | Whisper        | Linear               | Embed-splice               | Sequential, 1D RoPE    |
-| Llama 3.2 Vision     | ViT-H          | (none — cross-attn)  | **Cross-attention layers** | LM stays text-position |
+| Family               | Vision encoder | Connector           | Integration pattern         | Position scheme        |
+|----------------------|----------------|---------------------|-----------------------------|------------------------|
+| Gemma 3 (4B/12B/27B) | SigLIP         | Linear projection   | **Embed-splice** (256/img)  | Sequential, 1D RoPE    |
+| Gemma 4 (audio)      | USM-like       | Linear projection   | Embed-splice                | Sequential, 1D RoPE    |
+| Granite Vision 3.2   | SigLIP2        | 2-layer MLP (GELU)  | **Embed-splice** (per-tile) | Sequential, 1D RoPE    |
+| Qwen2-VL / 2.5-VL    | ViT (custom)   | MLP                 | **Embed-splice** (dynamic)  | **M-RoPE** (t, h, w)   |
+| Qwen2-Audio          | Whisper        | Linear              | Embed-splice                | Sequential, 1D RoPE    |
+| Llama 3.2 Vision     | ViT-H          | (none — cross-attn) | **Cross-attention layers**  | LM stays text-position |
 
 Three integration patterns fall out:
 
@@ -366,10 +366,10 @@ multi-chunk plan upstream from CLI / chat template.
 
 ## Two seams, recap
 
-| Seam                      | Where                                                                  | Why it changes                       |
-| ------------------------- | ---------------------------------------------------------------------- | ------------------------------------ |
-| **Embedding boundary**    | `forward/trace.rs:33`, `forward/embed.rs:11`                           | Multi-source embeddings; placeholder splicing. |
-| **Position encoding**     | `forward/rope.rs` (everywhere RoPE is applied)                         | Qwen-VL M-RoPE — positions become tuples. |
+| Seam                   | Where                                          | Why it changes                                 |
+|------------------------|------------------------------------------------|------------------------------------------------|
+| **Embedding boundary** | `forward/trace.rs:33`, `forward/embed.rs:11`   | Multi-source embeddings; placeholder splicing. |
+| **Position encoding**  | `forward/rope.rs` (everywhere RoPE is applied) | Qwen-VL M-RoPE — positions become tuples.      |
 
 vindex, layer graph, KV cache shape, lm_head, sampler — all unchanged.
 
@@ -454,17 +454,17 @@ boundary is at `prefill_from_hidden()`, which receives the fully-spliced
 The existing Metal shader inventory in `crates/larql-compute-metal/src/shaders/`
 already covers most of the SigLIP/SigLIP2 encoder pipeline:
 
-| Encoder op | Existing shader | Gap |
-| --- | --- | --- |
-| Patchify (Conv2D as matmul) | `sgemm` / `sgemm_transb` | None — reshape + matmul |
-| Position embedding add | Element-wise add | Trivial |
-| LayerNorm (scale + bias) | `layer_norm` | None |
-| Biased QKV projections | `sgemm` + bias add | None |
-| Bidirectional attention | `causal_attention` | **Mask removal** — existing shader applies triangular mask; encoder needs the same GEMM sequence minus the mask |
-| Output projection | `sgemm` + bias add | None |
-| GELU activation | `activation` (gelu_tanh) | None for SigLIP; SiLU variant may be needed for some SigLIP2 configs |
-| MLP (fc1 → act → fc2) | `sgemm` + activation + `sgemm` | None |
-| Post-LayerNorm | `layer_norm` | None |
+| Encoder op                  | Existing shader                | Gap                                                                                                             |
+|-----------------------------|--------------------------------|-----------------------------------------------------------------------------------------------------------------|
+| Patchify (Conv2D as matmul) | `sgemm` / `sgemm_transb`       | None — reshape + matmul                                                                                         |
+| Position embedding add      | Element-wise add               | Trivial                                                                                                         |
+| LayerNorm (scale + bias)    | `layer_norm`                   | None                                                                                                            |
+| Biased QKV projections      | `sgemm` + bias add             | None                                                                                                            |
+| Bidirectional attention     | `causal_attention`             | **Mask removal** — existing shader applies triangular mask; encoder needs the same GEMM sequence minus the mask |
+| Output projection           | `sgemm` + bias add             | None                                                                                                            |
+| GELU activation             | `activation` (gelu_tanh)       | None for SigLIP; SiLU variant may be needed for some SigLIP2 configs                                            |
+| MLP (fc1 → act → fc2)       | `sgemm` + activation + `sgemm` | None                                                                                                            |
+| Post-LayerNorm              | `layer_norm`                   | None                                                                                                            |
 
 **Single structural gap:** bidirectional attention. The current
 `causal_attention.rs` shader applies `if col > row { -inf }` before
@@ -474,10 +474,10 @@ architecture.
 
 ### Memory budget
 
-| Encoder | Params | f32 | f16 |
-| --- | --- | --- | --- |
-| SigLIP (Gemma 3 4B) | ~400M | ~1.6 GB | ~800 MB |
-| SigLIP2 (Granite Vision) | ~400M | ~1.6 GB | ~800 MB |
+| Encoder                  | Params | f32     | f16     |
+|--------------------------|--------|---------|---------|
+| SigLIP (Gemma 3 4B)      | ~400M  | ~1.6 GB | ~800 MB |
+| SigLIP2 (Granite Vision) | ~400M  | ~1.6 GB | ~800 MB |
 
 Both fit comfortably in Apple Silicon unified memory alongside the LM
 weights. Quantization of encoder weights is deferred (v1 runs f16/f32

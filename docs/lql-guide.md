@@ -269,11 +269,11 @@ STATS;
 
 DESCRIBE groups features into three bands based on the model's layer structure:
 
-| Band | Gemma 3 4B | Llama 3 8B | What it contains |
-|------|-----------|-----------|-----------------|
-| Syntax | L0-13 | L0-12 | Morphological, syntactic, code |
-| Knowledge | L14-27 | L13-25 | Factual relations (default view) |
-| Output | L28-33 | L26-31 | Formatting, token selection |
+| Band      | Gemma 3 4B | Llama 3 8B | What it contains                 |
+|-----------|------------|------------|----------------------------------|
+| Syntax    | L0-13      | L0-12      | Morphological, syntactic, code   |
+| Knowledge | L14-27     | L13-25     | Factual relations (default view) |
+| Output    | L28-33     | L26-31     | Formatting, token selection      |
 
 ```sql
 DESCRIBE "France";              -- Verbose: relation labels, also-tokens, layer ranges (default)
@@ -288,15 +288,15 @@ Bands are model-specific — computed automatically during EXTRACT from known ar
 
 ## Statement Reference
 
-| Category | Statements |
-|----------|-----------|
-| Lifecycle | EXTRACT, COMPILE, DIFF, USE |
-| Browse | WALK, DESCRIBE, SELECT, EXPLAIN WALK |
-| Inference | INFER, EXPLAIN INFER |
-| Trace | TRACE (with FOR, DECOMPOSE, LAYERS, POSITIONS, SAVE) |
-| Mutation | INSERT, DELETE, UPDATE, MERGE |
-| Patches | BEGIN PATCH, SAVE PATCH, APPLY PATCH, SHOW PATCHES, REMOVE PATCH |
-| Introspection | SHOW RELATIONS/LAYERS/FEATURES/MODELS/PATCHES, STATS |
-| Pipe | `\|>` chains two statements |
+| Category      | Statements                                                       |
+|---------------|------------------------------------------------------------------|
+| Lifecycle     | EXTRACT, COMPILE, DIFF, USE                                      |
+| Browse        | WALK, DESCRIBE, SELECT, EXPLAIN WALK                             |
+| Inference     | INFER, EXPLAIN INFER                                             |
+| Trace         | TRACE (with FOR, DECOMPOSE, LAYERS, POSITIONS, SAVE)             |
+| Mutation      | INSERT, DELETE, UPDATE, MERGE                                    |
+| Patches       | BEGIN PATCH, SAVE PATCH, APPLY PATCH, SHOW PATCHES, REMOVE PATCH |
+| Introspection | SHOW RELATIONS/LAYERS/FEATURES/MODELS/PATCHES, STATS             |
+| Pipe          | `\|>` chains two statements                                      |
 
 See [the LQL specification](../crates/larql-lql/docs/spec.md) for the full language specification.
