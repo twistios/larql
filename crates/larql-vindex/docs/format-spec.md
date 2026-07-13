@@ -23,11 +23,11 @@ Existing model formats — safetensors, GGUF, ONNX — store all weights togethe
 
 Vindex separates weights by what you want to do with the model:
 
-| Intent | Weights needed | Size (4B, f16) | What you skip |
-|--------|---------------|-----------------|---------------|
-| Browse knowledge | Gate + embeddings + down metadata | ~3 GB | Attention, up projections, norms, LM head |
-| Run inference | + attention weights + norms | ~6 GB | Up projections, LM head |
-| Edit and recompile | All weights | ~10 GB | Nothing |
+| Intent             | Weights needed                    | Size (4B, f16) | What you skip                             |
+|--------------------|-----------------------------------|----------------|-------------------------------------------|
+| Browse knowledge   | Gate + embeddings + down metadata | ~3 GB          | Attention, up projections, norms, LM head |
+| Run inference      | + attention weights + norms       | ~6 GB          | Up projections, LM head                   |
+| Edit and recompile | All weights                       | ~10 GB         | Nothing                                   |
 
 This separation exists because these operations touch fundamentally different weight matrices. Querying what a model knows about France uses gate vectors and embeddings — a dot product against pre-extracted rows. It never touches attention weights. Running inference additionally needs attention for token routing. Recompiling needs everything to reconstruct the full safetensors.
 
@@ -39,16 +39,16 @@ The vindex format is model-agnostic. It stores weights by function (gate, down, 
 
 ### Supported model families
 
-| Family | Models | FFN Type | Notes |
-|--------|--------|----------|-------|
-| Gemma | Gemma 2/3/4 (2B-31B) | Gated (gate + up + down) | GeGLU activation, GQA attention; Gemma 4 adds per-layer head_dim, QK-norm, partial RoPE, cross-layer KV sharing (E2B), Per-Layer Embeddings (E2B), double-wide MLP (E2B) |
-| Llama | Llama 2/3 (7B-405B) | Gated (gate + up + down) | SiLU activation, GQA attention |
-| Mistral | Mistral 7B | Gated (gate + up + down) | Sliding window attention |
-| Mixtral | Mixtral 8x7B, 8x22B | MoE (8 experts × gate + up + down) | Sparse MoE, top-2 routing |
-| Qwen | Qwen 2/2.5 (0.5B-72B) | Gated (gate + up + down) | SiLU activation |
-| Phi | Phi 2/3 (2.7B-14B) | Gated (gate + up + down) | Partial attention |
-| DeepSeek | DeepSeek V2/V3 | MoE (shared + routed experts) | Fine-grained MoE, shared expert |
-| GPT-2 | GPT-2 (117M-1.5B) | Dense (W_in + W_out) | Soft gating via GELU |
+| Family   | Models                | FFN Type                           | Notes                                                                                                                                                                    |
+|----------|-----------------------|------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Gemma    | Gemma 2/3/4 (2B-31B)  | Gated (gate + up + down)           | GeGLU activation, GQA attention; Gemma 4 adds per-layer head_dim, QK-norm, partial RoPE, cross-layer KV sharing (E2B), Per-Layer Embeddings (E2B), double-wide MLP (E2B) |
+| Llama    | Llama 2/3 (7B-405B)   | Gated (gate + up + down)           | SiLU activation, GQA attention                                                                                                                                           |
+| Mistral  | Mistral 7B            | Gated (gate + up + down)           | Sliding window attention                                                                                                                                                 |
+| Mixtral  | Mixtral 8x7B, 8x22B   | MoE (8 experts × gate + up + down) | Sparse MoE, top-2 routing                                                                                                                                                |
+| Qwen     | Qwen 2/2.5 (0.5B-72B) | Gated (gate + up + down)           | SiLU activation                                                                                                                                                          |
+| Phi      | Phi 2/3 (2.7B-14B)    | Gated (gate + up + down)           | Partial attention                                                                                                                                                        |
+| DeepSeek | DeepSeek V2/V3        | MoE (shared + routed experts)      | Fine-grained MoE, shared expert                                                                                                                                          |
+| GPT-2    | GPT-2 (117M-1.5B)     | Dense (W_in + W_out)               | Soft gating via GELU                                                                                                                                                     |
 
 ### MoE layout
 
@@ -148,11 +148,11 @@ Gate vectors are NOT duplicated — `gate_vectors.bin` IS the W_gate weight matr
 
 A vindex can be built at three levels, each adding more weight components:
 
-| Level | LQL Syntax | Components | Size (f16, 4B) | Enables |
-|-------|-----------|------------|-----------------|---------|
-| Browse | `EXTRACT MODEL ... INTO ...` | gate + embed + down_meta | ~3 GB | WALK, DESCRIBE, SELECT |
-| Inference | `... WITH INFERENCE` | + attn_weights + norms | ~6 GB | + INFER, EXPLAIN INFER |
-| All | `... WITH ALL` | + up, down, lm_head | ~10 GB | + COMPILE |
+| Level     | LQL Syntax                   | Components               | Size (f16, 4B) | Enables                |
+|-----------|------------------------------|--------------------------|----------------|------------------------|
+| Browse    | `EXTRACT MODEL ... INTO ...` | gate + embed + down_meta | ~3 GB          | WALK, DESCRIBE, SELECT |
+| Inference | `... WITH INFERENCE`         | + attn_weights + norms   | ~6 GB          | + INFER, EXPLAIN INFER |
+| All       | `... WITH ALL`               | + up, down, lm_head      | ~10 GB         | + COMPILE              |
 
 ```rust
 pub enum ExtractLevel {
@@ -273,13 +273,13 @@ JSON array mapping tensor keys to byte offsets in the weight files.
 ]
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `key` | string | Tensor key (architecture-specific naming) |
-| `kind` | string | `"tensor"` (2D f32/f16), `"vector"` (1D f32/f16), `"tensor_q4k"` (2D Q4_K 144-byte blocks, used by `lm_head_q4.bin`), or `"tensor_f16"` (2D IEEE half, used by `ple_weights.bin`) |
-| `shape` | [usize] | Dimensions |
-| `offset` | u64 | Byte offset into the relevant weight file |
-| `length` | u64 | Byte length |
+| Field    | Type    | Description                                                                                                                                                                       |
+|----------|---------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `key`    | string  | Tensor key (architecture-specific naming)                                                                                                                                         |
+| `kind`   | string  | `"tensor"` (2D f32/f16), `"vector"` (1D f32/f16), `"tensor_q4k"` (2D Q4_K 144-byte blocks, used by `lm_head_q4.bin`), or `"tensor_f16"` (2D IEEE half, used by `ple_weights.bin`) |
+| `shape`  | [usize] | Dimensions                                                                                                                                                                        |
+| `offset` | u64     | Byte offset into the relevant weight file                                                                                                                                         |
+| `length` | u64     | Byte length                                                                                                                                                                       |
 
 `tensor_q4k` and `tensor_f16` entries are decoded to f32 at load time
 and surface in `ModelWeights.tensors`, so the downstream forward code
@@ -301,7 +301,7 @@ sub-blocks of 32 elements each, matching the OCP MXFP4 sub-block size.
 **FP4 block layout — 137 bytes per 256 elements:**
 
 | Offset  | Size  | Contents                                    |
-| ------- | ----- | ------------------------------------------- |
+|---------|-------|---------------------------------------------|
 | 0–127   | 128 B | 256 FP4 E2M1 values, nibble-packed (2/byte) |
 | 128–135 | 8 B   | 8 FP8 E4M3 sub-block scales                 |
 | 136     | 1 B   | 1 FP8 E4M3 block scale                      |
@@ -311,10 +311,10 @@ packing: lower nibble = even-indexed element of each pair.
 
 **FP8 block layout — 257 bytes per 256 elements:**
 
-| Offset | Size  | Contents                      |
-| ------ | ----- | ----------------------------- |
-| 0–255  | 256 B | 256 FP8 E4M3 values           |
-| 256    | 1 B   | 1 FP8 E4M3 block scale        |
+| Offset | Size  | Contents               |
+|--------|-------|------------------------|
+| 0–255  | 256 B | 256 FP8 E4M3 values    |
+| 256    | 1 B   | 1 FP8 E4M3 block scale |
 
 Dequantisation: `x = fp8_value × block_scale`. No sub-block scales — E4M3's
 dynamic range (±448) absorbs typical FFN weight magnitude spread directly.
@@ -330,12 +330,12 @@ legacy f16 layout.
 
 **Compression vs F16 (4B, 3 projections):**
 
-| Configuration                          | Per-feature | Compression |
-| -------------------------------------- | -----------:| -----------:|
-| F16 baseline (3 × 2560 × 2 bytes)      | 15,360 B    | 1.00×       |
-| Uniform FP4 (all 3 projections)        | 4,110 B     | **3.74×**   |
-| FP4 gate/up + FP8 down (default)       | 5,310 B     | **2.89×**   |
-| FP4 gate/up + F16 down (conservative)  | 7,860 B     | 1.95×       |
+| Configuration                         | Per-feature | Compression |
+|---------------------------------------|------------:|------------:|
+| F16 baseline (3 × 2560 × 2 bytes)     |    15,360 B |       1.00× |
+| Uniform FP4 (all 3 projections)       |     4,110 B |   **3.74×** |
+| FP4 gate/up + FP8 down (default)      |     5,310 B |   **2.89×** |
+| FP4 gate/up + F16 down (conservative) |     7,860 B |       1.95× |
 
 **Policy default.** Option B (`{gate: fp4, up: fp4, down: fp8}`). The
 `down` projection carries FFN's heaviest-tailed per-feature magnitude
@@ -463,10 +463,10 @@ One GPU command buffer per decode step for both dense and MoE paths.
 
 **File sizes (Gemma 4 26B A4B, Q4_K).**
 
-| Old format | Size | New format | Size |
-|---|---|---|---|
-| `experts_packed.bin` (BF16) | 43 GB | `layers/*.weights` (Q4_K) | ~24 GB |
-| `interleaved_q4k.bin` (dense) | — | `layers/*.weights` (Q4_K) | same bytes, per-layer |
+| Old format                    | Size  | New format                | Size                  |
+|-------------------------------|-------|---------------------------|-----------------------|
+| `experts_packed.bin` (BF16)   | 43 GB | `layers/*.weights` (Q4_K) | ~24 GB                |
+| `interleaved_q4k.bin` (dense) | —     | `layers/*.weights` (Q4_K) | same bytes, per-layer |
 
 ---
 
@@ -585,13 +585,13 @@ sniff filenames. Adding this field does **not** bump the parent
 
 **`layer_bands`** — Model-specific boundaries for DESCRIBE layer grouping. Per-family values auto-detected during EXTRACT:
 
-| Family | Syntax | Knowledge | Output |
-|--------|--------|-----------|--------|
-| Gemma 3 (34L) | 0-13 | 14-27 | 28-33 |
-| Llama 3 (32L) | 0-7 | 8-24 | 25-31 |
-| Qwen 2.5 (28L) | 0-7 | 8-21 | 22-27 |
-| Mixtral (32L) | 0-7 | 8-24 | 25-31 |
-| GPT-2 (12L) | 0-3 | 4-9 | 10-11 |
+| Family         | Syntax | Knowledge | Output |
+|----------------|--------|-----------|--------|
+| Gemma 3 (34L)  | 0-13   | 14-27     | 28-33  |
+| Llama 3 (32L)  | 0-7    | 8-24      | 25-31  |
+| Qwen 2.5 (28L) | 0-7    | 8-21      | 22-27  |
+| Mixtral (32L)  | 0-7    | 8-24      | 25-31  |
+| GPT-2 (12L)    | 0-3    | 4-9       | 10-11  |
 
 **`layers`** — Per-layer byte offset and length into `gate_vectors.bin`. For MoE models, includes `num_experts` and `num_features_per_expert`.
 
@@ -647,8 +647,8 @@ effectively identical to f32 — top-K ranking is preserved.
 
 | Dtype | Bytes/float | gate_vectors (4B) | embeddings (4B) | Total browse |
 |-------|-------------|-------------------|-----------------|--------------|
-| f32 | 4 | 3.32 GB | 2.50 GB | ~6 GB |
-| f16 | 2 | 1.66 GB | 1.25 GB | ~3 GB |
+| f32   | 4           | 3.32 GB           | 2.50 GB         | ~6 GB        |
+| f16   | 2           | 1.66 GB           | 1.25 GB         | ~3 GB        |
 
 **`fp4.projections.{gate|up|down}.precision`** (optional, per-projection):
 overrides `dtype` for the FFN projections when the `fp4` field is set.
@@ -678,35 +678,35 @@ FP4/FP8 data is dequantised to f32 lazily at walk time — the block codec
 
 ### f32
 
-| File | Size | Description |
-|------|------|-------------|
-| gate_vectors.bin | 3.32 GB | 34 × 10,240 × 2,560 × 4 bytes |
-| embeddings.bin | 2.50 GB | 262,144 × 2,560 × 4 bytes |
-| down_meta.bin | ~2 MB | Binary token IDs + scores |
-| attn_weights.bin | ~6 GB | Q, K, V, O per layer |
-| up_weights.bin | ~3.4 GB | W_up per layer |
-| down_weights.bin | ~3.4 GB | W_down per layer |
-| norms.bin | ~1 MB | LayerNorm parameters |
-| lm_head.bin | ~2.6 GB | Output projection |
-| **Browse total** | **~6 GB** | |
-| **Inference total** | **~12 GB** | |
-| **All total** | **~18 GB** | |
+| File                | Size       | Description                   |
+|---------------------|------------|-------------------------------|
+| gate_vectors.bin    | 3.32 GB    | 34 × 10,240 × 2,560 × 4 bytes |
+| embeddings.bin      | 2.50 GB    | 262,144 × 2,560 × 4 bytes     |
+| down_meta.bin       | ~2 MB      | Binary token IDs + scores     |
+| attn_weights.bin    | ~6 GB      | Q, K, V, O per layer          |
+| up_weights.bin      | ~3.4 GB    | W_up per layer                |
+| down_weights.bin    | ~3.4 GB    | W_down per layer              |
+| norms.bin           | ~1 MB      | LayerNorm parameters          |
+| lm_head.bin         | ~2.6 GB    | Output projection             |
+| **Browse total**    | **~6 GB**  |                               |
+| **Inference total** | **~12 GB** |                               |
+| **All total**       | **~18 GB** |                               |
 
 ### f16
 
-| File | Size | Description |
-|------|------|-------------|
-| gate_vectors.bin | 1.66 GB | Half precision |
-| embeddings.bin | 1.25 GB | Half precision |
-| down_meta.bin | ~2 MB | Same (integer token IDs) |
-| attn_weights.bin | ~3 GB | Half precision |
-| up_weights.bin | ~1.7 GB | Half precision |
-| down_weights.bin | ~1.7 GB | Half precision |
-| norms.bin | ~1 MB | Small regardless |
-| lm_head.bin | ~1.3 GB | Half precision |
-| **Browse total** | **~3 GB** | |
-| **Inference total** | **~6 GB** | |
-| **All total** | **~10 GB** | |
+| File                | Size       | Description              |
+|---------------------|------------|--------------------------|
+| gate_vectors.bin    | 1.66 GB    | Half precision           |
+| embeddings.bin      | 1.25 GB    | Half precision           |
+| down_meta.bin       | ~2 MB      | Same (integer token IDs) |
+| attn_weights.bin    | ~3 GB      | Half precision           |
+| up_weights.bin      | ~1.7 GB    | Half precision           |
+| down_weights.bin    | ~1.7 GB    | Half precision           |
+| norms.bin           | ~1 MB      | Small regardless         |
+| lm_head.bin         | ~1.3 GB    | Half precision           |
+| **Browse total**    | **~3 GB**  |                          |
+| **Inference total** | **~6 GB**  |                          |
+| **All total**       | **~10 GB** |                          |
 
 ### FP4 + FP8 (Option B default, exp 26)
 
@@ -714,31 +714,31 @@ Gate and up in FP4, down in FP8. Inference-level FFN storage only — rest
 of the vindex (embeddings, attn, lm_head) stays at the `dtype` setting
 (typically f16).
 
-| File | Size | Description |
-|------|------|-------------|
-| gate_vectors_fp4.bin | ~0.48 GB | 34 × 10,240 × 1,370 B per feature |
-| up_features_fp4.bin | ~0.48 GB | Same layout as gate |
-| down_features_fp8.bin | ~0.89 GB | 34 × 10,240 × 2,570 B per feature |
-| fp4_compliance.json | <100 KB | Extract-time Q1 scan |
-| **FFN total (vs ~5.0 GB F16)** | **~1.85 GB (2.89× compression)** | |
+| File                           | Size                             | Description                       |
+|--------------------------------|----------------------------------|-----------------------------------|
+| gate_vectors_fp4.bin           | ~0.48 GB                         | 34 × 10,240 × 1,370 B per feature |
+| up_features_fp4.bin            | ~0.48 GB                         | Same layout as gate               |
+| down_features_fp8.bin          | ~0.89 GB                         | 34 × 10,240 × 2,570 B per feature |
+| fp4_compliance.json            | <100 KB                          | Extract-time Q1 scan              |
+| **FFN total (vs ~5.0 GB F16)** | **~1.85 GB (2.89× compression)** |                                   |
 
 At 31B scale (Gemma 4 31B, hidden=5376, intermediate=21504, 60 layers):
 
-| Config | FFN storage | vs F16 FFN (41.6 GB) |
-|--------|-------------|----------------------|
-| F16 baseline | 41.6 GB | 1.00× |
-| Uniform FP4 (Option A) | 11.1 GB | **3.74×** |
-| FP4 gate/up + FP8 down (Option B, default) | 14.4 GB | **2.89×** |
-| FP4 gate/up + F16 down (Option C) | 21.2 GB | 1.95× |
+| Config                                     | FFN storage | vs F16 FFN (41.6 GB) |
+|--------------------------------------------|-------------|----------------------|
+| F16 baseline                               | 41.6 GB     | 1.00×                |
+| Uniform FP4 (Option A)                     | 11.1 GB     | **3.74×**            |
+| FP4 gate/up + FP8 down (Option B, default) | 14.4 GB     | **2.89×**            |
+| FP4 gate/up + F16 down (Option C)          | 21.2 GB     | 1.95×                |
 
 ---
 
 ## 10. Version History
 
-| Version | Changes |
-|---------|---------|
-| 1 | Original: gate + embed + down_meta JSONL + model_weights.bin |
-| 2 | Added extract_level, layer_bands, model_config, source, checksums, dtype. Binary down_meta. Split weight files (attn, up, down, norms, lm_head). f16 storage. Q4_K/Q6_K quantisation (interleaved_q4k.bin + manifest). |
+| Version | Changes                                                                                                                                                                                                                |
+|---------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1       | Original: gate + embed + down_meta JSONL + model_weights.bin                                                                                                                                                           |
+| 2       | Added extract_level, layer_bands, model_config, source, checksums, dtype. Binary down_meta. Split weight files (attn, up, down, norms, lm_head). f16 storage. Q4_K/Q6_K quantisation (interleaved_q4k.bin + manifest). |
 
 **FP4/FP8 storage is an additive extension, not a version bump.** Version
 2 vindexes can optionally carry an `fp4` field in `index.json` with
