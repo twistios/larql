@@ -345,11 +345,11 @@ gemma3-4b.vindex/
 
 Three extraction levels:
 
-| Level | CLI Flag | LQL Syntax | Size (f16) | Enables |
-|-------|----------|-----------|-----------|---------|
-| Browse | `--level browse` (default) | `EXTRACT MODEL ... INTO ...` | ~3 GB | DESCRIBE, WALK, SELECT |
-| Inference | `--level inference` | `... WITH INFERENCE` | ~6 GB | + INFER |
-| All | `--level all` | `... WITH ALL` | ~10 GB | + COMPILE |
+| Level     | CLI Flag                   | LQL Syntax                   | Size (f16) | Enables                |
+|-----------|----------------------------|------------------------------|------------|------------------------|
+| Browse    | `--level browse` (default) | `EXTRACT MODEL ... INTO ...` | ~3 GB      | DESCRIBE, WALK, SELECT |
+| Inference | `--level inference`        | `... WITH INFERENCE`         | ~6 GB      | + INFER                |
+| All       | `--level all`              | `... WITH ALL`               | ~10 GB     | + COMPILE              |
 
 Add `--f16` to halve file sizes with negligible accuracy loss.
 
@@ -418,17 +418,17 @@ derivative_state, correctness_contract)` — the same compression
 ratio with K/V slotted canonical vs derivative gives a 13% tok/s
 delta on Metal, which the per-engine bench numbers confirm.
 
-| Engine | Canonical state | K/V role | Contract | Bench (tok/s) |
-|---|---|---|---|---:|
-| `standard` | K/V tensors | canonical | exact logits | 97.6 |
-| `no-cache` | tokens | recomputed | exact logits | (debug) |
-| `markov-rs` | residual stream | derivative | exact logits under arch contract | **98.0** |
-| `markov-rs-codec` | compressed residuals | derivative | bounded KL | **98.1** |
-| `boundary-per-layer` | per-layer codec residuals | derivative | bounded KL per-layer | **98.7** |
-| `unlimited-context` | KV (within window) + checkpoints | derivative | exact within window | 94.2 |
-| `turbo-quant` | quantised K/V | canonical (destructive) | bounded KL | 85.0 |
-| `boundary-kv` | K/V + boundary frames | canonical | exact logits | composes `standard` |
-| `apollo` | boundary retrieval store | n/a (retrieval) | task-level | orthogonal |
+| Engine               | Canonical state                  | K/V role                | Contract                         |       Bench (tok/s) |
+|----------------------|----------------------------------|-------------------------|----------------------------------|--------------------:|
+| `standard`           | K/V tensors                      | canonical               | exact logits                     |                97.6 |
+| `no-cache`           | tokens                           | recomputed              | exact logits                     |             (debug) |
+| `markov-rs`          | residual stream                  | derivative              | exact logits under arch contract |            **98.0** |
+| `markov-rs-codec`    | compressed residuals             | derivative              | bounded KL                       |            **98.1** |
+| `boundary-per-layer` | per-layer codec residuals        | derivative              | bounded KL per-layer             |            **98.7** |
+| `unlimited-context`  | KV (within window) + checkpoints | derivative              | exact within window              |                94.2 |
+| `turbo-quant`        | quantised K/V                    | canonical (destructive) | bounded KL                       |                85.0 |
+| `boundary-kv`        | K/V + boundary frames            | canonical               | exact logits                     | composes `standard` |
+| `apollo`             | boundary retrieval store         | n/a (retrieval)         | task-level                       |          orthogonal |
 
 Gemma 3 4B Q4K, Metal, M3 Max, 50 decode tokens, W10 default-on
 (2026-05-21).
@@ -465,7 +465,7 @@ LQL parser and executor. 20+ statement types across 5 categories:
 
 ## LQL Reference
 
-See [docs/specs/lql-spec.md](docs/specs/lql-spec.md) for the full language specification and [docs/lql-guide.md](docs/lql-guide.md) for a quick start guide.
+See [crates/larql-lql/docs/spec.md](crates/larql-lql/docs/spec.md) for the full language specification and [docs/lql-guide.md](docs/lql-guide.md) for a quick start guide.
 
 ### Key Statements
 
@@ -567,19 +567,19 @@ larql build . --output custom.vindex   # custom output path
 
 Input formats: **safetensors** (HuggingFace), **GGUF** (llama.cpp, dequantized to f32), **MLX** (Apple, same safetensors layout).
 
-| Family | Models | FFN Type |
-|--------|--------|----------|
-| Gemma | Gemma 2/3/4 (2B-31B) | Gated (GeGLU) |
-| Llama | Llama 2/3 (7B-405B) | Gated (SiLU) |
-| Mistral | Mistral 7B | Gated (SiLU) |
-| Mixtral | Mixtral 8x7B, 8x22B | MoE (8 experts) |
-| Qwen | Qwen 2/2.5 (0.5B-72B) | Gated (SiLU) |
-| Phi | Phi 2/3 (2.7B-14B) | Gated |
-| DeepSeek | DeepSeek V2/V3 | MoE (shared + routed) |
-| GPT-OSS | GPT-OSS-120B | MoE (128 experts, MXFP4) |
-| GPT-2 | GPT-2 (117M-1.5B) | Standard (GELU-tanh, vindex extraction only) |
+| Family   | Models                | FFN Type                                     |
+|----------|-----------------------|----------------------------------------------|
+| Gemma    | Gemma 2/3/4 (2B-31B)  | Gated (GeGLU)                                |
+| Llama    | Llama 2/3 (7B-405B)   | Gated (SiLU)                                 |
+| Mistral  | Mistral 7B            | Gated (SiLU)                                 |
+| Mixtral  | Mixtral 8x7B, 8x22B   | MoE (8 experts)                              |
+| Qwen     | Qwen 2/2.5 (0.5B-72B) | Gated (SiLU)                                 |
+| Phi      | Phi 2/3 (2.7B-14B)    | Gated                                        |
+| DeepSeek | DeepSeek V2/V3        | MoE (shared + routed)                        |
+| GPT-OSS  | GPT-OSS-120B          | MoE (128 experts, MXFP4)                     |
+| GPT-2    | GPT-2 (117M-1.5B)     | Standard (GELU-tanh, vindex extraction only) |
 
-Dense and full-precision MoE models support all operations (DESCRIBE, WALK, INFER). MXFP4-quantized MoE models (GPT-OSS) can be extracted and served but DESCRIBE/WALK produce noisy results due to 4-bit weight precision — use INFER for accurate knowledge queries. See [operations spec](docs/specs/vindex-operations-spec.md) for details.
+Dense and full-precision MoE models support all operations (DESCRIBE, WALK, INFER). MXFP4-quantized MoE models (GPT-OSS) can be extracted and served but DESCRIBE/WALK produce noisy results due to 4-bit weight precision — use INFER for accurate knowledge queries. See [operations spec](crates/larql-vindex/docs/operations-spec.md) for details.
 
 GPT-2 status: GGUF conversion (`larql convert gguf-to-vindex`) lands canonical
 weights — the loader transparently re-orients non-standard FFN layouts, splits
@@ -593,33 +593,33 @@ extraction-only flows (DESCRIBE, KNN, vindex publish) work today.
 
 ### Vindex Operations
 
-| Operation | Latency |
-|---|---|
+| Operation            | Latency |
+|----------------------|---------|
 | Gate KNN (per layer) | 0.008ms |
-| Walk (34 layers) | 0.3ms |
-| Feature lookup | <1ns |
-| Save gates (8 MB) | 1.1ms |
-| Load vindex | 8ms |
-| Mutate (meta + gate) | 617ns |
+| Walk (34 layers)     | 0.3ms   |
+| Feature lookup       | <1ns    |
+| Save gates (8 MB)    | 1.1ms   |
+| Load vindex          | 8ms     |
+| Mutate (meta + gate) | 617ns   |
 
 ### Inference Engine (Gemma 3 4B, Apple Silicon M3 Max)
 
-| Operation | Latency | tok/s |
-|---|---|---|
-| **GPU Q4K decode (Metal, 34L, KV cache)** | **11.4ms** | **88.1** |
-| **CPU Q4K decode (StandardEngine, KV cache, 8 threads)** | **~38ms** | **~26.4** |
-| Walk prediction (CPU, no attention) | 33ms | 30 |
-| INFER walk (CPU, with attention, mmap FFN) | 517ms | 1.9 |
-| INFER dense (CPU, all matmul) | 535ms | 1.9 |
-| DESCRIBE (knowledge browse) | 33ms | — |
+| Operation                                                | Latency    | tok/s     |
+|----------------------------------------------------------|------------|-----------|
+| **GPU Q4K decode (Metal, 34L, KV cache)**                | **11.4ms** | **88.1**  |
+| **CPU Q4K decode (StandardEngine, KV cache, 8 threads)** | **~38ms**  | **~26.4** |
+| Walk prediction (CPU, no attention)                      | 33ms       | 30        |
+| INFER walk (CPU, with attention, mmap FFN)               | 517ms      | 1.9       |
+| INFER dense (CPU, all matmul)                            | 535ms      | 1.9       |
+| DESCRIBE (knowledge browse)                              | 33ms       | —         |
 
 GPU decode per-stage breakdown (post 2026-05-09 QKV defuse, ADR-016):
 
-| Component | Time | % of total |
-|---|---|---|
-| GPU forward (34 layers, Q4K/Q6K, defused norm+QKV) | 11.40 ms | 86% |
-| LM head (Q4_K production path) | 1.85 ms | 14% |
-| Embed + norm + detokenize | <0.1ms | <1% |
+| Component                                          | Time     | % of total |
+|----------------------------------------------------|----------|------------|
+| GPU forward (34 layers, Q4K/Q6K, defused norm+QKV) | 11.40 ms | 86%        |
+| LM head (Q4_K production path)                     | 1.85 ms  | 14%        |
+| Embed + norm + detokenize                          | <0.1ms   | <1%        |
 
 vs ollama gemma3:4b on the same machine: ~103 tok/s steady → **gap 1.17×**, was 1.18× pre QKV defuse, 1.30× pre 2026-05-02 dispatch fix. Acceptance criterion (~85 tok/s, ~1.16×) effectively met.
 
@@ -631,33 +631,33 @@ vs ollama gemma3:4b on the same machine: ~103 tok/s steady → **gap 1.17×**, w
 
 CPU walk breakdown:
 
-| Component | Time | % of total |
-|---|---|---|
-| Logits (262K vocab gemv) | 221ms | 41% |
-| FFN × 34 layers (walk) | 194ms | 36% |
-| Attention × 34 layers | 84ms | 16% |
+| Component                | Time  | % of total |
+|--------------------------|-------|------------|
+| Logits (262K vocab gemv) | 221ms | 41%        |
+| FFN × 34 layers (walk)   | 194ms | 36%        |
+| Attention × 34 layers    | 84ms  | 16%        |
 
 Walk is **faster than dense** (517ms vs 535ms). GPU Q4K decode is **23× faster** than CPU walk. FFN down projection in walk reads from mmap'd vindex (zero-copy BLAS). Walk only needs ~3.5GB of model weights (attention + embeddings), not 16.6GB. No quantization. See [docs/ffn-graph-layer.md](docs/ffn-graph-layer.md) for architecture and [docs/inference-engine.md](docs/inference-engine.md) for engine details.
 
 ### MoE / grid (Gemma 4 26B A4B, M3 Max)
 
-| Topology | tok/s | Notes |
-|---|---|---|
-| **Local Metal MoE** | **18.9** | Measured 2026-05-04; MoE experts on CPU NEON. |
-| 1-shard CPU/grid (loopback) | 18.3 | NEON Q4_K matvec on shard server, gRPC fan-in |
-| 2-shard CPU/grid (loopback) | 17.3 | Parallel collect + parallel fire (`std::thread::scope` + `rayon::par_iter`) |
-| `LARQL_SKIP_MOE=1` ceiling | 56.8 | Attention + dense FFN only; theoretical max |
+| Topology                    | tok/s    | Notes                                                                       |
+|-----------------------------|----------|-----------------------------------------------------------------------------|
+| **Local Metal MoE**         | **18.9** | Measured 2026-05-04; MoE experts on CPU NEON.                               |
+| 1-shard CPU/grid (loopback) | 18.3     | NEON Q4_K matvec on shard server, gRPC fan-in                               |
+| 2-shard CPU/grid (loopback) | 17.3     | Parallel collect + parallel fire (`std::thread::scope` + `rayon::par_iter`) |
+| `LARQL_SKIP_MOE=1` ceiling  | 56.8     | Attention + dense FFN only; theoretical max                                 |
 
 **Wire format (2026-05-07)**: grid traffic uses f16 by default (50% bandwidth). Set `LARQL_I8_WIRE=1` for i8 symmetric quantisation (75% bandwidth, opt-in). Both are architecture-agnostic — `hidden_size` is read from vindex config at runtime. Per-layer latency is tracked via `HeartbeatMsg.layer_stats` (EMA + p99); the router uses it to route replicated layers to the lowest-latency server. Use `make bench-wire` to measure codec throughput and `make bench-routing` for routing hot-path.
 
 ### Dense remote-FFN (Gemma 4 31B Q4K, M3 Max, localhost)
 
-| Topology | tok/s | Notes |
-|---|---|---|
-| **Remote-FFN batch, Metal GPU server** | **6.5** | `larql bench --ffn URL --ffn-dispatch batch`; `--features metal-experts` on server. 153ms/tok: 92ms attn local + 60ms FFN remote. |
-| Remote-FFN batch, CPU server | 1.6 | Same path, server uses CPU NEON instead of Metal. |
-| Remote-FFN streaming (60 sequential HTTP) | 0.6 | Q8K wire format via `/v1/walk-ffn-q8k`, NEON down projection. |
-| Local Metal | blocked | Heterogeneous attention (L5/L11/…/L59 head_dim=512 vs sliding head_dim=256) — A1-A3 roadmap. Est. ~12-15 tok/s after fix. |
+| Topology                                  | tok/s   | Notes                                                                                                                             |
+|-------------------------------------------|---------|-----------------------------------------------------------------------------------------------------------------------------------|
+| **Remote-FFN batch, Metal GPU server**    | **6.5** | `larql bench --ffn URL --ffn-dispatch batch`; `--features metal-experts` on server. 153ms/tok: 92ms attn local + 60ms FFN remote. |
+| Remote-FFN batch, CPU server              | 1.6     | Same path, server uses CPU NEON instead of Metal.                                                                                 |
+| Remote-FFN streaming (60 sequential HTTP) | 0.6     | Q8K wire format via `/v1/walk-ffn-q8k`, NEON down projection.                                                                     |
+| Local Metal                               | blocked | Heterogeneous attention (L5/L11/…/L59 head_dim=512 vs sliding head_dim=256) — A1-A3 roadmap. Est. ~12-15 tok/s after fix.         |
 
 **Metal GPU FFN server** (`larql serve --ffn-only --features metal-experts`): pre-loads Q4K weight bytes into Metal buffers at startup via zero-copy mmap; dispatches `q4k_ffn_gate_up_8sg` + `geglu_gelu_tanh` + `q4k_matvec` per Q8K batch request — same shaders as local decode. **Build separation required**: `larql-cli` must be built WITHOUT `--features metal-experts` (adding it causes a 10.7 vs 18.9 tok/s regression on Gemma 4 26B-A4B due to Metal pipeline init overhead in the standard decode path). Only the server binary uses that flag.
 
@@ -697,11 +697,11 @@ t.save("trace.bin")            # mmap'd store
 
 ### Tiered Context (infinite context without KV cache)
 
-| Storage | Per window | 370K tokens | vs KV cache |
-|---|---|---|---|
-| Boundary residual | 10 KB | 18.9 MB | 3,100x |
-| Tier 4 int8 (bit-perfect) | 58 KB | 110 MB | 511x |
-| KV cache | ~30 MB | 56,000 MB | 1x |
+| Storage                   | Per window | 370K tokens | vs KV cache |
+|---------------------------|------------|-------------|-------------|
+| Boundary residual         | 10 KB      | 18.9 MB     | 3,100x      |
+| Tier 4 int8 (bit-perfect) | 58 KB      | 110 MB      | 511x        |
+| KV cache                  | ~30 MB     | 56,000 MB   | 1x          |
 
 ```python
 from larql._native import BoundaryWriter, BoundaryStore
@@ -774,45 +774,47 @@ End-to-end walkthrough on synthetic weights (no vindex required):
 cargo run --release -p larql-inference --example mech_interp_demo
 ```
 
-The full surface is documented in `crates/larql-inference/ROADMAP.md` §
+The full surface is documented in [crates/larql-inference/ROADMAP.md](crates/larql-inference/ROADMAP.md) §
 "P0: Mechanistic hooks (lazarus parity)".
 
 ## Documentation
 
-| Doc | Description |
-|---|---|
-| [docs/specs/lql-spec.md](docs/specs/lql-spec.md) | LQL language specification (v0.3) |
-| [docs/specs/vindex-format-spec.md](docs/specs/vindex-format-spec.md) | Vindex file format specification (v0.3, ~98% implemented) |
-| [docs/specs/vindex-operations-spec.md](docs/specs/vindex-operations-spec.md) | Vindex operations, API, patches (~98% implemented) |
-| [docs/specs/vindex-ecosystem-spec.md](docs/specs/vindex-ecosystem-spec.md) | Distributed hosting, HuggingFace, Vindexfile (~85% implemented) |
-| [crates/larql-vindex-spec/SPEC.md](crates/larql-vindex-spec/SPEC.md) | Vindex v1 public contract — manifest schema, sharding rule, validation thresholds, model card tags |
-| [crates/larql-vindex-spec/schema/vindex-v1.schema.json](crates/larql-vindex-spec/schema/vindex-v1.schema.json) | JSON Schema 2020-12 mirror of the v1 manifest |
-| [docs/lql-guide.md](docs/lql-guide.md) | LQL quick start guide |
-| [docs/cli.md](docs/cli.md) | CLI reference |
-| [docs/inference-engine.md](docs/inference-engine.md) | Inference engine — BLAS-fused attention, Metal GPU, auto-calibration |
-| [crates/larql-kv/README.md](crates/larql-kv/README.md) | **KV engines** — 9 pluggable implementations, state-policy classified, W10 mask cascade |
-| [crates/larql-kv/docs/state-policy.md](crates/larql-kv/docs/state-policy.md) | **State Policy** — `(canonical_state, derivative_state, correctness_contract)` framing; why the K/V slot choice predicts perf |
-| [crates/larql-kv/PERFORMANCE.md](crates/larql-kv/PERFORMANCE.md) | KV engine bench protocol, W10 default-on result (2026-05-21), per-engine perf decomposition |
-| [crates/larql-inference/docs/specs/kv-engine-unification.md](crates/larql-inference/docs/specs/kv-engine-unification.md) | KV engine unification — single `KvEngine` trait dispatch through `larql run` / `walk` / `bench` |
-| [docs/ffn-graph-layer.md](docs/ffn-graph-layer.md) | FFN graph layer — mmap walk faster than dense (517ms vs 535ms), all 34 layers |
-| [docs/walk-boundary-sweep.md](docs/walk-boundary-sweep.md) | Walk boundary sweep — correctness proof across all layer boundaries |
-| [docs/residual-trace.md](docs/residual-trace.md) | Residual stream trace — decomposition, storage, tiered context |
-| [docs/mech-interp.md](docs/mech-interp.md) | Mechanistic interp surface — hooks, lens, vocab proj, patching, KV surgery (Rust + Python) |
-| [docs/specs/trace-format-spec.md](docs/specs/trace-format-spec.md) | Trace file format specification (.bin, .bndx, .ctxt) |
-| [docs/adr/0009-wire-format-evolution.md](docs/adr/0009-wire-format-evolution.md) | Wire format: f16 default, i8 opt-in, Accept/Content-Type negotiation |
-| [docs/adr/0010-quic-grid-transport.md](docs/adr/0010-quic-grid-transport.md) | QUIC transport for grid (planned) |
-| [docs/adr/0011-grid-self-balancing.md](docs/adr/0011-grid-self-balancing.md) | Grid Mode B + dynamic rebalancing (planned) |
-| [docs/adr/0012-grid-benchmarking.md](docs/adr/0012-grid-benchmarking.md) | Grid benchmarking infrastructure — criterion + CLI + CI gate |
-| [docs/diagnoses/shannon-cross-engine-divergence.md](docs/diagnoses/shannon-cross-engine-divergence.md) | Forward-pass correctness diagnostic via `larql shannon verify` — three-engine bits/char comparison against HF/PyTorch and MLX, plus the three bugs it surfaced |
-| [scripts/README_shannon_score.md](scripts/README_shannon_score.md) | Cross-engine Shannon scorers — `larql shannon verify` + standalone scripts for MLX and HF |
+The implementation status varies by specification.
+
+| Doc                                                                                                                      | Description                                                                                                                                                    |
+|--------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [crates/larql-lql/docs/spec.md](crates/larql-lql/docs/spec.md)                                                           | LQL language specification (v0.4)                                                                                                                              |
+| [crates/larql-vindex/docs/format-spec.md](crates/larql-vindex/docs/format-spec.md)                                       | Vindex file format specification (v0.4)                                                                                                                        |
+| [crates/larql-vindex/docs/operations-spec.md](crates/larql-vindex/docs/operations-spec.md)                               | Vindex operations, API, patches                                                                                                                                |
+| [crates/larql-vindex/docs/ecosystem-spec.md](crates/larql-vindex/docs/ecosystem-spec.md)                                 | Distributed hosting, HuggingFace, Vindexfile                                                                                                                   |
+| [crates/larql-vindex-spec/SPEC.md](crates/larql-vindex-spec/SPEC.md)                                                     | Vindex v1 public contract — manifest schema, sharding rule, validation thresholds, model card tags                                                             |
+| [crates/larql-vindex-spec/schema/vindex-v1.schema.json](crates/larql-vindex-spec/schema/vindex-v1.schema.json)           | JSON Schema 2020-12 mirror of the v1 manifest                                                                                                                  |
+| [docs/lql-guide.md](docs/lql-guide.md)                                                                                   | LQL quick start guide                                                                                                                                          |
+| [docs/cli.md](docs/cli.md)                                                                                               | CLI reference                                                                                                                                                  |
+| [docs/inference-engine.md](docs/inference-engine.md)                                                                     | Inference engine — BLAS-fused attention, Metal GPU, auto-calibration                                                                                           |
+| [crates/larql-kv/README.md](crates/larql-kv/README.md)                                                                   | **KV engines** — 9 pluggable implementations, state-policy classified, W10 mask cascade                                                                        |
+| [crates/larql-kv/docs/state-policy.md](crates/larql-kv/docs/state-policy.md)                                             | **State Policy** — `(canonical_state, derivative_state, correctness_contract)` framing; why the K/V slot choice predicts perf                                  |
+| [crates/larql-kv/PERFORMANCE.md](crates/larql-kv/PERFORMANCE.md)                                                         | KV engine bench protocol, W10 default-on result (2026-05-21), per-engine perf decomposition                                                                    |
+| [crates/larql-inference/docs/specs/kv-engine-unification.md](crates/larql-inference/docs/specs/kv-engine-unification.md) | KV engine unification — single `KvEngine` trait dispatch through `larql run` / `walk` / `bench`                                                                |
+| [docs/ffn-graph-layer.md](docs/ffn-graph-layer.md)                                                                       | FFN graph layer — mmap walk faster than dense (517ms vs 535ms), all 34 layers                                                                                  |
+| [docs/walk-boundary-sweep.md](docs/walk-boundary-sweep.md)                                                               | Walk boundary sweep — correctness proof across all layer boundaries                                                                                            |
+| [docs/residual-trace.md](docs/residual-trace.md)                                                                         | Residual stream trace — decomposition, storage, tiered context                                                                                                 |
+| [docs/mech-interp.md](docs/mech-interp.md)                                                                               | Mechanistic interp surface — hooks, lens, vocab proj, patching, KV surgery (Rust + Python)                                                                     |
+| [crates/larql-inference/docs/trace-format.md](crates/larql-inference/docs/trace-format.md)                               | Trace file format specification (.bin, .bndx, .ctxt)                                                                                                           |
+| [docs/adr/0009-wire-format-evolution.md](docs/adr/0009-wire-format-evolution.md)                                         | Wire format: f16 default, i8 opt-in, Accept/Content-Type negotiation                                                                                           |
+| [docs/adr/0010-quic-grid-transport.md](docs/adr/0010-quic-grid-transport.md)                                             | QUIC transport for grid (planned)                                                                                                                              |
+| [docs/adr/0011-grid-self-balancing.md](docs/adr/0011-grid-self-balancing.md)                                             | Grid Mode B + dynamic rebalancing (planned)                                                                                                                    |
+| [docs/adr/0012-grid-benchmarking.md](docs/adr/0012-grid-benchmarking.md)                                                 | Grid benchmarking infrastructure — criterion + CLI + CI gate                                                                                                   |
+| [docs/diagnoses/shannon-cross-engine-divergence.md](docs/diagnoses/shannon-cross-engine-divergence.md)                   | Forward-pass correctness diagnostic via `larql shannon verify` — three-engine bits/char comparison against HF/PyTorch and MLX, plus the three bugs it surfaced |
+| [scripts/README_shannon_score.md](scripts/README_shannon_score.md)                                                       | Cross-engine Shannon scorers — `larql shannon verify` + standalone scripts for MLX and HF                                                                      |
 
 ## Platform Support
 
-| Platform | Compiles | GPU | BLAS |
-|----------|----------|-----|------|
-| macOS arm64 (M-series) | ✓ | Metal (`--features gpu`) | Accelerate |
-| Linux arm64 / x86_64 | ✓ | — (CPU fallback) | OpenBLAS |
-| Windows arm64 / x86_64 | ✓ | — (CPU fallback) | OpenBLAS |
+| Platform               | Compiles | GPU                      | BLAS       |
+|------------------------|----------|--------------------------|------------|
+| macOS arm64 (M-series) | ✓        | Metal (`--features gpu`) | Accelerate |
+| Linux arm64 / x86_64   | ✓        | — (CPU fallback)         | OpenBLAS   |
+| Windows arm64 / x86_64 | ✓        | — (CPU fallback)         | OpenBLAS   |
 
 macOS gets Metal GPU acceleration. Linux and Windows run the same CPU path (BLAS-fused attention + mmap walk FFN). All platforms require OpenBLAS on Linux/Windows — install via your system package manager (`apt install libopenblas-dev`, `vcpkg install openblas`).
 
