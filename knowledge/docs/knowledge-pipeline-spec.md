@@ -388,11 +388,11 @@ probes/
 
 **Source hierarchy:**
 
-| Tier | Source | Pairs | Quality | Method |
-|------|--------|-------|---------|--------|
-| 1 | Hand-curated | ~500 | Gold | Manual JSON files per relation |
-| 2 | DBpedia | ~16K | High | SPARQL queries + API, filtered to single/few-token entities |
-| 3 | Wikidata dump | ~500K+ | Medium | Full dump filtered to top properties, common entities |
+| Tier | Source        | Pairs  | Quality | Method                                                      |
+|------|---------------|--------|---------|-------------------------------------------------------------|
+| 1    | Hand-curated  | ~500   | Gold    | Manual JSON files per relation                              |
+| 2    | DBpedia       | ~16K   | High    | SPARQL queries + API, filtered to single/few-token entities |
+| 3    | Wikidata dump | ~500K+ | Medium  | Full dump filtered to top properties, common entities       |
 
 **Ingestion pipeline:**
 
@@ -437,13 +437,13 @@ python3 scripts/assemble_triples.py
 
 **Relations extracted:**
 
-| Relation | Description | Expected pairs | Example |
-|----------|-------------|----------------|---------|
-| synonym | Same meaning | 5,000 | big→large |
-| hypernym | Is-a (parent category) | 3,000 | dog→animal |
-| antonym | Opposite meaning | 2,000 | hot→cold |
-| meronym | Part-of | 2,000 | wheel→car |
-| derivation | Derived form | 5,000 | able→ability |
+| Relation   | Description            | Expected pairs | Example      |
+|------------|------------------------|----------------|--------------|
+| synonym    | Same meaning           | 5,000          | big→large    |
+| hypernym   | Is-a (parent category) | 3,000          | dog→animal   |
+| antonym    | Opposite meaning       | 2,000          | hot→cold     |
+| meronym    | Part-of                | 2,000          | wheel→car    |
+| derivation | Derived form           | 5,000          | able→ability |
 
 **Ingestion pipeline:**
 
@@ -466,18 +466,18 @@ python3 scripts/fetch_wordnet_relations.py
 
 **Relations extracted:**
 
-| Relation | Description | Example |
-|----------|-------------|---------|
-| plural | Singular→plural | dog→dogs |
-| gerund | Base→-ing form | run→running |
-| past_tense | Base→past | run→ran |
-| third_person | Base→3rd person | run→runs |
-| comparative | Base→-er form | big→bigger |
-| superlative | Base→-est form | big→biggest |
-| agent_noun | Verb→-er noun | run→runner |
-| nominalization | Adj→-ness noun | happy→happiness |
-| adverb | Adj→-ly adverb | happy→happily |
-| negation_prefix | Base→un- form | happy→unhappy |
+| Relation        | Description     | Example         |
+|-----------------|-----------------|-----------------|
+| plural          | Singular→plural | dog→dogs        |
+| gerund          | Base→-ing form  | run→running     |
+| past_tense      | Base→past       | run→ran         |
+| third_person    | Base→3rd person | run→runs        |
+| comparative     | Base→-er form   | big→bigger      |
+| superlative     | Base→-est form  | big→biggest     |
+| agent_noun      | Verb→-er noun   | run→runner      |
+| nominalization  | Adj→-ness noun  | happy→happiness |
+| adverb          | Adj→-ly adverb  | happy→happily   |
+| negation_prefix | Base→un- form   | happy→unhappy   |
 
 **Ingestion pipeline:**
 
@@ -500,14 +500,14 @@ python3 scripts/fetch_morphological.py
 
 **Relations extracted:**
 
-| Relation | Description | Example |
-|----------|-------------|---------|
-| determiner→noun | Article predicts noun | the→dog, a→cat |
-| preposition→noun | Prep predicts noun | in→London, of→France |
-| copula→adjective | Be-verb predicts adj | is→big, was→born |
-| auxiliary→verb | Aux predicts verb | will→go, can→see |
-| conjunction→clause | Conj predicts clause start | and→the, but→it |
-| pronoun→verb | Pronoun predicts verb | he→said, they→went |
+| Relation           | Description                | Example              |
+|--------------------|----------------------------|----------------------|
+| determiner→noun    | Article predicts noun      | the→dog, a→cat       |
+| preposition→noun   | Prep predicts noun         | in→London, of→France |
+| copula→adjective   | Be-verb predicts adj       | is→big, was→born     |
+| auxiliary→verb     | Aux predicts verb          | will→go, can→see     |
+| conjunction→clause | Conj predicts clause start | and→the, but→it      |
+| pronoun→verb       | Pronoun predicts verb      | he→said, they→went   |
 
 **Ingestion pipeline:**
 
@@ -530,49 +530,49 @@ python3 scripts/extract_grammar_pairs.py \
 
 **Languages supported:**
 
-| Language | Parser | Key relations |
-|----------|--------|---------------|
-| **Systems** | | |
-| Python | `ast` module | def→identifier, class→identifier, import→module, return→expression, for→identifier, if→condition, with→expression, yield→expression, async→def, lambda→expression, try→block, except→exception, raise→exception |
-| Rust | tree-sitter-rust | fn→identifier, let→identifier, use→module, impl→type, struct→identifier, enum→identifier, match→expression, trait→identifier, pub→fn, mod→identifier, unsafe→block, async→fn, move→closure, where→constraint |
-| C | tree-sitter-c | int→identifier, #include→header, struct→identifier, void→function, typedef→type, malloc→size, printf→format, #define→macro, switch→variable, goto→label, sizeof→type, static→type, extern→type |
-| C++ | tree-sitter-cpp | class→identifier, template→type, namespace→identifier, virtual→method, override→method, auto→variable, std→container, new→type, delete→pointer, const→type, friend→class, operator→symbol |
-| **Web** | | |
-| JavaScript | tree-sitter-javascript | function→identifier, const→identifier, let→identifier, require→module, class→identifier, import→module, export→declaration, async→function, await→promise, yield→value, new→constructor, this→property, throw→error |
-| TypeScript | tree-sitter-typescript | interface→identifier, type→identifier, enum→identifier, extends→type, implements→type, readonly→property, generic→type, as→type, keyof→type, typeof→expression, declare→type, abstract→class, namespace→identifier |
-| HTML | regex/tree-sitter | div→class, span→class, a→href, img→src, input→type, form→action, table→class, script→src, link→href, meta→content, button→onclick, select→name, style→type, head→meta, body→div |
-| CSS/SCSS | regex patterns | color→value, font→value, display→value, margin→value, padding→value, background→value, border→value, position→value, width→value, height→value, flex→value, grid→value, @media→query, @import→url, :hover→property |
-| **JVM** | | |
-| Java | tree-sitter-java | class→identifier, import→package, void→method, public→class, interface→identifier, extends→class, implements→interface, new→constructor, throws→exception, synchronized→block, static→method, final→variable, abstract→method, enum→identifier, package→name |
-| Kotlin | tree-sitter-kotlin | fun→identifier, val→identifier, var→identifier, class→identifier, object→identifier, data→class, sealed→class, when→expression, suspend→fun, companion→object, inline→fun, lateinit→var |
-| Scala | tree-sitter-scala | def→identifier, val→identifier, var→identifier, class→identifier, object→identifier, trait→identifier, case→class, sealed→trait, implicit→value, lazy→val, match→expression |
-| **Scripting** | | |
-| Ruby | tree-sitter-ruby | def→identifier, class→identifier, module→identifier, require→string, attr→symbol, do→block, end→statement, yield→value, begin→block, rescue→exception, include→module |
-| PHP | tree-sitter-php | function→identifier, class→identifier, namespace→identifier, use→class, echo→expression, require→path, public→function, private→function, try→block, throw→exception, interface→identifier |
-| Perl | regex patterns | sub→identifier, my→variable, use→module, foreach→variable, unless→condition, die→message, bless→reference, package→name |
-| Lua | tree-sitter-lua | function→identifier, local→identifier, require→module, for→variable, while→condition, return→value, table→constructor, nil→value |
-| **Functional** | | |
-| Haskell | tree-sitter-haskell | data→type, class→typeclass, instance→typeclass, where→definition, let→binding, import→module, type→alias, newtype→wrapper, do→monad, case→expression, deriving→typeclass |
-| OCaml | tree-sitter-ocaml | let→identifier, type→identifier, module→identifier, match→expression, fun→parameter, val→identifier, open→module, sig→signature |
-| Elixir | tree-sitter-elixir | def→identifier, defmodule→identifier, defp→identifier, do→block, end→statement, use→module, import→module, alias→module, case→expression, with→pattern |
-| Clojure | regex patterns | defn→identifier, def→identifier, ns→namespace, require→module, let→binding, fn→parameter, if→condition, cond→expression |
-| **Data/Query** | | |
-| SQL | regex patterns | SELECT→column, FROM→table, WHERE→condition, JOIN→table, INSERT→table, CREATE→table, UPDATE→table, DELETE→table, ALTER→table, DROP→table, GROUP→BY, ORDER→BY, HAVING→condition, INDEX→column, GRANT→privilege |
-| R | tree-sitter-r | function→identifier, library→package, data→frame, plot→variable, for→variable, if→condition, return→value, source→file |
-| MATLAB | regex patterns | function→identifier, for→variable, while→condition, switch→variable, class→identifier, end→statement |
-| **Shell/Config** | | |
-| Bash | tree-sitter-bash | function→identifier, if→condition, for→variable, while→condition, case→variable, export→variable, source→file, alias→name, echo→string, cd→path, chmod→permissions |
-| PowerShell | regex patterns | function→identifier, param→parameter, foreach→variable, if→condition, Write-Host→string, Get→object, Set→object, New→object |
-| YAML | regex patterns | key→value, list→item, map→key, include→file, env→variable |
-| JSON | regex patterns | key→value, array→element, object→key, string→value, number→value |
-| TOML | regex patterns | key→value, section→name, array→element |
-| **Markup** | | |
-| LaTeX | regex patterns | \begin→environment, \section→title, \usepackage→package, \cite→reference, \ref→label, \label→name, \textbf→text, \emph→text, \frac→numerator |
-| Markdown | regex patterns | #→heading, *→emphasis, [→link_text, ```→language, -→list_item, >→blockquote, |→table_cell |
-| XML | regex patterns | tag→attribute, xmlns→namespace, xsl→template, schema→element |
-| **Mobile** | | |
-| Swift | tree-sitter-swift | func→identifier, class→identifier, struct→identifier, enum→identifier, let→identifier, var→identifier, import→module, protocol→identifier, extension→type, guard→condition, @→attribute |
-| Dart | tree-sitter-dart | class→identifier, void→method, import→package, final→variable, const→variable, async→function, await→future, extends→class, implements→interface, Widget→build |
+| Language         | Parser                 | Key relations                                                                                                                                                                                                                                                |
+|------------------|------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Systems**      |                        |                                                                                                                                                                                                                                                              |
+| Python           | `ast` module           | def→identifier, class→identifier, import→module, return→expression, for→identifier, if→condition, with→expression, yield→expression, async→def, lambda→expression, try→block, except→exception, raise→exception                                              |
+| Rust             | tree-sitter-rust       | fn→identifier, let→identifier, use→module, impl→type, struct→identifier, enum→identifier, match→expression, trait→identifier, pub→fn, mod→identifier, unsafe→block, async→fn, move→closure, where→constraint                                                 |
+| C                | tree-sitter-c          | int→identifier, #include→header, struct→identifier, void→function, typedef→type, malloc→size, printf→format, #define→macro, switch→variable, goto→label, sizeof→type, static→type, extern→type                                                               |
+| C++              | tree-sitter-cpp        | class→identifier, template→type, namespace→identifier, virtual→method, override→method, auto→variable, std→container, new→type, delete→pointer, const→type, friend→class, operator→symbol                                                                    |
+| **Web**          |                        |                                                                                                                                                                                                                                                              |
+| JavaScript       | tree-sitter-javascript | function→identifier, const→identifier, let→identifier, require→module, class→identifier, import→module, export→declaration, async→function, await→promise, yield→value, new→constructor, this→property, throw→error                                          |
+| TypeScript       | tree-sitter-typescript | interface→identifier, type→identifier, enum→identifier, extends→type, implements→type, readonly→property, generic→type, as→type, keyof→type, typeof→expression, declare→type, abstract→class, namespace→identifier                                           |
+| HTML             | regex/tree-sitter      | div→class, span→class, a→href, img→src, input→type, form→action, table→class, script→src, link→href, meta→content, button→onclick, select→name, style→type, head→meta, body→div                                                                              |
+| CSS/SCSS         | regex patterns         | color→value, font→value, display→value, margin→value, padding→value, background→value, border→value, position→value, width→value, height→value, flex→value, grid→value, @media→query, @import→url, :hover→property                                           |
+| **JVM**          |                        |                                                                                                                                                                                                                                                              |
+| Java             | tree-sitter-java       | class→identifier, import→package, void→method, public→class, interface→identifier, extends→class, implements→interface, new→constructor, throws→exception, synchronized→block, static→method, final→variable, abstract→method, enum→identifier, package→name |
+| Kotlin           | tree-sitter-kotlin     | fun→identifier, val→identifier, var→identifier, class→identifier, object→identifier, data→class, sealed→class, when→expression, suspend→fun, companion→object, inline→fun, lateinit→var                                                                      |
+| Scala            | tree-sitter-scala      | def→identifier, val→identifier, var→identifier, class→identifier, object→identifier, trait→identifier, case→class, sealed→trait, implicit→value, lazy→val, match→expression                                                                                  |
+| **Scripting**    |                        |                                                                                                                                                                                                                                                              |
+| Ruby             | tree-sitter-ruby       | def→identifier, class→identifier, module→identifier, require→string, attr→symbol, do→block, end→statement, yield→value, begin→block, rescue→exception, include→module                                                                                        |
+| PHP              | tree-sitter-php        | function→identifier, class→identifier, namespace→identifier, use→class, echo→expression, require→path, public→function, private→function, try→block, throw→exception, interface→identifier                                                                   |
+| Perl             | regex patterns         | sub→identifier, my→variable, use→module, foreach→variable, unless→condition, die→message, bless→reference, package→name                                                                                                                                      |
+| Lua              | tree-sitter-lua        | function→identifier, local→identifier, require→module, for→variable, while→condition, return→value, table→constructor, nil→value                                                                                                                             |
+| **Functional**   |                        |                                                                                                                                                                                                                                                              |
+| Haskell          | tree-sitter-haskell    | data→type, class→typeclass, instance→typeclass, where→definition, let→binding, import→module, type→alias, newtype→wrapper, do→monad, case→expression, deriving→typeclass                                                                                     |
+| OCaml            | tree-sitter-ocaml      | let→identifier, type→identifier, module→identifier, match→expression, fun→parameter, val→identifier, open→module, sig→signature                                                                                                                              |
+| Elixir           | tree-sitter-elixir     | def→identifier, defmodule→identifier, defp→identifier, do→block, end→statement, use→module, import→module, alias→module, case→expression, with→pattern                                                                                                       |
+| Clojure          | regex patterns         | defn→identifier, def→identifier, ns→namespace, require→module, let→binding, fn→parameter, if→condition, cond→expression                                                                                                                                      |
+| **Data/Query**   |                        |                                                                                                                                                                                                                                                              |
+| SQL              | regex patterns         | SELECT→column, FROM→table, WHERE→condition, JOIN→table, INSERT→table, CREATE→table, UPDATE→table, DELETE→table, ALTER→table, DROP→table, GROUP→BY, ORDER→BY, HAVING→condition, INDEX→column, GRANT→privilege                                                 |
+| R                | tree-sitter-r          | function→identifier, library→package, data→frame, plot→variable, for→variable, if→condition, return→value, source→file                                                                                                                                       |
+| MATLAB           | regex patterns         | function→identifier, for→variable, while→condition, switch→variable, class→identifier, end→statement                                                                                                                                                         |
+| **Shell/Config** |                        |                                                                                                                                                                                                                                                              |
+| Bash             | tree-sitter-bash       | function→identifier, if→condition, for→variable, while→condition, case→variable, export→variable, source→file, alias→name, echo→string, cd→path, chmod→permissions                                                                                           |
+| PowerShell       | regex patterns         | function→identifier, param→parameter, foreach→variable, if→condition, Write-Host→string, Get→object, Set→object, New→object                                                                                                                                  |
+| YAML             | regex patterns         | key→value, list→item, map→key, include→file, env→variable                                                                                                                                                                                                    |
+| JSON             | regex patterns         | key→value, array→element, object→key, string→value, number→value                                                                                                                                                                                             |
+| TOML             | regex patterns         | key→value, section→name, array→element                                                                                                                                                                                                                       |
+| **Markup**       |                        |                                                                                                                                                                                                                                                              |
+| LaTeX            | regex patterns         | \begin→environment, \section→title, \usepackage→package, \cite→reference, \ref→label, \label→name, \textbf→text, \emph→text, \frac→numerator                                                                                                                 |
+| Markdown         | regex patterns         | #→heading, *→emphasis, [→link_text, ```→language, -→list_item, >→blockquote,                                                                                                                                                                                 |→table_cell |
+| XML              | regex patterns         | tag→attribute, xmlns→namespace, xsl→template, schema→element                                                                                                                                                                                                 |
+| **Mobile**       |                        |                                                                                                                                                                                                                                                              |
+| Swift            | tree-sitter-swift      | func→identifier, class→identifier, struct→identifier, enum→identifier, let→identifier, var→identifier, import→module, protocol→identifier, extension→type, guard→condition, @→attribute                                                                      |
+| Dart             | tree-sitter-dart       | class→identifier, void→method, import→package, final→variable, const→variable, async→function, await→future, extends→class, implements→interface, Widget→build                                                                                               |
 
 **Ingestion pipeline:**
 
@@ -807,12 +807,12 @@ Labels come from multiple sources. Higher priority overrides lower:
 
 ### 5.2 Layer-Aware Matching
 
-| Layer Range | Source Databases | Label Types |
-|-------------|-----------------|-------------|
-| L0-7 | Morphological lexicon, WordNet derivations | plural, gerund, past_tense, derivation |
-| L4-13 | WordNet (synonym, hypernym, antonym, meronym), English grammar, AST pairs | synonym, determiner→noun, py:function_def |
-| L14-27 | Wikidata triples, probe labels | capital, language, continent, occupation |
-| L28-33 | None (output formatting) | TF-IDF fallback only |
+| Layer Range | Source Databases                                                          | Label Types                               |
+|-------------|---------------------------------------------------------------------------|-------------------------------------------|
+| L0-7        | Morphological lexicon, WordNet derivations                                | plural, gerund, past_tense, derivation    |
+| L4-13       | WordNet (synonym, hypernym, antonym, meronym), English grammar, AST pairs | synonym, determiner→noun, py:function_def |
+| L14-27      | Wikidata triples, probe labels                                            | capital, language, continent, occupation  |
+| L28-33      | None (output formatting)                                                  | TF-IDF fallback only                      |
 
 ### 5.3 Merge Command
 
@@ -1033,12 +1033,12 @@ larql label <vindex_path> --probes probes/<model_name>/
 
 ## 8. Scaling Roadmap
 
-| Phase | Triples | Relations | AST Languages | Probe Coverage | WordNet | Timeline |
-|-------|---------|-----------|---------------|----------------|---------|----------|
-| 1 (now) | 16K | 32 | 0 | 112 features | 18K pairs | Done |
-| 2 | 100K | 100+ | 5 (Py/Rust/JS/TS/Java) | 1,000+ features | 25K pairs | 1 week |
-| 3 | 500K | 150+ | 15 languages | 5,000+ features | 30K pairs + grammar | 1 month |
-| 4 | 2M+ | 200+ | 30+ languages | 20,000+ features | Full WordNet + FrameNet | 3 months |
+| Phase   | Triples | Relations | AST Languages          | Probe Coverage   | WordNet                 | Timeline |
+|---------|---------|-----------|------------------------|------------------|-------------------------|----------|
+| 1 (now) | 16K     | 32        | 0                      | 112 features     | 18K pairs               | Done     |
+| 2       | 100K    | 100+      | 5 (Py/Rust/JS/TS/Java) | 1,000+ features  | 25K pairs               | 1 week   |
+| 3       | 500K    | 150+      | 15 languages           | 5,000+ features  | 30K pairs + grammar     | 1 month  |
+| 4       | 2M+     | 200+      | 30+ languages          | 20,000+ features | Full WordNet + FrameNet | 3 months |
 
 **Phase 2 -- Demo Ready:**
 - Expand DBpedia to 1000+ pairs per relation for top 30 relations

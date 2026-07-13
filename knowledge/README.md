@@ -136,35 +136,35 @@ Structured (subject, object) pairs grouped by relation. Model-agnostic.
 
 **144 relations across 18 domains:**
 
-| Domain | Relations | Example |
-|--------|-----------|---------|
-| Geography | capital, language, continent, borders, currency, ... | France->Paris |
-| Cities | located_in, city_country, landmark, river, ... | London->Thames |
-| People | occupation, birthplace, nationality, spouse, ... | Einstein->physicist |
-| Politics | party, position, country_leader, ... | Obama->Democrat |
-| Music | genre, instrument, composer, band_member, ... | Beatles->Lennon |
-| Film & TV | director, starring, film_genre, tv_network, ... | Jaws->Spielberg |
-| Literature | author, poet, playwright, literary_genre, ... | Hamlet->Shakespeare |
-| Sports | team, league, sport, championship, ... | Messi->Barcelona |
-| Companies | founder, ceo, headquarters, industry, ... | Apple->Jobs |
-| Science | inventor, chemical_symbol, programming_language, ... | gold->Au |
-| Food | ingredient, cuisine_origin, dish_country, ... | pizza->Italy |
-| Art | painter, art_movement, art_museum, ... | Mona Lisa->Da Vinci |
-| History | event_year, dynasty, historical_figure, ... | WW2->1939 |
-| Animals | animal_class, animal_habitat, endangered, ... | dog->mammal |
-| Education | university_city, academic_field, ... | Harvard->Cambridge |
-| Religion | religion_founder, religion_text, ... | Christianity->Bible |
-| Transport | manufacturer, airline_country, airport_city, ... | Boeing 747->Boeing |
-| Language | language_family, language_script, ... | French->Romance |
+| Domain     | Relations                                            | Example             |
+|------------|------------------------------------------------------|---------------------|
+| Geography  | capital, language, continent, borders, currency, ... | France->Paris       |
+| Cities     | located_in, city_country, landmark, river, ...       | London->Thames      |
+| People     | occupation, birthplace, nationality, spouse, ...     | Einstein->physicist |
+| Politics   | party, position, country_leader, ...                 | Obama->Democrat     |
+| Music      | genre, instrument, composer, band_member, ...        | Beatles->Lennon     |
+| Film & TV  | director, starring, film_genre, tv_network, ...      | Jaws->Spielberg     |
+| Literature | author, poet, playwright, literary_genre, ...        | Hamlet->Shakespeare |
+| Sports     | team, league, sport, championship, ...               | Messi->Barcelona    |
+| Companies  | founder, ceo, headquarters, industry, ...            | Apple->Jobs         |
+| Science    | inventor, chemical_symbol, programming_language, ... | gold->Au            |
+| Food       | ingredient, cuisine_origin, dish_country, ...        | pizza->Italy        |
+| Art        | painter, art_movement, art_museum, ...               | Mona Lisa->Da Vinci |
+| History    | event_year, dynasty, historical_figure, ...          | WW2->1939           |
+| Animals    | animal_class, animal_habitat, endangered, ...        | dog->mammal         |
+| Education  | university_city, academic_field, ...                 | Harvard->Cambridge  |
+| Religion   | religion_founder, religion_text, ...                 | Christianity->Bible |
+| Transport  | manufacturer, airline_country, airport_city, ...     | Boeing 747->Boeing  |
+| Language   | language_family, language_script, ...                | French->Romance     |
 
 ### Linguistic Databases
 
-| Source | Relations | Pairs | Layer Range |
-|--------|-----------|-------|-------------|
-| WordNet | synonym, hypernym, antonym, meronym, derivation | 17,800 | L0-13 |
-| Morphological | plural, gerund, past_tense, comparative, ... | 3,952 | L0-7 |
-| English Grammar | determiner->noun, preposition->object, ... | 1,040 | L4-13 |
-| AST (5 langs) | def->identifier, fn->identifier, ... | 13,012 | L0-13 |
+| Source          | Relations                                       | Pairs  | Layer Range |
+|-----------------|-------------------------------------------------|--------|-------------|
+| WordNet         | synonym, hypernym, antonym, meronym, derivation | 17,800 | L0-13       |
+| Morphological   | plural, gerund, past_tense, comparative, ...    | 3,952  | L0-7        |
+| English Grammar | determiner->noun, preposition->object, ...      | 1,040  | L4-13       |
+| AST (5 langs)   | def->identifier, fn->identifier, ...            | 13,012 | L0-13       |
 
 ### Probe Labels
 
@@ -451,11 +451,11 @@ Labels come from multiple sources. Higher priority overrides lower:
 
 ## Roadmap
 
-| Phase | Triples | Relations | AST Languages | Probe Features | Status |
-|-------|---------|-----------|---------------|----------------|--------|
-| 1 | 16K | 32 | 1 | 112 | Done |
-| 2 | 18.5K | 144 | 5 | 157 | Current |
-| 3 | 500K | 150+ | 15 | 5,000+ | Next |
-| 4 | 2M+ | 200+ | 30+ | 20,000+ | Future |
+| Phase | Triples | Relations | AST Languages | Probe Features | Status  |
+|-------|---------|-----------|---------------|----------------|---------|
+| 1     | 16K     | 32        | 1             | 112            | Done    |
+| 2     | 18.5K   | 144       | 5             | 157            | Current |
+| 3     | 500K    | 150+      | 15            | 5,000+         | Next    |
+| 4     | 2M+     | 200+      | 30+           | 20,000+        | Future  |
 
 See [docs/knowledge-pipeline-spec.md](docs/knowledge-pipeline-spec.md) for the full specification.

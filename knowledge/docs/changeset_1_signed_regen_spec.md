@@ -76,13 +76,13 @@
 
 Evaluated against three signed pilot re-runs (subword, 1c extended, multilingual) at L0-L33.
 
-| Prediction | Predicted | Observed | Result |
-|-----------|-----------|----------|--------|
-| V1 (growth) | 75-90% | +82% | **CONFIRMED** |
-| V2 (depth ratio) | 2.7-3.1x | 2.9x | **CONFIRMED** |
+| Prediction                 | Predicted               | Observed       | Result        |
+|----------------------------|-------------------------|----------------|---------------|
+| V1 (growth)                | 75-90%                  | +82%           | **CONFIRMED** |
+| V2 (depth ratio)           | 2.7-3.1x                | 2.9x           | **CONFIRMED** |
 | V3 (hits/feature flatness) | 4.0-5.5, gradient <1.5x | 4.3-5.2, 1.22x | **CONFIRMED** |
-| V4 (L0-L12 promiscuity) | 5-12% | 8.2% | **CONFIRMED** |
-| V5 (M3-stable fraction) | 45-50% | 46.9% | **CONFIRMED** |
+| V4 (L0-L12 promiscuity)    | 5-12%                   | 8.2%           | **CONFIRMED** |
+| V5 (M3-stable fraction)    | 45-50%                  | 46.9%          | **CONFIRMED** |
 
 5/5 confirmed. The signed regen behaves as the pilot re-runs predicted. The predictions were well-calibrated because the three-pilot consistency (79-84% growth range) left little room for surprises.
 
@@ -92,10 +92,10 @@ Evaluated against three signed pilot re-runs (subword, 1c extended, multilingual
 
 Canonical `probe_mlx.py` re-run with signed fix: L0-L12 syntax mode, 198 relations (60 syntax + 138 knowledge), 54,441 probes. This is an independent validation — different probe script, different relation scope, different entity sets from the three pilots.
 
-| Metric | Unsigned canonical | Signed canonical | Change |
-|--------|-------------------|-----------------|--------|
-| wn:* features | 70 (rerun) | **214** | **+206%** |
-| morph:* features | 3 | **17** | +467% |
+| Metric           | Unsigned canonical | Signed canonical | Change    |
+|------------------|--------------------|------------------|-----------|
+| wn:* features    | 70 (rerun)         | **214**          | **+206%** |
+| morph:* features | 3                  | **17**           | +467%     |
 
 The +206% L0-L12 growth matches the subword pilot's L0-L12 result (+204%) on an independent probe configuration. V1's predicted range (75-90%) was calibrated against full-depth L0-L33 data; the L0-L12-specific growth is expected to be higher because early layers are where the sign fix has its strongest effect (L0-L12 was 76-87% anti-activating in the unsigned data).
 
@@ -107,12 +107,12 @@ Two additional fixes applied beyond the sign fix:
 1. Scan range extended from L0-L26 to L0-L33 (`--layers all` now scans `range(0, num_layers)`)
 2. Band-based match routing removed — combined index matches WordNet AND knowledge relations at ALL layers
 
-| Run | wn:* | total | Change |
-|-----|------|-------|--------|
-| Unsigned L0-L12 (deployed) | 64 | 1,785 | — |
-| Signed L0-L12 (band-routed) | 214 | 1,984 | Sign fix: +234% wn:* |
-| Signed L0-L33 (band-routed) | 215 | 4,845 | Bands prevent wn:* at L13+ |
-| **Signed L0-L33 (combined index)** | **844** | **5,727** | **Band fix: +293% wn:*** |
+| Run                                | wn:*    | total     | Change                     |
+|------------------------------------|---------|-----------|----------------------------|
+| Unsigned L0-L12 (deployed)         | 64      | 1,785     | —                          |
+| Signed L0-L12 (band-routed)        | 214     | 1,984     | Sign fix: +234% wn:*       |
+| Signed L0-L33 (band-routed)        | 215     | 4,845     | Bands prevent wn:* at L13+ |
+| **Signed L0-L33 (combined index)** | **844** | **5,727** | **Band fix: +293% wn:***   |
 
 The band-routing fix (+293% wn:*) is larger than the sign fix (+234%). The deployed probe was wrong in two independent ways — sign conflation AND band-based match routing — and the second was the bigger correction.
 

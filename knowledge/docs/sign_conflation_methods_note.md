@@ -8,13 +8,13 @@ Gate-vector probes that select features by magnitude (`|dot(residual, gate_vecto
 
 The natural response to discovering sign conflation is to filter: remove anti-activating features from existing probe results. We tested this by comparing post-hoc-filtered counts to a from-scratch re-run with signed thresholding (subword pilot, Gemma-3-4B-IT, L0-L33, 11,638 subjects).
 
-| Zone | Unsigned | Post-hoc filtered (predicted) | Signed from scratch (actual) |
-|------|----------|-------------------------------|------------------------------|
-| L0-L12 | 52 | ~12 (-77%) | **158 (+204%)** |
-| L13-L20 | 64 | ~43 (-33%) | **153 (+139%)** |
-| L21-L29 | 315 | ~285 (-10%) | **470 (+49%)** |
-| L30-L33 | 102 | ~93 (-9%) | **200 (+96%)** |
-| **Total** | **533** | **~433 (-19%)** | **981 (+84%)** |
+| Zone      | Unsigned | Post-hoc filtered (predicted) | Signed from scratch (actual) |
+|-----------|----------|-------------------------------|------------------------------|
+| L0-L12    | 52       | ~12 (-77%)                    | **158 (+204%)**              |
+| L13-L20   | 64       | ~43 (-33%)                    | **153 (+139%)**              |
+| L21-L29   | 315      | ~285 (-10%)                   | **470 (+49%)**               |
+| L30-L33   | 102      | ~93 (-9%)                     | **200 (+96%)**               |
+| **Total** | **533**  | **~433 (-19%)**               | **981 (+84%)**               |
 
 Post-hoc filtering predicted early-layer counts would shrink. They tripled.
 
@@ -39,22 +39,22 @@ Sign analysis on 522 M3-stable features from three independent pilots (1c extend
 
 **1c pilot (203 M3-stable features, % positive gate activation on matched entities):**
 
-| Relation | L0-L12 | L13-L20 | L21-L29 | L30-L33 |
-|----------|--------|---------|---------|---------|
-| pertainym | 75% | 82% | 93% | 92% |
-| similar_to | **0%** | **17%** | 86% | 69% |
-| also_see | **12%** | **20%** | 60% | 75% |
-| attribute | 33% | **0%** | 86% | 33% |
-| entailment | 50% | **0%** | 100% | — |
+| Relation   | L0-L12  | L13-L20 | L21-L29 | L30-L33 |
+|------------|---------|---------|---------|---------|
+| pertainym  | 75%     | 82%     | 93%     | 92%     |
+| similar_to | **0%**  | **17%** | 86%     | 69%     |
+| also_see   | **12%** | **20%** | 60%     | 75%     |
+| attribute  | 33%     | **0%**  | 86%     | 33%     |
+| entailment | 50%     | **0%**  | 100%    | —       |
 
 **Aggregate across all three pilots:**
 
-| Zone | 1c | Multilingual | Subword |
-|------|-----|-------------|---------|
-| L0-L12 | 21% | 13% | 24% |
-| L13-L20 | 39% | 44% | 67% |
-| L21-L29 | 89% | 68% | 96% |
-| L30-L33 | 74% | 78% | 91% |
+| Zone    | 1c  | Multilingual | Subword |
+|---------|-----|--------------|---------|
+| L0-L12  | 21% | 13%          | 24%     |
+| L13-L20 | 39% | 44%          | 67%     |
+| L21-L29 | 89% | 68%          | 96%     |
+| L30-L33 | 74% | 78%          | 91%     |
 
 Pertainym is least affected (75%+ positive at all depths). Adjective-side relations other than pertainym (similar_to, also_see, attribute) are most severely affected at early/mid layers. The pertainym exception may reflect that pertainym is a morphological relation (the adjective form of a noun), so pertainym features may sit closer to the unembedding direction for the target word, making positive gate alignment the default. The other relations are semantic rather than morphological, so their gate orientations may be less constrained by unembedding geometry. This is untested but suggests that sign conflation severity depends on the relationship between gate-vector geometry and residual-stream geometry, which varies by relation type.
 
