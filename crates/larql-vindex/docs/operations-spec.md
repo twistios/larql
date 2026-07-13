@@ -332,15 +332,15 @@ COMPILE CURRENT INTO VINDEX "output.vindex" ON CONFLICT FAIL;
 
 ### 2.5 Comparison with LoRA
 
-| Dimension | LoRA Adapter | Vindex Patch |
-|-----------|-------------|-------------|
-| **Size** | ~50-200 MB | ~10 KB per fact |
-| **Creation** | Training (hours, GPU) | INSERT statement (seconds, CPU) |
-| **Granularity** | Low-rank approximation | Exact: specific features, specific facts |
-| **Human-readable** | No | Yes (JSON with entity, relation, target) |
-| **Composable** | Limited (merging is lossy) | Yes (patches stack, conflicts resolved) |
-| **Reversible** | Partially | Fully (base unchanged) |
-| **Training required** | Yes | No |
+| Dimension             | LoRA Adapter               | Vindex Patch                             |
+|-----------------------|----------------------------|------------------------------------------|
+| **Size**              | ~50-200 MB                 | ~10 KB per fact                          |
+| **Creation**          | Training (hours, GPU)      | INSERT statement (seconds, CPU)          |
+| **Granularity**       | Low-rank approximation     | Exact: specific features, specific facts |
+| **Human-readable**    | No                         | Yes (JSON with entity, relation, target) |
+| **Composable**        | Limited (merging is lossy) | Yes (patches stack, conflicts resolved)  |
+| **Reversible**        | Partially                  | Fully (base unchanged)                   |
+| **Training required** | Yes                        | No                                       |
 
 LoRA is for broad behaviour adaptation (tone, style). Vindex patches are for specific fact insertion/correction. They're complementary.
 
@@ -594,11 +594,11 @@ Model loading (safetensors, GGUF, MLX) and quantization (f16, Q4_0, MXFP4) live 
 
 ### 6.1 Knowledge Extraction by Architecture Type
 
-| Architecture | Weights | DESCRIBE | WALK | INFER | Notes |
-|---|---|---|---|---|---|
-| Dense (Gemma, Llama, Qwen) | f32/f16/bf16 | ✅ Works | ✅ Works | ✅ Works | Gate KNN with raw embeddings is accurate |
-| MoE, full precision (Mixtral) | f16/bf16 per expert | ✅ Expected | ✅ Expected | ✅ Works | Per-expert gate vectors have enough precision |
-| MoE, MXFP4 (GPT-OSS) | 4-bit block quantized | ❌ Noisy | ❌ Noisy | ✅ Works | 4-bit gate vectors lack precision for isolated KNN |
+| Architecture                  | Weights               | DESCRIBE   | WALK       | INFER   | Notes                                              |
+|-------------------------------|-----------------------|------------|------------|---------|----------------------------------------------------|
+| Dense (Gemma, Llama, Qwen)    | f32/f16/bf16          | ✅ Works    | ✅ Works    | ✅ Works | Gate KNN with raw embeddings is accurate           |
+| MoE, full precision (Mixtral) | f16/bf16 per expert   | ✅ Expected | ✅ Expected | ✅ Works | Per-expert gate vectors have enough precision      |
+| MoE, MXFP4 (GPT-OSS)          | 4-bit block quantized | ❌ Noisy    | ❌ Noisy    | ✅ Works | 4-bit gate vectors lack precision for isolated KNN |
 
 ### 6.2 Why MXFP4 Models Work at Inference but Not for Browse
 
@@ -640,16 +640,16 @@ When loading an MXFP4-quantized model, LARQL detects `ExpertFormat::PackedMxfp4`
 
 ## 7. Benchmarks
 
-| Operation | Latency |
-|---|---|
-| Gate KNN (per layer) | 0.008ms |
-| Walk (34 layers) | 0.3ms |
-| Feature lookup | <1ns |
-| Save gates (8 MB) | 1.1ms |
-| Load vindex | 8ms |
-| Mutate (meta + gate) | 617ns |
-| Checksum (SHA256) | 23ms |
-| MoE 8x scaling | 6.6x (sub-linear) |
+| Operation            | Latency           |
+|----------------------|-------------------|
+| Gate KNN (per layer) | 0.008ms           |
+| Walk (34 layers)     | 0.3ms             |
+| Feature lookup       | <1ns              |
+| Save gates (8 MB)    | 1.1ms             |
+| Load vindex          | 8ms               |
+| Mutate (meta + gate) | 617ns             |
+| Checksum (SHA256)    | 23ms              |
+| MoE 8x scaling       | 6.6x (sub-linear) |
 
 ---
 
