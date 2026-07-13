@@ -2,13 +2,13 @@
 
 ## Summary
 
-| Format | Size per value | Block size | Use case | Origin |
-|--------|---------------|------------|----------|--------|
-| Q4_0 | 0.5625 B | 32 values = 18 bytes | FFN gate/up/down | GGUF standard |
-| Q4_K | 0.578 B | 256 values = 148 bytes | Attention Q/K/O | GGUF standard (our layout) |
-| Q4_KF | 0.625 B | 256 values = 160 bytes | Fast decode (experimental) | LARQL original |
-| Q6_K | 0.820 B | 256 values = 210 bytes | Attention V, FFN down | GGUF standard |
-| Q8_0 | 1.125 B | 32 values = 36 bytes | Higher precision fallback | GGUF standard |
+| Format | Size per value | Block size             | Use case                   | Origin                     |
+|--------|----------------|------------------------|----------------------------|----------------------------|
+| Q4_0   | 0.5625 B       | 32 values = 18 bytes   | FFN gate/up/down           | GGUF standard              |
+| Q4_K   | 0.578 B        | 256 values = 148 bytes | Attention Q/K/O            | GGUF standard (our layout) |
+| Q4_KF  | 0.625 B        | 256 values = 160 bytes | Fast decode (experimental) | LARQL original             |
+| Q6_K   | 0.820 B        | 256 values = 210 bytes | Attention V, FFN down      | GGUF standard              |
+| Q8_0   | 1.125 B        | 32 values = 36 bytes   | Higher precision fallback  | GGUF standard              |
 
 ## Q4_0 (Production FFN)
 
@@ -98,24 +98,24 @@ GPU kernel: q8_matvec, q8_qkv_proj
 
 ## Quantization Strategy (matching Ollama Q4_K_M)
 
-| Component | Ollama | LARQL | Format |
-|-----------|--------|-------|--------|
-| Attention Q/K/O | Q4_K | Q4_K | q4k_qkv_proj |
-| Attention V | Q6_K | Q6_K | q6k_matvec |
-| FFN gate/up | Q4_K | Q4_0 | q4_matvec_v4 |
-| FFN down | Q6_K | Q4_0 | q4_f32_matvec |
-| Norms | f32 | f32 | rms_norm |
-| Embeddings | Q6_K | Q6_K | — |
+| Component       | Ollama | LARQL | Format        |
+|-----------------|--------|-------|---------------|
+| Attention Q/K/O | Q4_K   | Q4_K  | q4k_qkv_proj  |
+| Attention V     | Q6_K   | Q6_K  | q6k_matvec    |
+| FFN gate/up     | Q4_K   | Q4_0  | q4_matvec_v4  |
+| FFN down        | Q6_K   | Q4_0  | q4_f32_matvec |
+| Norms           | f32    | f32   | rms_norm      |
+| Embeddings      | Q6_K   | Q6_K  | —             |
 
 ## Quantize Functions (cpu/ops/q4_common.rs)
 
-| Function | Input | Output | Notes |
-|----------|-------|--------|-------|
-| `quantize_q4_0(data)` | `&[f32]` | `Vec<u8>` | 18 bytes per 32 values |
-| `quantize_q4_k(data)` | `&[f32]` | `Vec<u8>` | 148 bytes per 256 values |
-| `quantize_q4_k_gguf(data)` | `&[f32]` | `Vec<u8>` | 144 bytes, GGUF-compatible |
-| `quantize_q4_kf(data)` | `&[f32]` | `Vec<u8>` | 160 bytes, pre-baked scales |
-| `quantize_q6_k(data)` | `&[f32]` | `Vec<u8>` | 210 bytes per 256 values |
-| `quantize_to_q8(x)` | `&[f32]` | `(Vec<i8>, Vec<f32>)` | Values + per-block scales |
-| `q4k_to_q4kf(data, rows, hidden)` | Q4_K bytes | `Vec<u8>` | Format conversion |
-| `f16_to_f32(bits)` | `u16` | `f32` | Shared helper |
+| Function                          | Input      | Output                | Notes                       |
+|-----------------------------------|------------|-----------------------|-----------------------------|
+| `quantize_q4_0(data)`             | `&[f32]`   | `Vec<u8>`             | 18 bytes per 32 values      |
+| `quantize_q4_k(data)`             | `&[f32]`   | `Vec<u8>`             | 148 bytes per 256 values    |
+| `quantize_q4_k_gguf(data)`        | `&[f32]`   | `Vec<u8>`             | 144 bytes, GGUF-compatible  |
+| `quantize_q4_kf(data)`            | `&[f32]`   | `Vec<u8>`             | 160 bytes, pre-baked scales |
+| `quantize_q6_k(data)`             | `&[f32]`   | `Vec<u8>`             | 210 bytes per 256 values    |
+| `quantize_to_q8(x)`               | `&[f32]`   | `(Vec<i8>, Vec<f32>)` | Values + per-block scales   |
+| `q4k_to_q4kf(data, rows, hidden)` | Q4_K bytes | `Vec<u8>`             | Format conversion           |
+| `f16_to_f32(bits)`                | `u16`      | `f32`                 | Shared helper               |

@@ -23,11 +23,11 @@ Both use the same architecture: rows 0..q_rows → Q output, q_rows..q_rows+k_ro
 
 ## Benchmark (M3 Max, QKV = 5120 rows × 2560 hidden, 21 layers)
 
-| Kernel | attn/21L | Speedup vs Q8 | Notes |
-|--------|----------|---------------|-------|
-| Q8 separate (3 dispatches) | 18.4ms | 1.0x | Baseline |
-| Q8 fused (1 dispatch) | 10.2ms | 1.8x | Our design |
-| Q4_K fused | 10.3ms | 1.78x | Our design, smaller data |
+| Kernel                     | attn/21L | Speedup vs Q8 | Notes                    |
+|----------------------------|----------|---------------|--------------------------|
+| Q8 separate (3 dispatches) | 18.4ms   | 1.0x          | Baseline                 |
+| Q8 fused (1 dispatch)      | 10.2ms   | 1.8x          | Our design               |
+| Q4_K fused                 | 10.3ms   | 1.78x         | Our design, smaller data |
 
 ## Consequences
 

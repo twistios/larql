@@ -22,10 +22,10 @@ The fused kernel's TG geometry is 4 simdgroups × 32 threads = 128 threads, prod
 
 The two stride patterns can't share a register tile across simdgroups, so the same 2560-element H + norm_w arrays are reread once per simdgroup × 4 simdgroups = **3 redundant device-memory traversals per TG**. Per-kernel batched diag:
 
-| Kernel | bat ms/layer | × 34 | GB/s |
-|---|---|---|---|
-| `q4k_q6k_qkv_proj_normed` (fused) | 0.135 | 4.59 ms | 199 |
-| `q4k_q6k_qkv_proj` (non-fused) + `rms_norm` dispatch | 0.092 + 0.007 ≈ 0.099 | 3.37 ms | 287 |
+| Kernel                                               | bat ms/layer          | × 34    | GB/s |
+|------------------------------------------------------|-----------------------|---------|------|
+| `q4k_q6k_qkv_proj_normed` (fused)                    | 0.135                 | 4.59 ms | 199  |
+| `q4k_q6k_qkv_proj` (non-fused) + `rms_norm` dispatch | 0.092 + 0.007 ≈ 0.099 | 3.37 ms | 287  |
 
 The 88 GB/s gap (199 → 287) corresponds to ~30% of the H + norm_w traffic getting cut once the inner matvec doesn't have to recompute the per-row normalised input four times.
 
@@ -33,20 +33,20 @@ The 88 GB/s gap (199 → 287) corresponds to ~30% of the H + norm_w traffic gett
 
 `larql bench --warmup 8 -n 100`, M3 Max, gemma3-4b-q4k-v2:
 
-| config | tok/s | mean ms/tok | GPU fwd | output |
-|---|---|---|---|---|
-| baseline 1 (fused, default) | 84.8 | 11.79 | 11.79 | "Paris" ✓ |
-| **defused** | **86.5** | **11.57** | **11.52** | "Paris" ✓ |
-| baseline 2 (drift check) | 85.0 | 11.77 | 11.86 | "Paris" ✓ |
+| config                      | tok/s    | mean ms/tok | GPU fwd   | output    |
+|-----------------------------|----------|-------------|-----------|-----------|
+| baseline 1 (fused, default) | 84.8     | 11.79       | 11.79     | "Paris" ✓ |
+| **defused**                 | **86.5** | **11.57**   | **11.52** | "Paris" ✓ |
+| baseline 2 (drift check)    | 85.0     | 11.77       | 11.86     | "Paris" ✓ |
 
 Drift between baselines: 0.02 ms (well below signal). **Defuse delta: +1.6 tok/s, −0.30 ms/tok GPU fwd.**
 
 Side-by-side post-promotion (warmup 8, n 100, ollama gemma3:4b on same machine):
 
-| | tok/s | ms/tok | gap |
-|---|---|---|---|
-| larql-metal (defused default) | 88.1 | 11.35 | — |
-| ollama gemma3:4b | 103.2 | 9.69 | 1.17× |
+|                               | tok/s | ms/tok | gap   |
+|-------------------------------|-------|--------|-------|
+| larql-metal (defused default) | 88.1  | 11.35  | —     |
+| ollama gemma3:4b              | 103.2 | 9.69   | 1.17× |
 
 ## Magnitude undershoot — see ADR-015
 

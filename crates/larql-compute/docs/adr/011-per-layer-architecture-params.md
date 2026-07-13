@@ -10,26 +10,26 @@ Move all architecture-dependent parameters from global function arguments to per
 
 ### Fields added to FullPipelineLayer (18 new)
 
-| Field | Type | Purpose |
-|-------|------|---------|
-| `eps` | f32 | Norm epsilon (was hardcoded 1e-6) |
-| `attn_scale` | f32 | Attention scale (was 1/sqrt(head_dim)) |
-| `head_dim` | usize | Head dimension (was global arg) |
-| `num_q_heads` | usize | Q heads (was global arg) |
-| `num_kv_heads` | usize | KV heads (was global arg) |
-| `rope_base` | f32 | RoPE theta (was global arg) |
-| `rotary_dim` | usize | Partial RoPE dims (new) |
-| `sliding_window` | usize | Window size (new) |
-| `has_v_norm` | bool | V-norm flag (new) |
-| `layer_scalar` | f32 | Per-layer scalar (new) |
-| `norm_type` | NormType | RMSNorm vs LayerNorm (new) |
-| `ffn_type` | FfnType | Gated vs Standard (new) |
-| `activation` | Activation | SiLU vs GeluTanh (replaces use_gelu_tanh) |
-| `qk_norm_offset` | f32 | QK norm weight offset (new) |
-| `input_norm_bias` | Option | LayerNorm bias (new) |
-| `post_attn_norm_bias` | Option | LayerNorm bias (new) |
-| `ffn_up_bias` | Option | FFN bias (new) |
-| `ffn_down_bias` | Option | FFN bias (new) |
+| Field                 | Type       | Purpose                                   |
+|-----------------------|------------|-------------------------------------------|
+| `eps`                 | f32        | Norm epsilon (was hardcoded 1e-6)         |
+| `attn_scale`          | f32        | Attention scale (was 1/sqrt(head_dim))    |
+| `head_dim`            | usize      | Head dimension (was global arg)           |
+| `num_q_heads`         | usize      | Q heads (was global arg)                  |
+| `num_kv_heads`        | usize      | KV heads (was global arg)                 |
+| `rope_base`           | f32        | RoPE theta (was global arg)               |
+| `rotary_dim`          | usize      | Partial RoPE dims (new)                   |
+| `sliding_window`      | usize      | Window size (new)                         |
+| `has_v_norm`          | bool       | V-norm flag (new)                         |
+| `layer_scalar`        | f32        | Per-layer scalar (new)                    |
+| `norm_type`           | NormType   | RMSNorm vs LayerNorm (new)                |
+| `ffn_type`            | FfnType    | Gated vs Standard (new)                   |
+| `activation`          | Activation | SiLU vs GeluTanh (replaces use_gelu_tanh) |
+| `qk_norm_offset`      | f32        | QK norm weight offset (new)               |
+| `input_norm_bias`     | Option     | LayerNorm bias (new)                      |
+| `post_attn_norm_bias` | Option     | LayerNorm bias (new)                      |
+| `ffn_up_bias`         | Option     | FFN bias (new)                            |
+| `ffn_down_bias`       | Option     | FFN bias (new)                            |
 
 ### New enums
 

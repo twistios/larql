@@ -68,18 +68,18 @@ Future `larql-compute-vulkan`, `larql-compute-cuda` follow the same shape. No fu
 
 ### Trait + type ownership
 
-| Type / fn                              | Lives in                       | Notes                                                                 |
-|----------------------------------------|--------------------------------|-----------------------------------------------------------------------|
-| `ComputeBackend`, `MatMul`, `QuantMatVec`, `DecodeBackend`, `Capability` | `larql-compute`                | Unchanged. The contract every backend implements.                     |
-| `CpuBackend`                            | `larql-compute`                | Unchanged.                                                            |
-| `cpu_backend()`                         | `larql-compute`                | Unchanged. Always returns CPU.                                        |
-| `default_backend()`                     | `larql-compute`                | **Returns CPU only.** No cfg branches. Callers who want GPU call the GPU crate's constructor explicitly. |
-| `MoeLayerWeights`, `FullPipelineLayer`, `Activation`, `QuantFormat`, etc. | `larql-compute`                | Pipeline types stay — they're the trait's argument vocabulary.        |
-| `Q8KActivation`, `quantize_x_to_q8k`    | `larql-compute`                | CPU primitive used cross-crate (server's expert routes).              |
-| `MetalBackend`                          | `larql-compute-metal`          | Implements `larql_compute::ComputeBackend` for itself.                |
-| `MoeScratch`, `BackendOptions`, `DecodeFlags`, `MetalBuffer` (Buffer re-export) | `larql-compute-metal`          | Today re-exported through `larql-compute`; move to the Metal crate.   |
-| `metal_take_last_split_timings`         | `larql-compute-metal`          | Renamed to plain `take_last_split_timings` since the crate prefix already disambiguates. |
-| `metal_backend()` / `metal_backend_with_options()` | `larql-compute-metal`          | New constructors — return `Option<MetalBackend>`. Replace `MetalBackend::new()` at call sites if desired. |
+| Type / fn                                                                       | Lives in              | Notes                                                                                                     |
+|---------------------------------------------------------------------------------|-----------------------|-----------------------------------------------------------------------------------------------------------|
+| `ComputeBackend`, `MatMul`, `QuantMatVec`, `DecodeBackend`, `Capability`        | `larql-compute`       | Unchanged. The contract every backend implements.                                                         |
+| `CpuBackend`                                                                    | `larql-compute`       | Unchanged.                                                                                                |
+| `cpu_backend()`                                                                 | `larql-compute`       | Unchanged. Always returns CPU.                                                                            |
+| `default_backend()`                                                             | `larql-compute`       | **Returns CPU only.** No cfg branches. Callers who want GPU call the GPU crate's constructor explicitly.  |
+| `MoeLayerWeights`, `FullPipelineLayer`, `Activation`, `QuantFormat`, etc.       | `larql-compute`       | Pipeline types stay — they're the trait's argument vocabulary.                                            |
+| `Q8KActivation`, `quantize_x_to_q8k`                                            | `larql-compute`       | CPU primitive used cross-crate (server's expert routes).                                                  |
+| `MetalBackend`                                                                  | `larql-compute-metal` | Implements `larql_compute::ComputeBackend` for itself.                                                    |
+| `MoeScratch`, `BackendOptions`, `DecodeFlags`, `MetalBuffer` (Buffer re-export) | `larql-compute-metal` | Today re-exported through `larql-compute`; move to the Metal crate.                                       |
+| `metal_take_last_split_timings`                                                 | `larql-compute-metal` | Renamed to plain `take_last_split_timings` since the crate prefix already disambiguates.                  |
+| `metal_backend()` / `metal_backend_with_options()`                              | `larql-compute-metal` | New constructors — return `Option<MetalBackend>`. Replace `MetalBackend::new()` at call sites if desired. |
 
 ### `default_backend()` semantics change
 

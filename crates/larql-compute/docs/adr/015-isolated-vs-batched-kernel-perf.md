@@ -21,12 +21,12 @@ production workload.
 
 ## Four confirmed instances
 
-| Kernel | Isolated speedup | Batched delta | End-to-end | Outcome |
-|---|---|---|---|---|
-| `q4k_ffn_gate_up_f16acc` (2026-04-28) | 1.79× (0.607 → 0.340 ms) | within noise | parity on quiet GPU | opt-in only (`LARQL_F16_ACC=1`) |
-| `attn_fused` (2026-05-01) | merged 2 kernels into 1 | TGs collapse 12 → 8 | **−1.45 ms regression** | opt-in only (`LARQL_FUSED_ATTN=1`) |
-| `q4k_ffn_gate_up_nr2` (2026-05-02) | 1.47× (0.591 → 0.401 ms iso) | 279 → 267 GB/s (−4%) | **−0.62 ms regression on GPU fwd** (re-bench 2026-05-09: 11.71 → 12.05 ms, **−0.34 ms / −2.9 tok/s**, direction matched batched diag) | **kernel + `LARQL_GATE_UP_NR2` env-var removed 2026-05-09**; the second bench confirmed the batched-diag prediction so the candidate was retired rather than left dangling as opt-in |
-| **`q4k_matvec` lm_head** (broken-fast → fixed) | n/a — different category | 1.47 ms (broken) vs stride-32's 2.95 ms | initially +10 tok/s but FAILED smoke ("Capital" / truncated). **Root cause: dispatch geometry mismatch, not kernel-level drift. Fixed 2026-05-02 — kernel was correct all along.** | now production default; fixed `pipeline.rows_per_tg` / `threads_per_tg` lookup. Net **+8 tok/s end-to-end**. |
+| Kernel                                         | Isolated speedup             | Batched delta                           | End-to-end                                                                                                                                                                         | Outcome                                                                                                                                                                              |
+|------------------------------------------------|------------------------------|-----------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `q4k_ffn_gate_up_f16acc` (2026-04-28)          | 1.79× (0.607 → 0.340 ms)     | within noise                            | parity on quiet GPU                                                                                                                                                                | opt-in only (`LARQL_F16_ACC=1`)                                                                                                                                                      |
+| `attn_fused` (2026-05-01)                      | merged 2 kernels into 1      | TGs collapse 12 → 8                     | **−1.45 ms regression**                                                                                                                                                            | opt-in only (`LARQL_FUSED_ATTN=1`)                                                                                                                                                   |
+| `q4k_ffn_gate_up_nr2` (2026-05-02)             | 1.47× (0.591 → 0.401 ms iso) | 279 → 267 GB/s (−4%)                    | **−0.62 ms regression on GPU fwd** (re-bench 2026-05-09: 11.71 → 12.05 ms, **−0.34 ms / −2.9 tok/s**, direction matched batched diag)                                              | **kernel + `LARQL_GATE_UP_NR2` env-var removed 2026-05-09**; the second bench confirmed the batched-diag prediction so the candidate was retired rather than left dangling as opt-in |
+| **`q4k_matvec` lm_head** (broken-fast → fixed) | n/a — different category     | 1.47 ms (broken) vs stride-32's 2.95 ms | initially +10 tok/s but FAILED smoke ("Capital" / truncated). **Root cause: dispatch geometry mismatch, not kernel-level drift. Fixed 2026-05-02 — kernel was correct all along.** | now production default; fixed `pipeline.rows_per_tg` / `threads_per_tg` lookup. Net **+8 tok/s end-to-end**.                                                                         |
 
 The mechanisms differ but the symptom is identical at the perf level — a
 candidate that looks like a strict win at one measurement granularity and
@@ -111,12 +111,12 @@ canonical record at [ADR-016](016-defused-rms-norm-qkv.md)) is the first
 case where the batched diag's *direction* matched but its *magnitude*
 did not.
 
-| measurement | predicted | observed |
-|---|---|---|
-| batched diag (kernel-only) | 4.59 ms (fused) → 3.13 ms (non-fused) = −1.46 ms |  |
-| + rms_norm dispatch added back | +0.24 ms (1 dispatch × 34 layers × 7 µs) |  |
-| **predicted end-to-end Δ** | **−1.22 ms/tok** |  |
-| **measured end-to-end Δ** |  | **−0.22 ms/tok** (warmup 8, n=100, drift 0.02 ms) |
+| measurement                    | predicted                                        | observed                                          |
+|--------------------------------|--------------------------------------------------|---------------------------------------------------|
+| batched diag (kernel-only)     | 4.59 ms (fused) → 3.13 ms (non-fused) = −1.46 ms |                                                   |
+| + rms_norm dispatch added back | +0.24 ms (1 dispatch × 34 layers × 7 µs)         |                                                   |
+| **predicted end-to-end Δ**     | **−1.22 ms/tok**                                 |                                                   |
+| **measured end-to-end Δ**      |                                                  | **−0.22 ms/tok** (warmup 8, n=100, drift 0.02 ms) |
 
 The non-fused kernel's 287 GB/s peak is a *single-kernel-in-isolation*
 number. In the production decode pipeline, it shares the LPDDR5X bus with

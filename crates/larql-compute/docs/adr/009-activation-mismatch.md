@@ -52,11 +52,11 @@ This is the reason the real model benchmark shows wrong output on the GPU path. 
 
 ## Models Affected
 
-| Model | Activation | GPU Path |
-|-------|-----------|----------|
-| Gemma 2/3 | GELU-tanh | ❌ Wrong |
-| Llama 2/3 | SiLU | ✅ Correct |
-| Mistral | SiLU | ✅ Correct |
-| Qwen2 | SiLU | ✅ Correct |
-| Phi | GELU-approx | ❌ Wrong |
-| GPT-2 | GELU | ❌ Wrong |
+| Model     | Activation  | GPU Path  |
+|-----------|-------------|-----------|
+| Gemma 2/3 | GELU-tanh   | ❌ Wrong   |
+| Llama 2/3 | SiLU        | ✅ Correct |
+| Mistral   | SiLU        | ✅ Correct |
+| Qwen2     | SiLU        | ✅ Correct |
+| Phi       | GELU-approx | ❌ Wrong   |
+| GPT-2     | GELU        | ❌ Wrong   |

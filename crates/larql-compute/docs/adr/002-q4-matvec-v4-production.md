@@ -10,13 +10,13 @@ v4 (`q4_matvec_v4`) is the production kernel for Q4_0 FFN operations.
 
 ## Benchmark (M3 Max, [10240, 2560] = 14.7MB Q4_0)
 
-| Variant | Time | Bandwidth | Technique |
-|---------|------|-----------|-----------|
-| v1 | 0.48ms | 31 GB/s | Simdgroup + threadgroup shared memory |
-| v2 | 0.36ms | 41 GB/s | 4 rows per thread, f32 input |
-| v3 | 0.66ms | 22 GB/s | 8 rows unrolled (register spilling) |
-| **v4** | **0.26ms** | **57 GB/s** | **uint32 wide loads + simdgroup** |
-| v5 | 0.26ms | 57 GB/s | 256 rows/TG, no simd (same speed) |
+| Variant | Time       | Bandwidth   | Technique                             |
+|---------|------------|-------------|---------------------------------------|
+| v1      | 0.48ms     | 31 GB/s     | Simdgroup + threadgroup shared memory |
+| v2      | 0.36ms     | 41 GB/s     | 4 rows per thread, f32 input          |
+| v3      | 0.66ms     | 22 GB/s     | 8 rows unrolled (register spilling)   |
+| **v4**  | **0.26ms** | **57 GB/s** | **uint32 wide loads + simdgroup**     |
+| v5      | 0.26ms     | 57 GB/s     | 256 rows/TG, no simd (same speed)     |
 
 ## Key Techniques in v4
 

@@ -50,12 +50,12 @@ vs Ollama: 1.79x → 0.83x (from 79% slower to 17% FASTER)
 
 ## Affected Kernels
 
-| Kernel | File | What changed |
-|--------|------|-------------|
-| `rms_norm` | residual_inject.rs | stripe + simd_sum + tg_reduce |
-| `rms_norm_q8` | fused_ops.rs | same + simd_max for Q8 block max |
-| `residual_norm` | fused_ops.rs | same (residual add + norm) |
-| `residual_norm_q8` | fused_ops.rs | same (residual add + norm + Q8) |
+| Kernel             | File               | What changed                     |
+|--------------------|--------------------|----------------------------------|
+| `rms_norm`         | residual_inject.rs | stripe + simd_sum + tg_reduce    |
+| `rms_norm_q8`      | fused_ops.rs       | same + simd_max for Q8 block max |
+| `residual_norm`    | fused_ops.rs       | same (residual add + norm)       |
+| `residual_norm_q8` | fused_ops.rs       | same (residual add + norm + Q8)  |
 
 ## Consequences
 

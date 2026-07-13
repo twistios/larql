@@ -10,10 +10,10 @@ See `bench/baselines/cpu/COMPARISON.md` (2026-05-15) and `bench/baselines/cpu/DI
 Per-core thread-scaling table from the diagnosis:
 
 | Threads | larql | llama.cpp | Per-core ratio |
-|---:|---:|---:|---:|
-| 1 | 5.7 | 9.88 | **1.73×** |
-| 4 | 18.4 | 31.86 | 1.73× |
-| 8 | 24.6 | 42.13 | 1.71× |
+|--------:|------:|----------:|---------------:|
+|       1 |   5.7 |      9.88 |      **1.73×** |
+|       4 |  18.4 |     31.86 |          1.73× |
+|       8 |  24.6 |     42.13 |          1.71× |
 
 The ratio is **constant across thread counts** — this is a per-core kernel-quality issue, not a scaling problem. Effective Q4K weight bandwidth:
 
@@ -31,12 +31,12 @@ Both engines:
 
 The difference is in the inner loop's instruction stream:
 
-| Layer | llama.cpp (`ggml_vec_dot_q4_K_q8_K`) | larql (`q4k_q8k_matvec_neon`) |
-|---|---|---|
-| Inner kernel | Hand-written inline aarch64 asm | Rust `core::arch::aarch64::vdotq_s32` intrinsics, lowered by LLVM |
-| Block interleaving | Two adjacent super-blocks interleaved in the asm to keep both load units busy | One super-block at a time (parity-tested helpers compose) |
-| Prefetch | Explicit `prfm pldl1strm` hints ahead of the matvec stream | LLVM emits prefetch heuristically |
-| Block layout | Pre-formatted lo/hi nibble pairs ready for `tbl` / `ushr` | GGUF on-disk Q4K layout; unpack inside the matvec each block |
+| Layer              | llama.cpp (`ggml_vec_dot_q4_K_q8_K`)                                          | larql (`q4k_q8k_matvec_neon`)                                     |
+|--------------------|-------------------------------------------------------------------------------|-------------------------------------------------------------------|
+| Inner kernel       | Hand-written inline aarch64 asm                                               | Rust `core::arch::aarch64::vdotq_s32` intrinsics, lowered by LLVM |
+| Block interleaving | Two adjacent super-blocks interleaved in the asm to keep both load units busy | One super-block at a time (parity-tested helpers compose)         |
+| Prefetch           | Explicit `prfm pldl1strm` hints ahead of the matvec stream                    | LLVM emits prefetch heuristically                                 |
+| Block layout       | Pre-formatted lo/hi nibble pairs ready for `tbl` / `ushr`                     | GGUF on-disk Q4K layout; unpack inside the matvec each block      |
 
 LLVM's instruction scheduling from intrinsic IR is good but not optimal on this kind of byte-unpacking-heavy hot loop. On a wide-issue core like M3 Max where both load ports + 4 SDOT pipes can fire per cycle, **tight scheduling matters**. The intrinsics produce ~33 cycles/super-block on this workload; hand-asm closes it to ~21 cycles/super-block.
 
@@ -132,11 +132,11 @@ change here (fast, isolated) before any end-to-end tok/s run.
 
 **Result (M3 Max, single thread):**
 
-| shape | bytes | neon | scalar |
-|---|---:|---:|---:|
-| `ffn_gate_up` 10240×2560 | ~14 MB | **17.7 GiB/s** | — |
-| `ffn_down_shape` 2560×10240 | ~14 MB | 17.8 GiB/s | — |
-| `attn_proj` 2560×2560 | ~3.7 MB | 17.7 GiB/s | 9.3 GiB/s |
+| shape                       |   bytes |           neon |    scalar |
+|-----------------------------|--------:|---------------:|----------:|
+| `ffn_gate_up` 10240×2560    |  ~14 MB | **17.7 GiB/s** |         — |
+| `ffn_down_shape` 2560×10240 |  ~14 MB |     17.8 GiB/s |         — |
+| `attn_proj` 2560×2560       | ~3.7 MB |     17.7 GiB/s | 9.3 GiB/s |
 
 **Verdict: compute/issue-bound, NOT DRAM-bandwidth-bound.** Two
 independent reads:

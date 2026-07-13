@@ -39,22 +39,22 @@ Starting from ~14 dispatches/layer (~476/token):
 
 **2026-04-25 wave** (4 fusions, ~136 dispatches/token saved):
 
-| Fusion | Dispatches saved | Technique |
-|---|---|---|
-| `qk_norm_qk` | 34/token | One dispatch for Q+K heads instead of two |
-| `rope_at_pos_batched_qk` | 34/token | One dispatch for Q+K heads |
-| `residual_norm_store` | 34/token | Writes normed + raw sum simultaneously |
-| `q4k_q6k_qkv_proj_normed` | 34/token | Norm computed inline in QKV TGs |
+| Fusion                    | Dispatches saved | Technique                                 |
+|---------------------------|------------------|-------------------------------------------|
+| `qk_norm_qk`              | 34/token         | One dispatch for Q+K heads instead of two |
+| `rope_at_pos_batched_qk`  | 34/token         | One dispatch for Q+K heads                |
+| `residual_norm_store`     | 34/token         | Writes normed + raw sum simultaneously    |
+| `q4k_q6k_qkv_proj_normed` | 34/token         | Norm computed inline in QKV TGs           |
 
 **2026-05-01 / 2026-05-02 wave** (5 fusions, ~136 dispatches/token saved):
 
-| Fusion | Dispatches saved | Technique |
-|---|---|---|
-| `qk_norm_rope_fused` | 34/token | One TG/head: RMS-norm + RoPE in one pass; supersedes the qk_norm_qk + rope chain |
-| `kv_append_attend_fused` | 34/token | Per-Q-head TG cooperatively writes new K/V row at pos, then attends; absorbs the kv_cache_append dispatch |
-| `post_attn_residual_norm_store` | ~68/token | Triple fusion on the `has_post_norms` path: post-attn RMS + residual + ffn-norm + store |
-| `post_ffn_norm_residual_add` | 34/token | Single 1-TG kernel: RMS over down_out + per-element norm + residual sum into next-layer input |
-| (`attn_fused` — opt-in only) | — | Attempted further merge of qk_norm_rope + kv_append_attend; regressed -1.45 ms (parallelism loss). Kept registered as `LARQL_FUSED_ATTN=1`. |
+| Fusion                          | Dispatches saved | Technique                                                                                                                                   |
+|---------------------------------|------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
+| `qk_norm_rope_fused`            | 34/token         | One TG/head: RMS-norm + RoPE in one pass; supersedes the qk_norm_qk + rope chain                                                            |
+| `kv_append_attend_fused`        | 34/token         | Per-Q-head TG cooperatively writes new K/V row at pos, then attends; absorbs the kv_cache_append dispatch                                   |
+| `post_attn_residual_norm_store` | ~68/token        | Triple fusion on the `has_post_norms` path: post-attn RMS + residual + ffn-norm + store                                                     |
+| `post_ffn_norm_residual_add`    | 34/token         | Single 1-TG kernel: RMS over down_out + per-element norm + residual sum into next-layer input                                               |
+| (`attn_fused` — opt-in only)    | —                | Attempted further merge of qk_norm_rope + kv_append_attend; regressed -1.45 ms (parallelism loss). Kept registered as `LARQL_FUSED_ATTN=1`. |
 
 Current: ~306 dispatches/token (9 dispatches/layer × 34 layers).
 At measured ~6 µs/saved-dispatch this is ~1.84 ms of dispatch overhead;
@@ -150,11 +150,11 @@ placement at the end of `Gemma4TextDecoderLayer.forward`.
 
 **Measured gain (Gemma 4 26B A4B, M3 Max, 15 warmup / 30 tokens):**
 
-| Metric | Before | After | Δ |
-|--------|--------|-------|---|
-| Prefill (5-token) | 1889ms | 1297ms | **−31%** |
-| Decode GPU fwd | 334ms/tok | 246ms/tok | **−26%** |
-| Decode tok/s | 2.9 | **3.9** | **+35%** |
+| Metric            | Before    | After     | Δ        |
+|-------------------|-----------|-----------|----------|
+| Prefill (5-token) | 1889ms    | 1297ms    | **−31%** |
+| Decode GPU fwd    | 334ms/tok | 246ms/tok | **−26%** |
+| Decode tok/s      | 2.9       | **3.9**   | **+35%** |
 
 **KV cache:** Per-layer variant `populate_kv_one_layer` (in `kv_copy.rs`)
 copies one layer's K/V scratch immediately after each per-layer commit,
@@ -164,10 +164,10 @@ so the cache is current before the MoE callback reads `h_post_attn`.
 
 ### Gemma 3 4B (dense, 34 layers, all five 2026-05 fusions default-on)
 
-| Path | GPU fwd | tok/s | vs Ollama |
-|---|---|---|---|
+| Path                       | GPU fwd         | tok/s     | vs Ollama             |
+|----------------------------|-----------------|-----------|-----------------------|
 | **Q4_K+Q6_K decode (34L)** | **11.5–12.0ms** | **72–75** | **1.30–1.45×** slower |
-| Ollama gemma3:4b | ~10ms | 96–104 | 1.0× |
+| Ollama gemma3:4b           | ~10ms           | 96–104    | 1.0×                  |
 
 Per-stage: GPU fwd 79%, lm_head 20%.
 
@@ -180,9 +180,9 @@ documented in `crates/larql-inference/ROADMAP.md` (G-3, G-5 still open).
 
 ### Gemma 4 26B A4B (hybrid MoE, 26 layers, batched prefill)
 
-| Metric | tok/s | GPU fwd/tok |
-|---|---|---|
-| **LARQL Metal** | **3.9** | **246ms** |
+| Metric          | tok/s   | GPU fwd/tok |
+|-----------------|---------|-------------|
+| **LARQL Metal** | **3.9** | **246ms**   |
 
 Effective bandwidth: LARQL ~329 GB/s, Ollama ~348 GB/s (Gemma 3).
 Total weight data per token: 3029 MB (34 layers × 89.1 MB/layer).

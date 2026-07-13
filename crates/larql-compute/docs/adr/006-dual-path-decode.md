@@ -30,11 +30,11 @@ Original LARQL design. Q4_K path eliminates the Q8 quantization step, saving one
 
 ## Benchmark
 
-| Path | Decode/21L | tok/s | Notes |
-|------|-----------|-------|-------|
-| Q4_K | 16.9ms | 59 | Skips Q8 quantize, smaller data |
-| Q8 | 24.3ms | 41 | Higher precision, larger data |
-| Speedup | 1.44x | | |
+| Path    | Decode/21L | tok/s | Notes                           |
+|---------|------------|-------|---------------------------------|
+| Q4_K    | 16.9ms     | 59    | Skips Q8 quantize, smaller data |
+| Q8      | 24.3ms     | 41    | Higher precision, larger data   |
+| Speedup | 1.44x      |       |                                 |
 
 ## Consequences
 

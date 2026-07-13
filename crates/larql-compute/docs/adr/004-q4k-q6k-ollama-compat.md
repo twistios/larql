@@ -17,12 +17,12 @@ Implement Q4_K and Q6_K Metal shaders and CPU reference implementations that rea
 
 ## Q4_K Block Layouts
 
-| Field | LARQL (148B) | GGUF (144B) |
-|-------|-------------|-------------|
-| d, dmin | 2+2 bytes (f16) | 2+2 bytes (half) |
-| Scales | 12 bytes (8×6-bit) | 12 bytes (8×6-bit scale + 8×6-bit min packed) |
-| Mins | 4 bytes (8×4-bit) | (packed into scales) |
-| Nibbles | 128 bytes | 128 bytes |
+| Field   | LARQL (148B)       | GGUF (144B)                                   |
+|---------|--------------------|-----------------------------------------------|
+| d, dmin | 2+2 bytes (f16)    | 2+2 bytes (half)                              |
+| Scales  | 12 bytes (8×6-bit) | 12 bytes (8×6-bit scale + 8×6-bit min packed) |
+| Mins    | 4 bytes (8×4-bit)  | (packed into scales)                          |
+| Nibbles | 128 bytes          | 128 bytes                                     |
 
 ## Consequences
 

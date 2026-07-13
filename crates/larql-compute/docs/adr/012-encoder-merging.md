@@ -10,14 +10,14 @@ Final architecture: **single command buffer** for all 34 layers, **single encode
 
 ## What Worked (29.2ms → ~12.9ms = 2.3x faster)
 
-| Optimization | Savings | Notes |
-|-------------|---------|-------|
-| Q4_KF FFN routing (q4kf_proj) | ~8ms | llama.cpp-exact kernel for FFN gate/up/down |
-| Q4_K matvec rewrite (uint4, nr0=2) | ~3ms | Vectorized loads, multi-row |
-| Q4_K format for FFN (skip Q8) | ~4.5ms | residual_norm instead of residual_norm_q8 |
-| Fused gate+up (q4k_ffn_gate_up) | ~1ms | Single dispatch, shared input |
-| Batched RoPE + V-norm | ~0.5ms | 16 per-head dispatches → 3 batched |
-| SIMD KV attention | ~1ms | simd_max/simd_sum, 3 barriers (was 6) |
+| Optimization                       | Savings | Notes                                       |
+|------------------------------------|---------|---------------------------------------------|
+| Q4_KF FFN routing (q4kf_proj)      | ~8ms    | llama.cpp-exact kernel for FFN gate/up/down |
+| Q4_K matvec rewrite (uint4, nr0=2) | ~3ms    | Vectorized loads, multi-row                 |
+| Q4_K format for FFN (skip Q8)      | ~4.5ms  | residual_norm instead of residual_norm_q8   |
+| Fused gate+up (q4k_ffn_gate_up)    | ~1ms    | Single dispatch, shared input               |
+| Batched RoPE + V-norm              | ~0.5ms  | 16 per-head dispatches → 3 batched          |
+| SIMD KV attention                  | ~1ms    | simd_max/simd_sum, 3 barriers (was 6)       |
 
 ## What Didn't Work
 
