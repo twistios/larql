@@ -27,74 +27,74 @@ LQL is a query language for neural network weights treated as a graph database. 
 
 ### 2.1 Model Lifecycle
 
-| Statement | Purpose |
-|---|---|
-| `EXTRACT` | Decompile model weights → vindex |
-| `COMPILE` | Recompile vindex → model weights |
-| `DIFF` | Compare two vindexes |
-| `USE` | Set active vindex / model context |
+| Statement | Purpose                           |
+|-----------|-----------------------------------|
+| `EXTRACT` | Decompile model weights → vindex  |
+| `COMPILE` | Recompile vindex → model weights  |
+| `DIFF`    | Compare two vindexes              |
+| `USE`     | Set active vindex / model context |
 
 ### 2.2 Knowledge Browser (pure vindex, no model needed)
 
-| Statement | Purpose |
-|---|---|
-| `WALK` | Feature scan — what gate features fire for a token's embedding |
-| `SELECT` | Query edges by entity, relation, layer |
-| `DESCRIBE` | Show all knowledge for an entity, grouped by layer band |
-| `EXPLAIN WALK` | Feature trace without attention (pure vindex) |
+| Statement      | Purpose                                                        |
+|----------------|----------------------------------------------------------------|
+| `WALK`         | Feature scan — what gate features fire for a token's embedding |
+| `SELECT`       | Query edges by entity, relation, layer                         |
+| `DESCRIBE`     | Show all knowledge for an entity, grouped by layer band        |
+| `EXPLAIN WALK` | Feature trace without attention (pure vindex)                  |
 
 ### 2.3 Inference (requires model weights in vindex)
 
-| Statement | Purpose |
-|---|---|
-| `INFER` | Full forward pass with attention — actual next-token prediction |
-| `EXPLAIN INFER` | Full inference with per-layer feature trace |
+| Statement       | Purpose                                                         |
+|-----------------|-----------------------------------------------------------------|
+| `INFER`         | Full forward pass with attention — actual next-token prediction |
+| `EXPLAIN INFER` | Full inference with per-layer feature trace                     |
 
 ### 2.4 Knowledge Mutation
 
-| Statement | Purpose |
-|---|---|
-| `INSERT` | Add an edge (mode `KNN` default, `COMPOSE` FFN-overlay) |
-| `DELETE` | Remove edge(s) from the vindex |
-| `UPDATE` | Modify existing edge(s) |
-| `MERGE` | Merge edges from another vindex |
-| `REBALANCE` | Global fixed-point rebalance over compose installs |
-| `COMPACT MINOR` | Promote L0 KNN entries to L1 compose edges |
+| Statement       | Purpose                                                               |
+|-----------------|-----------------------------------------------------------------------|
+| `INSERT`        | Add an edge (mode `KNN` default, `COMPOSE` FFN-overlay)               |
+| `DELETE`        | Remove edge(s) from the vindex                                        |
+| `UPDATE`        | Modify existing edge(s)                                               |
+| `MERGE`         | Merge edges from another vindex                                       |
+| `REBALANCE`     | Global fixed-point rebalance over compose installs                    |
+| `COMPACT MINOR` | Promote L0 KNN entries to L1 compose edges                            |
 | `COMPACT MAJOR` | Promote L1 compose edges to L2 MEMIT (optional `FULL`, `WITH LAMBDA`) |
 
 ### 2.5 Patches
 
-| Statement | Purpose |
-|---|---|
-| `BEGIN PATCH` | Start recording edits into a patch file |
-| `SAVE PATCH` | Save and close the current patch |
-| `APPLY PATCH` | Apply a patch to the current vindex (stacks) |
-| `REMOVE PATCH` | Remove a patch from the stack |
-| `SHOW PATCHES` | List active patches |
-| `DIFF ... INTO PATCH` | Extract diff between two vindexes as a patch |
-| `COMPILE ... INTO VINDEX` | Bake patches into a new clean vindex |
+| Statement                 | Purpose                                      |
+|---------------------------|----------------------------------------------|
+| `BEGIN PATCH`             | Start recording edits into a patch file      |
+| `SAVE PATCH`              | Save and close the current patch             |
+| `APPLY PATCH`             | Apply a patch to the current vindex (stacks) |
+| `REMOVE PATCH`            | Remove a patch from the stack                |
+| `SHOW PATCHES`            | List active patches                          |
+| `DIFF ... INTO PATCH`     | Extract diff between two vindexes as a patch |
+| `COMPILE ... INTO VINDEX` | Bake patches into a new clean vindex         |
 
 ### 2.6 Schema Introspection
 
-| Statement | Purpose |
-|---|---|
-| `SHOW RELATIONS` | List discovered relation types |
-| `SHOW LAYERS` | Layer-by-layer summary |
-| `SHOW FEATURES` | Feature details at a layer |
-| `SHOW ENTITIES` | Distinct named entities across the loaded layers |
-| `SHOW MODELS` | List available vindexes |
-| `SHOW PATCHES` | List active patches (see §2.5) |
-| `SHOW COMPACT STATUS` | Storage-engine status (L0/L1/L2 tiers, epoch) |
-| `STATS` | Counts, coverage, size |
+| Statement             | Purpose                                          |
+|-----------------------|--------------------------------------------------|
+| `SHOW RELATIONS`      | List discovered relation types                   |
+| `SHOW LAYERS`         | Layer-by-layer summary                           |
+| `SHOW FEATURES`       | Feature details at a layer                       |
+| `SHOW ENTITIES`       | Distinct named entities across the loaded layers |
+| `SHOW MODELS`         | List available vindexes                          |
+| `SHOW PATCHES`        | List active patches (see §2.5)                   |
+| `SHOW COMPACT STATUS` | Storage-engine status (L0/L1/L2 tiers, epoch)    |
+| `STATS`               | Counts, coverage, size                           |
 
 ### 2.7 Residual Stream Trace (requires model weights in vindex)
 
-| Statement | Purpose |
-|---|---|
-| `TRACE` | Capture residual stream decomposition for a prompt |
+| Statement               | Purpose                                                     |
+|-------------------------|-------------------------------------------------------------|
+| `TRACE`                 | Capture residual stream decomposition for a prompt          |
 | `TRACE ... FOR <token>` | Track a specific target token's rank/contribution per layer |
-| `TRACE ... DECOMPOSE` | Show attention vs FFN delta per layer |
-| `TRACE ... SAVE <path>` | Write trace to a file |
+| `TRACE ... DECOMPOSE`   | Show attention vs FFN delta per layer                       |
+| `TRACE ... SAVE <path>` | Write trace to a file                                       |
 
 > Planned (not yet implemented): `TRACE ... DIFF`, boundary stores, tiered
 > context stores. See §11.
@@ -832,26 +832,26 @@ LQL abstracts over two backends through a common trait. Every query statement wo
 
 ### 4.2 Backend Capabilities
 
-| Statement | Vindex | Direct Weights |
-|---|---|---|
-| WALK (feature scan) | ✅ KNN (0.98ms/layer) | ✅ Dense matmul (~6ms/layer) |
-| DESCRIBE | ✅ Pre-computed edges + labels | ✅ On-the-fly per entity |
-| SELECT | ✅ Index lookup | ✅ Live gate×embedding scan |
-| EXPLAIN WALK | ✅ Walk trace from index | ✅ Walk trace from matmul |
-| INFER | ✅ With `--include-weights` | ✅ Full forward pass |
-| EXPLAIN INFER | ✅ With `--include-weights` | ✅ Full forward pass + trace |
-| SHOW RELATIONS | ✅ From label cache | ✅ Cluster on-the-fly (slow) |
-| SHOW LAYERS | ✅ From metadata | ✅ Computed from weights |
-| SHOW FEATURES | ✅ Index lookup | ✅ Dense scan per layer |
-| STATS | ✅ Instant | ✅ Computed |
-| INSERT | ✅ | ❌ Error: "requires vindex" |
-| DELETE | ✅ | ❌ Error: "requires vindex" |
-| UPDATE | ✅ | ❌ Error: "requires vindex" |
-| BEGIN/SAVE/APPLY PATCH | ✅ | ❌ Error: "requires vindex" |
-| SHOW PATCHES | ✅ | ❌ |
-| COMPILE | ✅ | ❌ Error: "requires vindex" |
-| DIFF | ✅ | ⚠️ One side can be weights |
-| MERGE | ✅ | ❌ Error: "requires vindex" |
+| Statement              | Vindex                        | Direct Weights              |
+|------------------------|-------------------------------|-----------------------------|
+| WALK (feature scan)    | ✅ KNN (0.98ms/layer)          | ✅ Dense matmul (~6ms/layer) |
+| DESCRIBE               | ✅ Pre-computed edges + labels | ✅ On-the-fly per entity     |
+| SELECT                 | ✅ Index lookup                | ✅ Live gate×embedding scan  |
+| EXPLAIN WALK           | ✅ Walk trace from index       | ✅ Walk trace from matmul    |
+| INFER                  | ✅ With `--include-weights`    | ✅ Full forward pass         |
+| EXPLAIN INFER          | ✅ With `--include-weights`    | ✅ Full forward pass + trace |
+| SHOW RELATIONS         | ✅ From label cache            | ✅ Cluster on-the-fly (slow) |
+| SHOW LAYERS            | ✅ From metadata               | ✅ Computed from weights     |
+| SHOW FEATURES          | ✅ Index lookup                | ✅ Dense scan per layer      |
+| STATS                  | ✅ Instant                     | ✅ Computed                  |
+| INSERT                 | ✅                             | ❌ Error: "requires vindex"  |
+| DELETE                 | ✅                             | ❌ Error: "requires vindex"  |
+| UPDATE                 | ✅                             | ❌ Error: "requires vindex"  |
+| BEGIN/SAVE/APPLY PATCH | ✅                             | ❌ Error: "requires vindex"  |
+| SHOW PATCHES           | ✅                             | ❌                           |
+| COMPILE                | ✅                             | ❌ Error: "requires vindex"  |
+| DIFF                   | ✅                             | ⚠️ One side can be weights  |
+| MERGE                  | ✅                             | ❌ Error: "requires vindex"  |
 
 ### 4.3 Promotion: Weights → Vindex
 
@@ -876,15 +876,15 @@ Feature labels come from the `larql-knowledge` project and are stored in the vin
 
 ### 5.1 Label Sources (Priority Order)
 
-| Priority | Source | Confidence | Layer Band | Description |
-|----------|--------|------------|------------|-------------|
-| 1 | Probe-confirmed | Highest | Knowledge | Model inference confirmed this feature encodes this relation |
-| 2 | Wikidata output matching | High | Knowledge | Cluster outputs match Wikidata objects |
-| 3 | WordNet output matching | High | Syntax | Cluster outputs match WordNet pairs |
-| 4 | AST output matching | High | Syntax | Cluster outputs match code AST pairs |
-| 5 | Entity pattern detection | Medium | Any | Cluster members match known lists (country, language, month, number) |
-| 6 | Morphological detection | Medium | Syntax | Cluster members are short suffixes/prefixes |
-| 7 | TF-IDF top tokens | Low | Any | Fallback: most distinctive tokens in the cluster |
+| Priority | Source                   | Confidence | Layer Band | Description                                                          |
+|----------|--------------------------|------------|------------|----------------------------------------------------------------------|
+| 1        | Probe-confirmed          | Highest    | Knowledge  | Model inference confirmed this feature encodes this relation         |
+| 2        | Wikidata output matching | High       | Knowledge  | Cluster outputs match Wikidata objects                               |
+| 3        | WordNet output matching  | High       | Syntax     | Cluster outputs match WordNet pairs                                  |
+| 4        | AST output matching      | High       | Syntax     | Cluster outputs match code AST pairs                                 |
+| 5        | Entity pattern detection | Medium     | Any        | Cluster members match known lists (country, language, month, number) |
+| 6        | Morphological detection  | Medium     | Syntax     | Cluster members are short suffixes/prefixes                          |
+| 7        | TF-IDF top tokens        | Low        | Any        | Fallback: most distinctive tokens in the cluster                     |
 
 ### 5.2 Vindex File Layout
 
@@ -937,11 +937,11 @@ gemma3-4b.vindex/
 
 **Size by use case:**
 
-| Use Case | Files Loaded | Size (f16) | Size (f32 current) |
-|----------|-------------|------------|-------------------|
-| Browse only (WALK, DESCRIBE, SELECT) | gate + embed + down_meta + labels | ~3 GB | ~6 GB |
-| Browse + Inference (+ INFER) | Above + attn_weights | ~6 GB | ~9 GB |
-| Full (+ COMPILE) | All files | ~10 GB | ~16 GB |
+| Use Case                             | Files Loaded                      | Size (f16) | Size (f32 current) |
+|--------------------------------------|-----------------------------------|------------|--------------------|
+| Browse only (WALK, DESCRIBE, SELECT) | gate + embed + down_meta + labels | ~3 GB      | ~6 GB              |
+| Browse + Inference (+ INFER)         | Above + attn_weights              | ~6 GB      | ~9 GB              |
+| Full (+ COMPILE)                     | All files                         | ~10 GB     | ~16 GB             |
 
 **Compared to original model:**
 
@@ -958,11 +958,11 @@ Each component loads lazily — DESCRIBE never touches attention weights, INFER 
 
 ### 5.3 Layer-Aware Matching
 
-| Layer Band | Name | Reference Databases | Typical Relations |
-|------------|------|--------------------|--------------------|
-| Syntax (early layers) | Morphological + Syntactic | Morphological lexicon, WordNet, English grammar, AST pairs | plural, gerund, synonym, determiner→noun, py:function_def |
-| Knowledge (middle layers) | Factual + Relational | Wikidata triples, probe labels | capital, language, continent, occupation, genre |
-| Output (late layers) | Formatting | None (formatting) | TF-IDF fallback only |
+| Layer Band                | Name                      | Reference Databases                                        | Typical Relations                                         |
+|---------------------------|---------------------------|------------------------------------------------------------|-----------------------------------------------------------|
+| Syntax (early layers)     | Morphological + Syntactic | Morphological lexicon, WordNet, English grammar, AST pairs | plural, gerund, synonym, determiner→noun, py:function_def |
+| Knowledge (middle layers) | Factual + Relational      | Wikidata triples, probe labels                             | capital, language, continent, occupation, genre           |
+| Output (late layers)      | Formatting                | None (formatting)                                          | TF-IDF fallback only                                      |
 
 Layer band boundaries are model-specific and stored in `index.json`:
 
@@ -980,13 +980,13 @@ Default boundaries are computed during EXTRACT by analysing feature distribution
 
 **Example boundaries by model:**
 
-| Model | Layers | Syntax | Knowledge | Output |
-|-------|--------|--------|-----------|--------|
-| Gemma 3 4B | 34 | 0-13 | 14-27 | 28-33 |
-| Llama 3 8B | 32 | 0-12 | 13-25 | 26-31 |
-| Llama 3 70B | 80 | 0-30 | 31-65 | 66-79 |
-| Mistral 7B | 32 | 0-12 | 13-25 | 26-31 |
-| GPT-2 | 12 | 0-4 | 5-9 | 10-11 |
+| Model       | Layers | Syntax | Knowledge | Output |
+|-------------|--------|--------|-----------|--------|
+| Gemma 3 4B  | 34     | 0-13   | 14-27     | 28-33  |
+| Llama 3 8B  | 32     | 0-12   | 13-25     | 26-31  |
+| Llama 3 70B | 80     | 0-30   | 31-65     | 66-79  |
+| Mistral 7B  | 32     | 0-12   | 13-25     | 26-31  |
+| GPT-2       | 12     | 0-4    | 5-9       | 10-11  |
 
 These are estimates. The actual boundaries are discoverable via `SHOW LAYERS` — the layer where factual features start appearing marks the syntax/knowledge boundary.
 
@@ -1330,62 +1330,62 @@ pub enum ExtractLevel {
 
 ### 8.3 Crate Mapping
 
-| Statement | Crate | Function |
-|---|---|---|
-| EXTRACT | `larql-models` | Read safetensors → write vindex |
-| COMPILE | `larql-models` | Read vindex → write safetensors |
-| WALK | `larql-inference` | Gate KNN on VectorIndex |
-| INFER | `larql-inference` | predict_with_ffn (attention + walk FFN) |
-| SELECT | `larql-core` | Edge query on graph |
-| INSERT/DELETE/UPDATE | `larql-core` | Graph mutation |
-| DESCRIBE | `larql-inference` | Multi-layer gate KNN + label lookup |
-| EXPLAIN | `larql-inference` | Walk/infer with trace capture |
-| MERGE | `larql-core` | Graph union |
-| DIFF | `larql-core` | Graph comparison |
-| SHOW/STATS | `larql-core` + `larql-models` | Metadata queries |
-| USE | `larql-lql` | Session state |
+| Statement            | Crate                         | Function                                |
+|----------------------|-------------------------------|-----------------------------------------|
+| EXTRACT              | `larql-models`                | Read safetensors → write vindex         |
+| COMPILE              | `larql-models`                | Read vindex → write safetensors         |
+| WALK                 | `larql-inference`             | Gate KNN on VectorIndex                 |
+| INFER                | `larql-inference`             | predict_with_ffn (attention + walk FFN) |
+| SELECT               | `larql-core`                  | Edge query on graph                     |
+| INSERT/DELETE/UPDATE | `larql-core`                  | Graph mutation                          |
+| DESCRIBE             | `larql-inference`             | Multi-layer gate KNN + label lookup     |
+| EXPLAIN              | `larql-inference`             | Walk/infer with trace capture           |
+| MERGE                | `larql-core`                  | Graph union                             |
+| DIFF                 | `larql-core`                  | Graph comparison                        |
+| SHOW/STATS           | `larql-core` + `larql-models` | Metadata queries                        |
+| USE                  | `larql-lql`                   | Session state                           |
 
 ### 8.4 Implementation Status
 
-| Component | Status |
-|---|---|
-| LQL Parser | ✅ Done — recursive descent, 90+ keywords, modular subfiles |
-| REPL | ✅ Done — rustyline, history, multi-line, help |
-| USE / STATS | ✅ Done — vindex loading, stats display |
-| SHOW (RELATIONS, LAYERS, FEATURES, MODELS) | ✅ Done |
-| SELECT / DESCRIBE | ✅ Done — vindex edge query, layer band grouping |
-| DESCRIBE layer bands (SYNTAX/KNOWLEDGE/OUTPUT/ALL) | ✅ Done — all bands, per-family boundaries from config |
-| WALK / EXPLAIN WALK | ✅ Done — gate KNN, per-layer feature trace |
-| INFER | ✅ Done — full forward pass with walk FFN (requires `--include-weights`) |
-| EXPLAIN INFER | ✅ Done — inference trace with relation labels |
-| Label loading (feature_labels.json) | ✅ Done — probe-confirmed labels override cluster labels |
-| Cluster-based labels (relation_clusters.json) | ✅ Done — k=512, offset clustering, Wikidata + WordNet + pattern matching |
-| EXTRACT | ✅ Done — full pipeline: gate, embed, down_meta, clustering, split weights |
-| INSERT | ✅ Done — cluster-centre gate synthesis, auto-layer, patch overlay (base readonly) |
-| DELETE | ✅ Done — by layer+feature or entity match, patch overlay |
-| UPDATE | ✅ Done — target/confidence update, patch overlay |
-| COMPILE INTO VINDEX | ✅ Done — bake_down patches into clean vindex |
-| COMPILE INTO MODEL | ✅ Done — reconstructs safetensors from split weight files |
-| DIFF | ✅ Done — feature-level comparison, INTO PATCH export |
-| MERGE | ✅ Done — graph union with KeepSource/KeepTarget/HighestConfidence strategies |
-| BEGIN/SAVE/APPLY/SHOW/REMOVE PATCH | ✅ Done — full patch lifecycle |
-| Auto-patch on mutation | ✅ Done — INSERT/DELETE/UPDATE auto-start anonymous patch session |
-| INSERT MODE {KNN, COMPOSE} | ✅ Done — KNN default (Architecture B), COMPOSE FFN-overlay validated exp 14 |
-| REBALANCE | ✅ Done — global fixed-point rebalance over compose installs |
-| COMPACT MINOR / MAJOR | ✅ Done — L0 → L1 → L2 tier promotion, `SHOW COMPACT STATUS` |
-| SHOW ENTITIES | ✅ Done — named-entity scan across loaded layers |
-| TRACE | ✅ Done — residual decomposition with FOR/DECOMPOSE/POSITIONS/SAVE |
-| Readonly base | ✅ Done — base vindex files never modified, all edits via PatchedVindex overlay |
-| Split weight files | ✅ Done — attn, up, down, norms, lm_head (no gate duplication) |
-| f16 storage | ✅ Done — `--f16` flag, halves file sizes |
-| Vindexfile | ✅ Done — declarative builds (FROM + PATCH + INSERT), `larql build` CLI |
-| USE REMOTE | ✅ Done — HTTP client to larql-server, all queries forwarded, local patch overlay |
-| `larql serve` | ✅ Done — HTTP/gRPC server, all endpoints, multi-model, per-session patches |
-| WeightBackend (USE MODEL) | ✅ Done — direct safetensors, INFER/EXPLAIN INFER/STATS; browse ops guide to EXTRACT |
-| GGUF output format | 🔴 Planned — COMPILE INTO MODEL FORMAT gguf |
-| MXFP4 browse quality | 🟡 Known limitation — gate KNN noisy for 4-bit quantized MoE; INFER works correctly |
-| Gated KNN for MoE | 🔴 Planned — use SiLU(gate)×up instead of raw gate dot product for MXFP4 models |
-| Residual-based DESCRIBE | 🔴 Planned — capture actual residuals for accurate MoE knowledge browse |
+| Component                                          | Status                                                                              |
+|----------------------------------------------------|-------------------------------------------------------------------------------------|
+| LQL Parser                                         | ✅ Done — recursive descent, 90+ keywords, modular subfiles                          |
+| REPL                                               | ✅ Done — rustyline, history, multi-line, help                                       |
+| USE / STATS                                        | ✅ Done — vindex loading, stats display                                              |
+| SHOW (RELATIONS, LAYERS, FEATURES, MODELS)         | ✅ Done                                                                              |
+| SELECT / DESCRIBE                                  | ✅ Done — vindex edge query, layer band grouping                                     |
+| DESCRIBE layer bands (SYNTAX/KNOWLEDGE/OUTPUT/ALL) | ✅ Done — all bands, per-family boundaries from config                               |
+| WALK / EXPLAIN WALK                                | ✅ Done — gate KNN, per-layer feature trace                                          |
+| INFER                                              | ✅ Done — full forward pass with walk FFN (requires `--include-weights`)             |
+| EXPLAIN INFER                                      | ✅ Done — inference trace with relation labels                                       |
+| Label loading (feature_labels.json)                | ✅ Done — probe-confirmed labels override cluster labels                             |
+| Cluster-based labels (relation_clusters.json)      | ✅ Done — k=512, offset clustering, Wikidata + WordNet + pattern matching            |
+| EXTRACT                                            | ✅ Done — full pipeline: gate, embed, down_meta, clustering, split weights           |
+| INSERT                                             | ✅ Done — cluster-centre gate synthesis, auto-layer, patch overlay (base readonly)   |
+| DELETE                                             | ✅ Done — by layer+feature or entity match, patch overlay                            |
+| UPDATE                                             | ✅ Done — target/confidence update, patch overlay                                    |
+| COMPILE INTO VINDEX                                | ✅ Done — bake_down patches into clean vindex                                        |
+| COMPILE INTO MODEL                                 | ✅ Done — reconstructs safetensors from split weight files                           |
+| DIFF                                               | ✅ Done — feature-level comparison, INTO PATCH export                                |
+| MERGE                                              | ✅ Done — graph union with KeepSource/KeepTarget/HighestConfidence strategies        |
+| BEGIN/SAVE/APPLY/SHOW/REMOVE PATCH                 | ✅ Done — full patch lifecycle                                                       |
+| Auto-patch on mutation                             | ✅ Done — INSERT/DELETE/UPDATE auto-start anonymous patch session                    |
+| INSERT MODE {KNN, COMPOSE}                         | ✅ Done — KNN default (Architecture B), COMPOSE FFN-overlay validated exp 14         |
+| REBALANCE                                          | ✅ Done — global fixed-point rebalance over compose installs                         |
+| COMPACT MINOR / MAJOR                              | ✅ Done — L0 → L1 → L2 tier promotion, `SHOW COMPACT STATUS`                         |
+| SHOW ENTITIES                                      | ✅ Done — named-entity scan across loaded layers                                     |
+| TRACE                                              | ✅ Done — residual decomposition with FOR/DECOMPOSE/POSITIONS/SAVE                   |
+| Readonly base                                      | ✅ Done — base vindex files never modified, all edits via PatchedVindex overlay      |
+| Split weight files                                 | ✅ Done — attn, up, down, norms, lm_head (no gate duplication)                       |
+| f16 storage                                        | ✅ Done — `--f16` flag, halves file sizes                                            |
+| Vindexfile                                         | ✅ Done — declarative builds (FROM + PATCH + INSERT), `larql build` CLI              |
+| USE REMOTE                                         | ✅ Done — HTTP client to larql-server, all queries forwarded, local patch overlay    |
+| `larql serve`                                      | ✅ Done — HTTP/gRPC server, all endpoints, multi-model, per-session patches          |
+| WeightBackend (USE MODEL)                          | ✅ Done — direct safetensors, INFER/EXPLAIN INFER/STATS; browse ops guide to EXTRACT |
+| GGUF output format                                 | 🔴 Planned — COMPILE INTO MODEL FORMAT gguf                                         |
+| MXFP4 browse quality                               | 🟡 Known limitation — gate KNN noisy for 4-bit quantized MoE; INFER works correctly |
+| Gated KNN for MoE                                  | 🔴 Planned — use SiLU(gate)×up instead of raw gate dot product for MXFP4 models     |
+| Residual-based DESCRIBE                            | 🔴 Planned — capture actual residuals for accurate MoE knowledge browse             |
 
 ### 8.5 INSERT Semantics — How Edge Becomes Vector
 
@@ -1479,11 +1479,11 @@ larql label <vindex_path> \
 
 ### 10.2 What the Engine Reads
 
-| File | Produced by | Used for |
-|------|-------------|----------|
-| `feature_labels.json` | `larql-knowledge` probe pipeline | Probe-confirmed per-feature labels |
-| `relation_clusters.json` | `larql` vindex build + `larql-knowledge` triples/WordNet | Cluster-based labels |
-| `feature_clusters.jsonl` | `larql` vindex build | Per-feature cluster assignments |
+| File                     | Produced by                                              | Used for                           |
+|--------------------------|----------------------------------------------------------|------------------------------------|
+| `feature_labels.json`    | `larql-knowledge` probe pipeline                         | Probe-confirmed per-feature labels |
+| `relation_clusters.json` | `larql` vindex build + `larql-knowledge` triples/WordNet | Cluster-based labels               |
+| `feature_clusters.jsonl` | `larql` vindex build                                     | Per-feature cluster assignments    |
 
 ### 10.3 Additive Updates
 
