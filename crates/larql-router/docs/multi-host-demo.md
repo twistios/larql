@@ -57,10 +57,10 @@ requests fan out in parallel.
 
 Three choices, listed by typical use case:
 
-| Mode | When | Setup |
-|---|---|---|
-| **Plain TCP, no auth** | Trusted LAN, dev | nothing extra |
-| **TCP + `--grid-key`** | LAN with multiple tenants | shared 32-char secret |
+| Mode                                      | When                           | Setup                                       |
+|-------------------------------------------|--------------------------------|---------------------------------------------|
+| **Plain TCP, no auth**                    | Trusted LAN, dev               | nothing extra                               |
+| **TCP + `--grid-key`**                    | LAN with multiple tenants      | shared 32-char secret                       |
 | **QUIC + `--grid-key` + fingerprint pin** | Untrusted segment / production | `--features quic` build; cert + fingerprint |
 
 The walkthrough below uses **TCP + `--grid-key`**. The "QUIC" §
@@ -180,12 +180,12 @@ Model gemma3:4b:
 
 If one server doesn't show up:
 
-| Symptom | Cause | Fix |
-|---|---|---|
-| `Connection refused` from server | router gRPC port firewalled | open `50052/tcp` |
-| Server logs `UNAUTHENTICATED` | `--grid-key` mismatch | re-share the secret |
-| Server logs `connect timed out` | `--join` uses wrong IP | use the router's LAN IP, not `127.0.0.1` |
-| `0 servers` after a clean start | server's `--public-url` is unreachable | ping the URL from the router |
+| Symptom                          | Cause                                  | Fix                                      |
+|----------------------------------|----------------------------------------|------------------------------------------|
+| `Connection refused` from server | router gRPC port firewalled            | open `50052/tcp`                         |
+| Server logs `UNAUTHENTICATED`    | `--grid-key` mismatch                  | re-share the secret                      |
+| Server logs `connect timed out`  | `--join` uses wrong IP                 | use the router's LAN IP, not `127.0.0.1` |
+| `0 servers` after a clean start  | server's `--public-url` is unreachable | ping the URL from the router             |
 
 ## Step 6 — send a request
 

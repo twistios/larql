@@ -135,11 +135,11 @@ drops → "hot shard cooled" line → `status` shows two replicas again.
 
 ## Knobs worth tweaking
 
-| Flag | What it does in this demo |
-|---|---|
-| `--hot-shard-rps 5` | Threshold to elevate. Drop lower if your local load is gentle; raise for production-scale traffic. |
-| `--rebalance-interval 5` | Tick cadence. Set short for the demo so elevations land in seconds; production default is 30 s. |
-| `--target-replicas 1` | Base target. Hot-shard elevation is a `+1` on top — set `--target-replicas 2` to see it climb to 3. |
+| Flag                      | What it does in this demo                                                                                         |
+|---------------------------|-------------------------------------------------------------------------------------------------------------------|
+| `--hot-shard-rps 5`       | Threshold to elevate. Drop lower if your local load is gentle; raise for production-scale traffic.                |
+| `--rebalance-interval 5`  | Tick cadence. Set short for the demo so elevations land in seconds; production default is 30 s.                   |
+| `--target-replicas 1`     | Base target. Hot-shard elevation is a `+1` on top — set `--target-replicas 2` to see it climb to 3.               |
 | `--concurrent N` on bench | Drives the rate. Each client opens one connection and serializes calls, so 16 ≈ 16× the single-client throughput. |
 
 ## Caveats
